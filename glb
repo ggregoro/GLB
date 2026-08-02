@@ -13,6 +13,77 @@ GLB_VERSION="$(<"$GLB_ROOT/VERSION")"
 
 # Load modules
 source "$GLB_ROOT/lib/banner.sh"
+source "$GLB_ROOT/lib/logging.sh"
+source "$GLB_ROOT/lib/utils.sh"
+source "$GLB_ROOT/lib/detect.sh"
 
-# Start GLB
+# ------------------------------------------------------------
+# Display help
+# ------------------------------------------------------------
+
+glb_show_help() {
+    printf "\n"
+    printf "Usage:\n"
+    printf "  glb <command>\n"
+    printf "\n"
+    printf "Commands:\n"
+    printf "  help       Show this help message\n"
+    printf "  version    Show GLB version\n"
+    printf "  info       Show system information\n"
+    printf "\n"
+}
+
+# ------------------------------------------------------------
+# Display system information
+# ------------------------------------------------------------
+
+glb_show_info() {
+    local os
+    local version
+    local package_manager
+    local shell
+
+    os="$(glb_detect_os)"
+    version="$(glb_detect_version)"
+    package_manager="$(glb_detect_package_manager)"
+    shell="$(glb_detect_shell)"
+
+    printf "\n"
+    printf "System Information\n"
+    printf -- "------------------\n"
+    printf "Distribution:    %s\n" "$os"
+    printf "Version:         %s\n" "$version"
+    printf "Package Manager: %s\n" "$package_manager"
+    printf "Shell:           %s\n" "$shell"
+    printf "\n"
+}
+
+# ------------------------------------------------------------
+# Main program
+# ------------------------------------------------------------
+
 glb_show_banner "$GLB_VERSION"
+
+case "${1:-}" in
+    help)
+        glb_show_help
+        ;;
+
+    version)
+        printf "GLB Version %s\n" "$GLB_VERSION"
+        ;;
+
+    info)
+        glb_show_info
+        ;;
+
+    "")
+        glb_show_help
+        ;;
+
+    *)
+        glb_log_error "Unknown command: $1"
+        glb_show_help
+        exit 1
+        ;;
+esac
