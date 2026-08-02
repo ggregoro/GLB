@@ -1,0 +1,21 @@
+# Logs
+logs/
+
+# Backup files
+*.bak
+*.old
+*.orig
+
+# Temporary files
+*~
+*.tmp
+*.swp
+
+# Vim
+.*.sw?
+
+# macOS
+.DS_Store
+
+# Windows
+Thumbs.db
