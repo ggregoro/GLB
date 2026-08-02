@@ -1,0 +1,18 @@
+#!/usr/bin/env bash
+#
+# ============================================================
+# GLB - Greg's Linux Bootstrap
+# Main Program
+# ============================================================
+
+# Project root directory
+GLB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+# Read version
+GLB_VERSION="$(<"$GLB_ROOT/VERSION")"
+
+# Load modules
+source "$GLB_ROOT/lib/banner.sh"
+
+# Start GLB
+glb_show_banner "$GLB_VERSION"
