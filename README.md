@@ -2,7 +2,7 @@
 
 **Greg's Linux Bootstrap**
 
-GLB is a cross-distribution Linux workstation bootstrap and customization toolkit.
+Build a modern Linux workstation with curated shell environments, tools, and profiles.
 
 ## Goals
 
