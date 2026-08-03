@@ -1,19 +1,24 @@
-# GLB
+# Greg's Linux Bootstrap (GLB)
 
-**Greg's Linux Bootstrap**
+Build a modern Linux workstation with curated shell
+environments, tools, and profiles.
 
-Build a modern Linux workstation with curated shell environments, tools, and profiles.
+Why GLB?
 
-## Goals
+Vision
 
-- Detect Linux distributions automatically
-- Support apt, dnf, pacman, and zypper
-- Configure Fish, Bash, and Zsh
-- Install and configure common Linux utilities
-- Create a consistent terminal experience across Linux distributions
+Features
 
-## Status
+Installation
 
-Version 0.1.0
+Profiles
 
-Initial development has begun.
+Supported Distributions
+
+Architecture
+
+Roadmap
+
+Contributing
+
+License

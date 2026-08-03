@@ -2,6 +2,20 @@
 
 This changelog records significant milestones, improvements, and lessons learned while developing the Greg's Linux Bootstrap (GLB) project.
 
+## [Unreleased]
+
+### Added
+
+- Added `PHILOSOPHY.md` to document the guiding principles of GLB.
+- Added `ROADMAP.md` outlining the long-term direction of the project.
+
+### Changed
+
+- Updated the README to reflect the evolution of GLB into a Linux workstation builder.
+- Revised PROJECT.md with a new mission, vision, and core principles.
+- Reworked ARCHITECTURE.md to document the modular workstation builder architecture.
+- Expanded CODING_STANDARDS.md to emphasize user experience, modularity, and integration with existing open-source projects.
+- Updated the project's guiding philosophy from a Linux bootstrap script to a user experience focused workstation builder.
 ---
 
 ## 2026-08-02
