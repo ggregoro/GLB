@@ -25,6 +25,15 @@ This project follows a simple versioning approach:
 - Added support for detecting package managers through GLB.
 - Added initial `glb install <package>` command support.
 - Added package installation support for apt, dnf, pacman, and zypper.
+- Added `glb remove` and `glb update` commands.
+- Added profile system: `glb restore [profile]` installs a profile's
+  `packages.txt` and symlinks its `dotfiles/` into `$HOME`, backing up
+  any existing files first.
+- Added `glb profiles` command to list available profiles.
+- Added the `default` profile with a starter package list.
+
+### Fixed
+- Fixed zypper not being detected as an available package manager.
 
 ### Planned
 
@@ -35,6 +44,9 @@ This project follows a simple versioning approach:
 - Git bootstrap
 - SSH bootstrap
 - Samba support
+- Support for apps outside the standard package manager (flatpak,
+  AppImage, curl-install scripts)
+- Per-distro package name overrides (e.g. `fd` vs `fd-find`)
 
 ---
 

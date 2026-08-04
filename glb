@@ -17,6 +17,7 @@ source "$GLB_ROOT/lib/logging.sh"
 source "$GLB_ROOT/lib/utils.sh"
 source "$GLB_ROOT/lib/detect.sh"
 source "$GLB_ROOT/lib/package.sh"
+source "$GLB_ROOT/lib/profile.sh"
 
 # ------------------------------------------------------------
 # Display help
@@ -31,7 +32,11 @@ glb_show_help() {
     printf "  help       Show this help message\n"
     printf "  version    Show GLB version\n"
     printf "  info       Show system information\n"
-    printf "  install   Install a package\n"
+    printf "  install    Install a package\n"
+    printf "  remove     Remove a package\n"
+    printf "  update     Update all system packages\n"
+    printf "  restore    Apply a profile (packages + dotfiles)\n"
+    printf "  profiles   List available profiles\n"
     printf "\n"
 }
 
@@ -78,10 +83,26 @@ case "${1:-}" in
     info)
         glb_show_info
         ;;
-   
-     install)
+    install)
         glb_install_package "${2:-}"
         ;;
+
+    remove)
+        glb_remove_package "${2:-}"
+        ;;
+
+    update)
+        glb_update_packages
+        ;;
+
+    restore)
+        glb_apply_profile "${2:-}"
+        ;;
+
+    profiles)
+        glb_list_profiles
+        ;;
+
     "")
         glb_show_help
         ;;

@@ -55,6 +55,8 @@ glb_detect_package_manager() {
         printf "dnf\n"
     elif command -v pacman >/dev/null 2>&1; then
         printf "pacman\n"
+    elif command -v zypper >/dev/null 2>&1; then
+        printf "zypper\n"
     else
         return 1
     fi
