@@ -16,6 +16,7 @@ source "$GLB_ROOT/lib/banner.sh"
 source "$GLB_ROOT/lib/logging.sh"
 source "$GLB_ROOT/lib/utils.sh"
 source "$GLB_ROOT/lib/detect.sh"
+source "$GLB_ROOT/lib/package.sh"
 
 # ------------------------------------------------------------
 # Display help
@@ -30,6 +31,7 @@ glb_show_help() {
     printf "  help       Show this help message\n"
     printf "  version    Show GLB version\n"
     printf "  info       Show system information\n"
+    printf "  install   Install a package\n"
     printf "\n"
 }
 
@@ -76,7 +78,10 @@ case "${1:-}" in
     info)
         glb_show_info
         ;;
-
+   
+     install)
+        glb_install_package "${2:-}"
+        ;;
     "")
         glb_show_help
         ;;
