@@ -20,6 +20,12 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+### Added
+- Added package management abstraction layer.
+- Added support for detecting package managers through GLB.
+- Added initial `glb install <package>` command support.
+- Added package installation support for apt, dnf, pacman, and zypper.
+
 ### Planned
 
 - Initial bootstrap framework
