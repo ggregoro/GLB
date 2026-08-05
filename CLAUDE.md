@@ -26,6 +26,22 @@ When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
 branches on it.
 
+## Current state (as of 2026-08-05, commit e84975a)
+
+- Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
+  `update`, `restore [profile]`, `profiles`, `prompt`.
+- Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
+  `lib/detect.sh`, `lib/package.sh`, `lib/profile.sh`, `lib/prompt.sh` —
+  all sourced by the `glb` dispatcher.
+- `profiles/default/` is still the only profile: placeholder
+  `packages.txt` (git, zsh, tmux, neovim, curl, ripgrep, fzf), empty
+  `dotfiles/`. Real dotfiles/package list not populated yet.
+- `glb prompt` (Starship install + preset picker) was built and tested
+  end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
+- For the fine-grained "what shipped when" list, check CHANGELOG.md's
+  `[Unreleased]` section — this file tracks the *why* and what's still
+  open, not a full change log.
+
 ## Roadmap / in progress
 
 - Add WezTerm and Ghostty terminal emulator setup (Greg already uses both)
@@ -80,3 +96,13 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- Greg develops across multiple machines (Dell E7450 laptop, a VirtualBox
+  VM — Zorin OS as of 2026-08-05) with Claude Code sessions running
+  independently on each, not always in sync in real time. **Before
+  pushing, check for commits on `origin/main` you don't have locally**
+  (`git fetch && git log main..origin/main`) — this file was committed
+  specifically because a VM session had already pushed 3 real commits
+  (per-distro package overrides, `glb restore` error handling, the bats
+  test suite) that the laptop session only found out about when a push
+  was rejected. Don't assume you have the full picture from this file
+  alone if it's been a while since the last pull on this machine.
