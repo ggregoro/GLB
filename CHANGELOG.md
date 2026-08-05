@@ -45,6 +45,14 @@ This project follows a simple versioning approach:
   install the right package on each distro (e.g. `fd-find` on apt).
   `glb install`, `glb remove`, and the installed-check all resolve
   through this table.
+- Added `lib/plugins.sh`: `glb restore` now vendors a small, curated set
+  of zsh plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`) by
+  git-cloning them into `~/.local/share/glb/plugins`, framework-free (no
+  Oh My Zsh dependency).
+- Populated the `default` profile with real dotfiles (`.zshrc`,
+  `.gitconfig`, `.config/starship.toml`) and wired Starship installation
+  and zsh plugin vendoring into `glb restore`, so restoring the `default`
+  profile now sets up a complete, working shell in one pass.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.

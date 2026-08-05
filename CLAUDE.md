@@ -26,16 +26,30 @@ When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
 branches on it.
 
-## Current state (as of 2026-08-05, commit e84975a)
+## Current state (as of 2026-08-05)
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
   `update`, `restore [profile]`, `profiles`, `prompt`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
-  `lib/detect.sh`, `lib/package.sh`, `lib/profile.sh`, `lib/prompt.sh` —
-  all sourced by the `glb` dispatcher.
-- `profiles/default/` is still the only profile: placeholder
-  `packages.txt` (git, zsh, tmux, neovim, curl, ripgrep, fzf), empty
-  `dotfiles/`. Real dotfiles/package list not populated yet.
+  `lib/detect.sh`, `lib/package.sh`, `lib/profile.sh`, `lib/prompt.sh`,
+  `lib/plugins.sh` — all sourced by the `glb` dispatcher.
+- `profiles/default/` is now Greg's real setup, not a placeholder:
+  `packages.txt` (git, zsh, tmux, neovim, curl, ripgrep, fzf — tmux/
+  neovim/ripgrep kept even though not currently installed, aspirational),
+  `dotfiles/.zshrc` + `.gitconfig` + `.config/starship.toml` (his actual
+  hand-crafted config — plain text style: directory, git info, colored
+  `❯`, no icons/segments — visually different from the Powerlevel10k
+  look he was using before). `glb restore default` now installs
+  Starship, vendors `zsh-autosuggestions`/`zsh-syntax-highlighting`
+  framework-free (`lib/plugins.sh`, into
+  `~/.local/share/glb/plugins`), and symlinks all three dotfiles —
+  a genuinely complete, working shell setup in one pass.
+  **This has only been verified in an isolated scratch `$HOME`, not yet
+  run for real against Greg's actual laptop `$HOME`** — that would
+  replace his live Oh My Zsh + Powerlevel10k `.zshrc` (backed up to
+  `.glb-backup`, but still a real, confirmed-first action). `~/.oh-my-zsh`
+  and `~/.p10k.zsh` become unused once he does but are not
+  auto-deleted — manual cleanup if/when he wants them gone.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - For the fine-grained "what shipped when" list, check CHANGELOG.md's
@@ -46,8 +60,6 @@ branches on it.
 
 - Add WezTerm and Ghostty terminal emulator setup (Greg already uses both)
 - Add a Homebrew/Linuxbrew repository as an install source
-- Populate `profiles/default/` with Greg's real dotfiles and package list
-  (currently just a placeholder starter list and an empty `dotfiles/`)
 - Support multiple named profiles, not just `default` — `docs/ROADMAP.md`'s
   Version 0.3 already envisions Minimal/Developer/Server/Custom, plus a new
   "New to Linux" profile: curated, opinionated software picks (one solid
@@ -72,13 +84,15 @@ branches on it.
     layout with Plain Text symbols — so a per-module mix-and-match picker
     was dropped in favor of picking one preset outright (no TOML parser to
     lean on, Bash-only). Zsh-only so far (`eval "$(starship init zsh)"`
-    appended to `~/.zshrc`, idempotent); bash/fish support and wiring into
-    `profiles/default` (once real dotfiles are populated) still open.
-  - **Plugins** (not started): stay framework-free — don't install Oh My
-    Zsh itself, cap to a curated subset of OMZ plugins (e.g.
-    autosuggestions, syntax-highlighting) vendored directly into GLB's own
-    dotfiles rather than the full OMZ catalog. Still open: which specific
-    plugins make the cut.
+    appended to `~/.zshrc`, idempotent); bash/fish support still open.
+    Now wired into `profiles/default` (`glb_install_starship` runs as
+    part of `glb restore`).
+  - **Plugins** (done, `lib/plugins.sh`): framework-free — no Oh My Zsh
+    dependency. Curated to exactly `zsh-autosuggestions` and
+    `zsh-syntax-highlighting` (the two Greg's real `.zshrc` actually
+    used), git-cloned into `~/.local/share/glb/plugins` as part of
+    `glb restore`. No OMZ-style "git aliases" plugin equivalent was
+    built.
 
 ## Testing
 
