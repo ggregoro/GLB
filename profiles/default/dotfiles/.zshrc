@@ -1,4 +1,20 @@
 # ------------------------------------------------------------
+# History (zsh has no useful defaults on its own -- Oh My Zsh used
+# to set these; nothing replaced them when it was removed)
+# ------------------------------------------------------------
+HISTFILE="$HOME/.zsh_history"
+HISTSIZE=50000
+SAVEHIST=50000
+setopt APPEND_HISTORY
+setopt EXTENDED_HISTORY
+setopt HIST_EXPIRE_DUPS_FIRST
+setopt HIST_IGNORE_DUPS
+setopt HIST_IGNORE_SPACE
+setopt HIST_VERIFY
+setopt INC_APPEND_HISTORY
+setopt SHARE_HISTORY
+
+# ------------------------------------------------------------
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then

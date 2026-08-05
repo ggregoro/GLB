@@ -76,6 +76,11 @@ This project follows a simple versioning approach:
   to install or a dotfile couldn't be symlinked/backed up. Failures
   are now logged individually and `glb_apply_profile` returns non-zero
   when any occur.
+- Fixed zsh history being effectively disabled (`HISTSIZE=30`,
+  `SAVEHIST=0`, no `HISTFILE`) since dropping Oh My Zsh, which used to
+  configure this automatically. `.zshrc` now sets it explicitly, which
+  broke Ctrl-R (fzf history search) in zsh specifically — bash and fish
+  were unaffected.
 
 ### Planned
 
