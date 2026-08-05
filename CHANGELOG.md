@@ -35,6 +35,12 @@ This project follows a simple versioning approach:
   the profile system (packages.txt parsing, dotfiles symlinking and
   backup), and the `glb` dispatcher's remove/update/restore/profiles
   commands.
+- Added per-distro package name overrides (`_GLB_PACKAGE_OVERRIDES` /
+  `glb_resolve_package_name` in `lib/package.sh`), so a profile's
+  `packages.txt` can use one generic name (e.g. `fd`) and GLB will
+  install the right package on each distro (e.g. `fd-find` on apt).
+  `glb install`, `glb remove`, and the installed-check all resolve
+  through this table.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
@@ -54,7 +60,6 @@ This project follows a simple versioning approach:
 - Samba support
 - Support for apps outside the standard package manager (flatpak,
   AppImage, curl-install scripts)
-- Per-distro package name overrides (e.g. `fd` vs `fd-find`)
 
 ---
 

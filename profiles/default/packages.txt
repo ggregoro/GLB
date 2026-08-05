@@ -3,10 +3,11 @@
 # One package per line. Blank lines and lines starting with '#' are
 # ignored; trailing '# comment' after a package name is stripped too.
 #
-# Package names are passed as-is to your distro's package manager
-# (apt/dnf/pacman/zypper), so stick to names that are the same across
-# all of them where you can. If a name differs per distro, you'll need
-# separate profiles or handle that package manually for now.
+# Package names are resolved per-distro before being passed to your
+# package manager (apt/dnf/pacman/zypper). Most names are the same
+# everywhere and need no special handling. For the few that aren't
+# (e.g. "fd" vs "fd-find"), add an entry to _GLB_PACKAGE_OVERRIDES in
+# lib/package.sh rather than hardcoding the distro-specific name here.
 
 git
 zsh
