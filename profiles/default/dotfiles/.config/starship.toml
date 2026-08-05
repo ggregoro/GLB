@@ -35,6 +35,5 @@ symbol = " "
 
 [env_var.GLB_SHELL]
 variable = "GLB_SHELL"
-symbol = "🐚 "
 style = "bold cyan"
-format = "[$symbol$env_value]($style) "
+format = "[$env_value]($style) "

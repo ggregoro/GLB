@@ -94,7 +94,7 @@ end
 # ------------------------------------------------------------
 # Starship Prompt
 # ------------------------------------------------------------
-set -gx GLB_SHELL fish
+set -gx GLB_SHELL "Ⓕ fish"
 if command -q starship
     starship init fish | source
 

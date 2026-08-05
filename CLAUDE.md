@@ -62,10 +62,13 @@ branches on it.
     on this machine after the real restore (the guarded `source`-if-
     present logic found what it needed).
   - Added a `GLB_SHELL` prompt indicator (2026-08-05): each shell exports
-    its own name and the shared `starship.toml` shows it (🐚 symbol) at
-    the start of the prompt — Greg asked for this after noticing all
-    three shells now look identical and wanting an easy way to tell them
-    apart when layered (e.g. running `bash` from inside `zsh`).
+    its own name with a unique circled-letter symbol baked in (`Ⓑ bash`,
+    `Ⓩ zsh`, `Ⓕ fish` — plain Unicode, not Nerd Font, so it renders
+    everywhere) and the shared `starship.toml` shows it at the start of
+    the prompt — Greg asked for this after noticing all three shells now
+    look identical and wanting an easy way to tell them apart when
+    layered (e.g. running `bash` from inside `zsh`). Iterated from an
+    initial generic 🐚 symbol to per-shell symbols per Greg's feedback.
   - Nerd Font glyphs need each *terminal emulator* (not shell) to have
     its own font set to the already-installed `JetBrainsMono Nerd Font`
     — GLB doesn't automate that per-terminal setting yet. Confirmed

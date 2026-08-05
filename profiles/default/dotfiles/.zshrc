@@ -97,7 +97,7 @@ source "$HOME/.local/share/glb/plugins/zsh-autosuggestions/zsh-autosuggestions.z
 # ------------------------------------------------------------
 # Starship Prompt (see lib/prompt.sh / `glb prompt`)
 # ------------------------------------------------------------
-export GLB_SHELL=zsh
+export GLB_SHELL="Ⓩ zsh"
 eval "$(starship init zsh)"
 
 # Must be sourced last
