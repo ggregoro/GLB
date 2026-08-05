@@ -38,6 +38,10 @@ This project follows a simple versioning approach:
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
+- Fixed `glb restore` silently reporting success when a package failed
+  to install or a dotfile couldn't be symlinked/backed up. Failures
+  are now logged individually and `glb_apply_profile` returns non-zero
+  when any occur.
 
 ### Planned
 

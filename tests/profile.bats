@@ -15,6 +15,7 @@ setup() {
     INSTALL_LOG="$TEST_TMP/installed.log"
     : > "$INSTALL_LOG"
     ALREADY_INSTALLED=""
+    FAIL_PACKAGES=""
 
     # Test doubles standing in for lib/package.sh, so these tests
     # exercise profile.sh's own logic in isolation.
@@ -22,6 +23,9 @@ setup() {
         [[ " $ALREADY_INSTALLED " == *" $1 "* ]]
     }
     glb_install_package() {
+        if [[ " $FAIL_PACKAGES " == *" $1 "* ]]; then
+            return 1
+        fi
         echo "$1" >> "$INSTALL_LOG"
     }
 }
@@ -100,6 +104,21 @@ teardown() {
     [ "$output" = "" ]
 }
 
+@test "reports failure and continues installing remaining packages when one fails" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'git\nzsh\ntmux\n' > "$pdir/packages.txt"
+    FAIL_PACKAGES="zsh"
+
+    run glb_apply_profile_packages "$pdir"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to install: zsh"* ]]
+    [[ "$output" == *"Failed to install 1 package(s): zsh"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "$(printf 'git\ntmux')" ]
+}
+
 # --- dotfiles symlinking ---------------------------------------------------
 
 @test "symlinks a flat dotfile into HOME" {
@@ -168,6 +187,56 @@ teardown() {
     [[ "$output" == *"No dotfiles directory found"* ]]
 }
 
+@test "reports failure when a destination directory cannot be created" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles/.config/app"
+    echo 'content' > "$pdir/dotfiles/.config/app/config.yml"
+
+    mkdir -p "$HOME/.config"
+    chmod 555 "$HOME/.config"
+
+    run glb_apply_profile_dotfiles "$pdir"
+
+    chmod 755 "$HOME/.config"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to create directory for ~/.config/app/config.yml"* ]]
+}
+
+@test "reports failure when backing up an existing file is not permitted" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles/.config"
+    echo 'new' > "$pdir/dotfiles/.config/app.conf"
+
+    mkdir -p "$HOME/.config"
+    echo 'old' > "$HOME/.config/app.conf"
+    chmod 555 "$HOME/.config"
+
+    run glb_apply_profile_dotfiles "$pdir"
+
+    chmod 755 "$HOME/.config"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to back up ~/.config/app.conf"* ]]
+    [ ! -L "$HOME/.config/app.conf" ]
+}
+
+@test "reports failure when creating a new symlink is not permitted" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles/.config"
+    echo 'content' > "$pdir/dotfiles/.config/app.conf"
+
+    mkdir -p "$HOME/.config"
+    chmod 555 "$HOME/.config"
+
+    run glb_apply_profile_dotfiles "$pdir"
+
+    chmod 755 "$HOME/.config"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to link ~/.config/app.conf"* ]]
+}
+
 @test "backs up a broken symlink found at the destination" {
     local pdir="$TEST_TMP/profile"
     mkdir -p "$pdir/dotfiles"
@@ -199,6 +268,17 @@ teardown() {
     run cat "$INSTALL_LOG"
     [ "$output" = "git" ]
     [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb_apply_profile returns failure and reports errors when a package fails to install" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'git\nzsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+    FAIL_PACKAGES="zsh"
+
+    run glb_apply_profile "work"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Profile applied with errors: work"* ]]
 }
 
 @test "glb_apply_profile defaults to the 'default' profile when no name is given" {
