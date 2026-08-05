@@ -31,6 +31,10 @@ This project follows a simple versioning approach:
   any existing files first.
 - Added `glb profiles` command to list available profiles.
 - Added the `default` profile with a starter package list.
+- Added a bats test suite (`tests/`) covering package manager detection,
+  the profile system (packages.txt parsing, dotfiles symlinking and
+  backup), and the `glb` dispatcher's remove/update/restore/profiles
+  commands.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
