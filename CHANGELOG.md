@@ -35,9 +35,23 @@ This project follows a simple versioning approach:
   pick a prompt preset (Default, Pure Prompt, Pastel Powerline, Nerd Font
   Symbols, Plain Text Symbols, No Runtime Versions), writing
   `~/.config/starship.toml` and wiring it into `~/.zshrc`.
+- Added a bats test suite (`tests/`) covering package manager detection,
+  the profile system (packages.txt parsing, dotfiles symlinking and
+  backup), and the `glb` dispatcher's remove/update/restore/profiles
+  commands.
+- Added per-distro package name overrides (`_GLB_PACKAGE_OVERRIDES` /
+  `glb_resolve_package_name` in `lib/package.sh`), so a profile's
+  `packages.txt` can use one generic name (e.g. `fd`) and GLB will
+  install the right package on each distro (e.g. `fd-find` on apt).
+  `glb install`, `glb remove`, and the installed-check all resolve
+  through this table.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
+- Fixed `glb restore` silently reporting success when a package failed
+  to install or a dotfile couldn't be symlinked/backed up. Failures
+  are now logged individually and `glb_apply_profile` returns non-zero
+  when any occur.
 
 ### Planned
 
@@ -50,7 +64,6 @@ This project follows a simple versioning approach:
 - Samba support
 - Support for apps outside the standard package manager (flatpak,
   AppImage, curl-install scripts)
-- Per-distro package name overrides (e.g. `fd` vs `fd-find`)
 
 ---
 

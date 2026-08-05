@@ -29,6 +29,7 @@ glb_apply_profile_packages() {
     local profile_dir="$1"
     local packages_file="$profile_dir/packages.txt"
     local line package
+    local failed=()
 
     if [[ ! -f "$packages_file" ]]; then
         glb_log_warn "No packages.txt found, skipping packages."
@@ -46,8 +47,16 @@ glb_apply_profile_packages() {
             continue
         fi
 
-        glb_install_package "$package"
+        if ! glb_install_package "$package"; then
+            glb_log_error "Failed to install: $package"
+            failed+=("$package")
+        fi
     done < "$packages_file"
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        glb_log_error "Failed to install ${#failed[@]} package(s): ${failed[*]}"
+        return 1
+    fi
 }
 
 # ------------------------------------------------------------
@@ -59,6 +68,7 @@ glb_apply_profile_dotfiles() {
     local profile_dir="$1"
     local dotfiles_dir="$profile_dir/dotfiles"
     local src rel dest
+    local failed=()
 
     if [[ ! -d "$dotfiles_dir" ]]; then
         glb_log_warn "No dotfiles directory found, skipping dotfiles."
@@ -69,7 +79,11 @@ glb_apply_profile_dotfiles() {
         rel="${src#"$dotfiles_dir"/}"
         dest="$HOME/$rel"
 
-        glb_create_directory "$(dirname "$dest")"
+        if ! glb_create_directory "$(dirname "$dest")"; then
+            glb_log_error "Failed to create directory for ~/$rel"
+            failed+=("$rel")
+            continue
+        fi
 
         if [[ -L "$dest" ]] && [[ "$(readlink -f "$dest")" == "$(readlink -f "$src")" ]]; then
             glb_log_info "Already linked: ~/$rel"
@@ -78,12 +92,25 @@ glb_apply_profile_dotfiles() {
 
         if [[ -e "$dest" || -L "$dest" ]]; then
             glb_log_warn "Backing up existing ~/$rel -> ~/$rel.glb-backup"
-            mv "$dest" "$dest.glb-backup"
+            if ! mv "$dest" "$dest.glb-backup"; then
+                glb_log_error "Failed to back up ~/$rel"
+                failed+=("$rel")
+                continue
+            fi
         fi
 
-        ln -s "$src" "$dest"
-        glb_log_success "Linked ~/$rel"
+        if ln -s "$src" "$dest"; then
+            glb_log_success "Linked ~/$rel"
+        else
+            glb_log_error "Failed to link ~/$rel"
+            failed+=("$rel")
+        fi
     done < <(find "$dotfiles_dir" -type f -not -name '.gitkeep' -print0)
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        glb_log_error "Failed to link ${#failed[@]} file(s): ${failed[*]}"
+        return 1
+    fi
 }
 
 # ------------------------------------------------------------
@@ -93,6 +120,7 @@ glb_apply_profile_dotfiles() {
 glb_apply_profile() {
     local name="${1:-default}"
     local profile_dir
+    local status=0
     profile_dir="$(_glb_profile_dir "$name")"
 
     if [[ ! -d "$profile_dir" ]]; then
@@ -102,10 +130,16 @@ glb_apply_profile() {
 
     glb_log_info "Applying profile: $name"
 
-    glb_apply_profile_packages "$profile_dir"
-    glb_apply_profile_dotfiles "$profile_dir"
+    glb_apply_profile_packages "$profile_dir" || status=1
+    glb_apply_profile_dotfiles "$profile_dir" || status=1
 
-    glb_log_success "Profile applied: $name"
+    if [[ "$status" -eq 0 ]]; then
+        glb_log_success "Profile applied: $name"
+    else
+        glb_log_error "Profile applied with errors: $name"
+    fi
+
+    return "$status"
 }
 
 # ------------------------------------------------------------
