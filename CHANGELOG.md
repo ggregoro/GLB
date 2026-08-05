@@ -53,6 +53,13 @@ This project follows a simple versioning approach:
   `.gitconfig`, `.config/starship.toml`) and wired Starship installation
   and zsh plugin vendoring into `glb restore`, so restoring the `default`
   profile now sets up a complete, working shell in one pass.
+- Unified aliases and tooling (`eza`, `bat`, `zoxide`, `fastfetch`,
+  navigation shortcuts, apt shortcuts, guarded Homebrew shellenv) across
+  bash, zsh, and fish, using Greg's existing fish config as the source of
+  truth. Added `.bashrc` and `.config/fish/config.fish` to the `default`
+  profile's dotfiles, and `eza`/`bat`/`zoxide`/`fastfetch`/`fish` to
+  `packages.txt`. Bash and fish now use Starship too (previously
+  zsh-only).
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
@@ -65,7 +72,6 @@ This project follows a simple versioning approach:
 
 - Initial bootstrap framework
 - Documentation system
-- Fish shell configuration
 - Ranger configuration
 - Git bootstrap
 - SSH bootstrap

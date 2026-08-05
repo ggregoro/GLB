@@ -33,23 +33,40 @@ branches on it.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
   `lib/detect.sh`, `lib/package.sh`, `lib/profile.sh`, `lib/prompt.sh`,
   `lib/plugins.sh` — all sourced by the `glb` dispatcher.
-- `profiles/default/` is now Greg's real setup, not a placeholder:
-  `packages.txt` (git, zsh, tmux, neovim, curl, ripgrep, fzf — tmux/
-  neovim/ripgrep kept even though not currently installed, aspirational),
-  `dotfiles/.zshrc` + `.gitconfig` + `.config/starship.toml` (his actual
-  hand-crafted config — plain text style: directory, git info, colored
-  `❯`, no icons/segments — visually different from the Powerlevel10k
-  look he was using before). `glb restore default` now installs
-  Starship, vendors `zsh-autosuggestions`/`zsh-syntax-highlighting`
-  framework-free (`lib/plugins.sh`, into
-  `~/.local/share/glb/plugins`), and symlinks all three dotfiles —
-  a genuinely complete, working shell setup in one pass.
-  **This has only been verified in an isolated scratch `$HOME`, not yet
-  run for real against Greg's actual laptop `$HOME`** — that would
-  replace his live Oh My Zsh + Powerlevel10k `.zshrc` (backed up to
-  `.glb-backup`, but still a real, confirmed-first action). `~/.oh-my-zsh`
-  and `~/.p10k.zsh` become unused once he does but are not
-  auto-deleted — manual cleanup if/when he wants them gone.
+- `profiles/default/` is now Greg's real setup, not a placeholder, and
+  **`glb restore default` has been run for real on this laptop** — Oh My
+  Zsh + Powerlevel10k are no longer active (backed up to `~/.zshrc
+  .glb-backup`; `~/.oh-my-zsh`/`~/.p10k.zsh` are just unused now, not
+  deleted). All three real shells are unified around what was discovered
+  to be Greg's most-maintained config, `~/.config/fish/config.fish`
+  (already used Starship, `eza`, `bat`, `zoxide`, fzf key-bindings,
+  Homebrew — far more developed than the old `.zshrc`, which only had one
+  alias):
+  - `packages.txt`: git, zsh, fish, tmux, neovim, curl, ripgrep, fzf,
+    eza, bat, zoxide, fastfetch (tmux/neovim/ripgrep/fastfetch kept as
+    aspirational even where not apt-installable on every distro).
+  - `dotfiles/`: `.bashrc`, `.zshrc`, `.config/fish/config.fish`,
+    `.gitconfig`, `.config/starship.toml` (Greg's real hand-crafted
+    config — plain text style: directory, git info, colored `❯`, no
+    icons/segments, visually different from the old Powerlevel10k look).
+    All three shells now share the same aliases (eza-based `ls` family,
+    `bat` as `cat`, nav shortcuts, apt shortcuts, zoxide, guarded
+    Homebrew shellenv) and all three now init Starship (bash and fish
+    newly added; previously zsh-only).
+  - `glb restore default` installs Starship + vendors
+    `zsh-autosuggestions`/`zsh-syntax-highlighting` framework-free
+    (`lib/plugins.sh`) in addition to packages/dotfiles — a genuinely
+    complete, working shell setup in one pass, now proven on real
+    hardware.
+  - Known gap, not silently faked: this machine's `fzf` (apt 0.44.1)
+    only ships working key-bindings for fish out of the box; bash/zsh
+    have the guarded `source`-if-present logic but no actual
+    keybindings file to find yet on this system.
+  - Nerd Font glyphs need each *terminal emulator* (not shell) to have
+    its own font set to the already-installed `JetBrainsMono Nerd Font`
+    — GLB doesn't automate that per-terminal setting yet. Confirmed
+    working in WezTerm; COSMIC Terminal/Konsole not yet addressed (see
+    roadmap).
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - For the fine-grained "what shipped when" list, check CHANGELOG.md's
@@ -83,10 +100,14 @@ branches on it.
     even starship.rs itself has no way to mix e.g. Pastel Powerline's
     layout with Plain Text symbols — so a per-module mix-and-match picker
     was dropped in favor of picking one preset outright (no TOML parser to
-    lean on, Bash-only). Zsh-only so far (`eval "$(starship init zsh)"`
-    appended to `~/.zshrc`, idempotent); bash/fish support still open.
-    Now wired into `profiles/default` (`glb_install_starship` runs as
-    part of `glb restore`).
+    lean on, Bash-only). The `glb prompt` *command itself* (interactive
+    picker for someone with an existing `.zshrc`) is still zsh-only —
+    that's still open. Separately, `profiles/default`'s vendored
+    `.bashrc`/`.zshrc`/`.config/fish/config.fish` all now bake in their
+    own `starship init <shell>` directly, so restoring the `default`
+    profile gets Starship in all three shells regardless of `glb
+    prompt`'s own scope. `glb_install_starship` runs as part of
+    `glb restore`.
   - **Plugins** (done, `lib/plugins.sh`): framework-free — no Oh My Zsh
     dependency. Curated to exactly `zsh-autosuggestions` and
     `zsh-syntax-highlighting` (the two Greg's real `.zshrc` actually

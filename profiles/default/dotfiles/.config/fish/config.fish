@@ -1,7 +1,18 @@
+# ============================================================
+# Greg's Fish Configuration
+# Pop!_OS Edition
+# ============================================================
+
+# Disable greeting
+set -U fish_greeting
+
+# User programs
+fish_add_path ~/.local/bin
+
 # ------------------------------------------------------------
-# eza (modern ls) with plain ls fallback
+# eza (modern ls)
 # ------------------------------------------------------------
-if command -v eza >/dev/null 2>&1; then
+if command -q eza
     alias ls='eza --icons --group-directories-first'
     alias ll='eza --icons -lah --group-directories-first'
     alias la='eza --icons -la --group-directories-first'
@@ -10,16 +21,16 @@ else
     alias ll='ls -lah'
     alias la='ls -la'
     alias l='ls -l'
-fi
+end
 
 # ------------------------------------------------------------
 # bat
 # ------------------------------------------------------------
-if command -v batcat >/dev/null 2>&1; then
+if command -q batcat
     alias cat='batcat'
-elif command -v bat >/dev/null 2>&1; then
+else if command -q bat
     alias cat='bat'
-fi
+end
 
 # ------------------------------------------------------------
 # Navigation
@@ -41,7 +52,7 @@ alias rd='rmdir'
 alias ff='fastfetch'
 alias c='clear'
 alias cls='clear'
-alias reload='source ~/.zshrc'
+alias reload='source ~/.config/fish/config.fish'
 
 # ------------------------------------------------------------
 # APT shortcuts (Pop!_OS / Ubuntu / Debian)
@@ -54,50 +65,45 @@ alias search='apt search'
 # ------------------------------------------------------------
 # Editors
 # ------------------------------------------------------------
-if command -v fresh-editor >/dev/null 2>&1; then
-    alias editzsh='fresh-editor ~/.zshrc'
+if command -q fresh-editor
+    alias editfish='fresh-editor ~/.config/fish/config.fish'
     alias editstarship='fresh-editor ~/.config/starship.toml'
-elif command -v fresh >/dev/null 2>&1; then
-    alias editzsh='fresh ~/.zshrc'
+    alias editconfig='fresh-editor ~/.config/fish/config.fish ~/.config/starship.toml'
+else if command -q fresh
+    alias editfish='fresh ~/.config/fish/config.fish'
     alias editstarship='fresh ~/.config/starship.toml'
-fi
+    alias editconfig='fresh ~/.config/fish/config.fish ~/.config/starship.toml'
+end
 
 # ------------------------------------------------------------
 # zoxide
 # ------------------------------------------------------------
-if command -v zoxide >/dev/null 2>&1; then
-    eval "$(zoxide init zsh)"
-fi
+if command -q zoxide
+    zoxide init fish | source
+end
 
 # ------------------------------------------------------------
 # fzf
 # ------------------------------------------------------------
-if [ -f /usr/share/doc/fzf/examples/key-bindings.zsh ]; then
-    source /usr/share/doc/fzf/examples/key-bindings.zsh
-elif [ -f /usr/share/fzf/key-bindings.zsh ]; then
-    source /usr/share/fzf/key-bindings.zsh
-fi
+if test -f /usr/share/fzf/shell/key-bindings.fish
+    source /usr/share/fzf/shell/key-bindings.fish
+else if test -f /usr/share/fzf/key-bindings.fish
+    source /usr/share/fzf/key-bindings.fish
+end
 
-# Force fzf to open as a pop-up taking up 40% of the screen height from the bottom
-export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
-export FZF_TMUX_OPTS="-p 80%,40%"
+# ------------------------------------------------------------
+# Starship Prompt
+# ------------------------------------------------------------
+if command -q starship
+    starship init fish | source
+
+    # Force fzf to open as a 40% height bottom pop-up layout in Fish
+    set -gx FZF_DEFAULT_OPTS "--height 40% --layout=reverse --border"
+end
 
 # ------------------------------------------------------------
 # Homebrew
 # ------------------------------------------------------------
-if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
-    eval "$(/home/linuxbrew/.linuxbrew/bin/brew shellenv)"
-fi
-
-# ------------------------------------------------------------
-# Framework-free plugins vendored by `glb restore` (see lib/plugins.sh)
-# ------------------------------------------------------------
-source "$HOME/.local/share/glb/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
-
-# ------------------------------------------------------------
-# Starship Prompt (see lib/prompt.sh / `glb prompt`)
-# ------------------------------------------------------------
-eval "$(starship init zsh)"
-
-# Must be sourced last
-source "$HOME/.local/share/glb/plugins/zsh-syntax-highlighting/zsh-syntax-highlighting.zsh"
+if test -x /home/linuxbrew/.linuxbrew/bin/brew
+    eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
+end

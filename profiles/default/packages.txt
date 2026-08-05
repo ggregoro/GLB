@@ -11,8 +11,17 @@
 
 git
 zsh
+fish
 tmux
 neovim
 curl
 ripgrep
 fzf
+eza
+bat
+zoxide
+
+# Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
+# setup) — may need a PPA or manual install. Kept here anyway since GLB
+# doesn't have a non-package-manager install mechanism yet.
+fastfetch
