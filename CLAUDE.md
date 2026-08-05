@@ -100,6 +100,20 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **In progress (2026-08-05): Greg is cross-distro testing `glb restore
+  default` on his ~10 VirtualBox VMs** — Fedora (dnf), openSUSE (zypper),
+  and CachyOS (pacman) are the priority ones (Mint is apt-based, lowest
+  priority — already validated on Pop!_OS/Zorin). Testing both existing
+  VMs (may already have some tools manually installed, masking gaps) and
+  fresh installs (the real signal — whether `packages.txt`'s tools are
+  actually available via each distro's default repos). Goal: find real
+  gaps in `_GLB_PACKAGE_OVERRIDES` (`lib/package.sh`) — currently only
+  has one entry (`fd` → `fd-find` on apt) — for `eza`, `bat`, `zoxide`,
+  `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
+  report back distro name + specific errors (package not found, or
+  installed under a different binary name like `bat`/`batcat`) so they
+  can be turned into override entries. Nothing to do here until he
+  reports results.
 - WezTerm config is done (see "Current state"). Ghostty turned out to
   **not** be installed or available via Flatpak on this machine (the
   original "Greg already uses both" premise was wrong) — dropped from
