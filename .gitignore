@@ -19,3 +19,6 @@ logs/
 
 # Windows
 Thumbs.db
+
+# Local Claude Code notes (not shared in the repo)
+CLAUDE.md

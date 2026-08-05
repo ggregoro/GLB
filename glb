@@ -18,6 +18,7 @@ source "$GLB_ROOT/lib/utils.sh"
 source "$GLB_ROOT/lib/detect.sh"
 source "$GLB_ROOT/lib/package.sh"
 source "$GLB_ROOT/lib/profile.sh"
+source "$GLB_ROOT/lib/prompt.sh"
 
 # ------------------------------------------------------------
 # Display help
@@ -37,6 +38,7 @@ glb_show_help() {
     printf "  update     Update all system packages\n"
     printf "  restore    Apply a profile (packages + dotfiles)\n"
     printf "  profiles   List available profiles\n"
+    printf "  prompt     Install and configure the Starship shell prompt\n"
     printf "\n"
 }
 
@@ -101,6 +103,10 @@ case "${1:-}" in
 
     profiles)
         glb_list_profiles
+        ;;
+
+    prompt)
+        glb_setup_prompt
         ;;
 
     "")

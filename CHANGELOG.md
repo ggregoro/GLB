@@ -31,6 +31,10 @@ This project follows a simple versioning approach:
   any existing files first.
 - Added `glb profiles` command to list available profiles.
 - Added the `default` profile with a starter package list.
+- Added `glb prompt` command: installs the Starship binary and lets you
+  pick a prompt preset (Default, Pure Prompt, Pastel Powerline, Nerd Font
+  Symbols, Plain Text Symbols, No Runtime Versions), writing
+  `~/.config/starship.toml` and wiring it into `~/.zshrc`.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
