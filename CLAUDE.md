@@ -48,6 +48,15 @@ branches on it.
 - Add a Homebrew/Linuxbrew repository as an install source
 - Populate `profiles/default/` with Greg's real dotfiles and package list
   (currently just a placeholder starter list and an empty `dotfiles/`)
+- Support multiple named profiles, not just `default` — `docs/ROADMAP.md`'s
+  Version 0.3 already envisions Minimal/Developer/Server/Custom, plus a new
+  "New to Linux" profile: curated, opinionated software picks (one solid
+  browser/editor/office-suite/image-editor/media-player, not a menu) aimed
+  at people switching from Windows/macOS who don't know the Linux-native
+  options yet. This is a different value proposition from the rest of
+  GLB — "restore my exact setup" doesn't help someone who has no setup to
+  restore, "here's what's good" does. Probably the highest-leverage way to
+  make GLB useful to people beyond Greg.
 - Add a mechanism for installs outside the package manager (flatpak,
   AppImage, curl-install scripts) — doesn't fit the plain `packages.txt`
   model yet

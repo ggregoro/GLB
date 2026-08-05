@@ -48,12 +48,23 @@ Introduce workstation profiles.
 ### Planned
 
 - Greg's Recommended ⭐
+- New to Linux — curated picks for people switching from Windows/macOS who
+  don't yet know the Linux-native equivalents of the software they're used
+  to (one solid choice per category: browser, code editor, office suite,
+  image editing, media player, etc.), rather than a wall of options
 - Minimal
 - Developer
 - Server
 - Custom
 
 Profiles will define complete workstation experiences rather than individual package selections.
+
+The "New to Linux" profile in particular targets a different value
+proposition from the others: the rest of GLB (and Greg's own "Recommended"
+profile) solve *restoring your own exact setup*, but someone installing
+their first Linux distro doesn't have a setup to restore — their problem is
+not knowing what's good. Curated, opinionated recommendations solve that in
+a way a plain `packages.txt` full of names they don't recognize can't.
 
 ---
 
