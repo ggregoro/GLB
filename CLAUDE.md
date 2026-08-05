@@ -76,6 +76,12 @@ branches on it.
     roadmap).
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
+- **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
+  above is confirmed and locked in as the standard prompt/shell for the
+  `default` profile** (Greg's words: "let's make this the standard prompt
+  and shell," 2026-08-05) — not a draft or one-off experiment. Treat
+  `profiles/default`'s current dotfiles as the baseline going forward;
+  future shell/prompt work should extend this rather than replace it.
 - For the fine-grained "what shipped when" list, check CHANGELOG.md's
   `[Unreleased]` section — this file tracks the *why* and what's still
   open, not a full change log.
@@ -96,31 +102,18 @@ branches on it.
 - Add a mechanism for installs outside the package manager (flatpak,
   AppImage, curl-install scripts) — doesn't fit the plain `packages.txt`
   model yet
-- Terminal prompt/shell customization — split into two pieces:
-  - **Prompt** (in progress, `lib/prompt.sh` + `glb prompt`): uses Starship
-    (starship.rs), not an OMZ theme — installs the `starship` binary via
-    its official installer, then a restore-time menu lets the user pick
-    exactly one full preset (Default, Pure Prompt, Pastel Powerline, Nerd
-    Font Symbols, Plain Text Symbols, No Runtime Versions), generated via
-    `starship preset <name> -o ~/.config/starship.toml`. Starship presets
-    turned out to be whole standalone configs, not composable modules —
-    even starship.rs itself has no way to mix e.g. Pastel Powerline's
-    layout with Plain Text symbols — so a per-module mix-and-match picker
-    was dropped in favor of picking one preset outright (no TOML parser to
-    lean on, Bash-only). The `glb prompt` *command itself* (interactive
-    picker for someone with an existing `.zshrc`) is still zsh-only —
-    that's still open. Separately, `profiles/default`'s vendored
-    `.bashrc`/`.zshrc`/`.config/fish/config.fish` all now bake in their
-    own `starship init <shell>` directly, so restoring the `default`
-    profile gets Starship in all three shells regardless of `glb
-    prompt`'s own scope. `glb_install_starship` runs as part of
-    `glb restore`.
-  - **Plugins** (done, `lib/plugins.sh`): framework-free — no Oh My Zsh
-    dependency. Curated to exactly `zsh-autosuggestions` and
-    `zsh-syntax-highlighting` (the two Greg's real `.zshrc` actually
-    used), git-cloned into `~/.local/share/glb/plugins` as part of
-    `glb restore`. No OMZ-style "git aliases" plugin equivalent was
-    built.
+- Terminal prompt/shell customization for `profiles/default` is **done**
+  (see "Current state" above — Starship + unified bash/zsh/fish +
+  framework-free plugins, locked in as standard). One narrower piece
+  remains open: the `glb prompt` *command itself* (`lib/prompt.sh` —
+  interactive preset picker for someone with an existing `.zshrc`, not
+  tied to `profiles/default`) is still zsh-only; bash/fish support for
+  that standalone command hasn't been built. Starship presets themselves
+  turned out to be whole standalone configs, not composable modules —
+  even starship.rs has no way to mix e.g. Pastel Powerline's layout with
+  Plain Text symbols — so `glb prompt`'s menu picks one full preset
+  outright rather than mixing-and-matching (no TOML parser to lean on,
+  Bash-only).
 
 ## Testing
 
