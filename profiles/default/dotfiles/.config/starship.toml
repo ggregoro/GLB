@@ -2,6 +2,7 @@ add_newline = false
 command_timeout = 1000
 
 format = """
+${env_var.GLB_SHELL}\
 $directory\
 $git_branch\
 $git_status\
@@ -31,3 +32,9 @@ style = "red"
 
 [fill]
 symbol = " "
+
+[env_var.GLB_SHELL]
+variable = "GLB_SHELL"
+symbol = "🐚 "
+style = "bold cyan"
+format = "[$symbol$env_value]($style) "

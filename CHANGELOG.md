@@ -60,6 +60,11 @@ This project follows a simple versioning approach:
   profile's dotfiles, and `eza`/`bat`/`zoxide`/`fastfetch`/`fish` to
   `packages.txt`. Bash and fish now use Starship too (previously
   zsh-only).
+- Added a `GLB_SHELL` indicator to the prompt: each shell exports its own
+  name (`export GLB_SHELL=bash`/`zsh`, `set -gx GLB_SHELL fish`) and the
+  shared `starship.toml` displays it (🐚 symbol) at the start of the
+  prompt, so it's always visible which shell you're in when they get
+  layered.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.

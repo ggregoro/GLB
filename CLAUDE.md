@@ -58,10 +58,14 @@ branches on it.
     (`lib/plugins.sh`) in addition to packages/dotfiles — a genuinely
     complete, working shell setup in one pass, now proven on real
     hardware.
-  - Known gap, not silently faked: this machine's `fzf` (apt 0.44.1)
-    only ships working key-bindings for fish out of the box; bash/zsh
-    have the guarded `source`-if-present logic but no actual
-    keybindings file to find yet on this system.
+  - fzf Ctrl-T/Ctrl-R key-bindings confirmed working in all three shells
+    on this machine after the real restore (the guarded `source`-if-
+    present logic found what it needed).
+  - Added a `GLB_SHELL` prompt indicator (2026-08-05): each shell exports
+    its own name and the shared `starship.toml` shows it (🐚 symbol) at
+    the start of the prompt — Greg asked for this after noticing all
+    three shells now look identical and wanting an easy way to tell them
+    apart when layered (e.g. running `bash` from inside `zsh`).
   - Nerd Font glyphs need each *terminal emulator* (not shell) to have
     its own font set to the already-installed `JetBrainsMono Nerd Font`
     — GLB doesn't automate that per-terminal setting yet. Confirmed
