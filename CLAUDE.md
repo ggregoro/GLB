@@ -70,10 +70,22 @@ branches on it.
     layered (e.g. running `bash` from inside `zsh`). Iterated from an
     initial generic 🐚 symbol to per-shell symbols per Greg's feedback.
   - Nerd Font glyphs need each *terminal emulator* (not shell) to have
-    its own font set to the already-installed `JetBrainsMono Nerd Font`
-    — GLB doesn't automate that per-terminal setting yet. Confirmed
-    working in WezTerm; COSMIC Terminal/Konsole not yet addressed (see
-    roadmap).
+    its own font set to the already-installed `JetBrainsMono Nerd Font`.
+    Checked directly (2026-08-05): COSMIC Terminal (`cosmic-term`) is
+    already correctly configured (`~/.config/cosmic/com.system76
+    .CosmicTerm/v1/font_name` = `JetBrainsMono Nerd Font`) — nothing to
+    do there. Konsole isn't installed on this machine at all, was only
+    raised earlier as a hypothetical example. WezTerm now has a real
+    vendored config (see below).
+  - `.config/wezterm/wezterm.lua` (2026-08-05): written from scratch —
+    Greg's WezTerm (installed via Flatpak, `org.wezfurlong.wezterm`) had
+    no prior config at all. JetBrainsMono Nerd Font, Tokyo Night color
+    scheme, minimal tab bar. Validated with WezTerm's own CLI
+    (`wezterm --config-file <path> show-keys`), not just `bash -n`, since
+    it's Lua, not shell. `glb restore` symlinks this config but does
+    **not** install WezTerm itself — Flatpak-installed apps aren't
+    covered by `packages.txt` (apt/dnf/pacman/zypper only), tied to the
+    still-open "non-package-manager installs" roadmap item below.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
@@ -88,7 +100,10 @@ branches on it.
 
 ## Roadmap / in progress
 
-- Add WezTerm and Ghostty terminal emulator setup (Greg already uses both)
+- WezTerm config is done (see "Current state"). Ghostty turned out to
+  **not** be installed or available via Flatpak on this machine (the
+  original "Greg already uses both" premise was wrong) — dropped from
+  active scope; revisit only if Greg actually starts using it.
 - Add a Homebrew/Linuxbrew repository as an install source
 - Support multiple named profiles, not just `default` — `docs/ROADMAP.md`'s
   Version 0.3 already envisions Minimal/Developer/Server/Custom, plus a new

@@ -64,6 +64,11 @@ This project follows a simple versioning approach:
   name with a unique circled-letter symbol (`Ⓑ bash`, `Ⓩ zsh`, `Ⓕ fish`)
   and the shared `starship.toml` displays it at the start of the prompt,
   so it's always visible which shell you're in when they get layered.
+- Added `.config/wezterm/wezterm.lua` to the `default` profile's
+  dotfiles: JetBrainsMono Nerd Font, Tokyo Night color scheme, minimal
+  tab bar — written from scratch since Greg's WezTerm (Flatpak-installed)
+  had no prior config. `glb restore` doesn't install WezTerm itself yet
+  (Flatpak, no install mechanism for that in GLB — see Planned).
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
