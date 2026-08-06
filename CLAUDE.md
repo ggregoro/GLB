@@ -108,6 +108,35 @@ branches on it.
   and shell," 2026-08-05) — not a draft or one-off experiment. Treat
   `profiles/default`'s current dotfiles as the baseline going forward;
   future shell/prompt work should extend this rather than replace it.
+- **Superseded (2026-08-06): the identical-prompt-everywhere approach
+  above is no longer current.** Greg asked to differentiate the three
+  shells' prompts instead of keeping them visually identical, and to
+  drop the `GLB_SHELL` indicator entirely now that the prompts
+  themselves look different:
+  - **bash**: no longer uses Starship at all. Reverted to the plain
+    Linux Mint/Debian default `PS1` (green `user@host`, blue `path`,
+    `$`), set directly in `.bashrc`.
+  - **fish**: no longer uses Starship either. Reverted to a hand-rolled
+    prompt styled after the classic "Pure" theme (two-line: path + dim
+    git branch, then a colored `❯` on its own line; right-prompt shows
+    command duration for slow commands) implemented as plain
+    `fish_prompt`/`fish_right_prompt` functions in `config.fish` — no
+    plugin manager (Fisher) added, consistent with how `lib/plugins.sh`
+    already vendors zsh plugins framework-free rather than pulling in a
+    framework.
+  - **zsh**: still the only shell using Starship. `starship.toml` was
+    replaced with the official, unmodified "Tokyo Night" preset from
+    starship.rs/presets (fetched from the starship GitHub repo, not
+    hand-transcribed) — nice incidental pairing with the existing Tokyo
+    Night WezTerm color scheme. Since zsh is now the only Starship
+    consumer, `starship.toml` no longer needs to serve three shells at
+    once.
+  - `GLB_SHELL` is fully removed — the export lines are gone from all
+    three rc files (`.bashrc`, `.zshrc`, `config.fish`), not just hidden
+    from display. Prompt differentiation now comes from each shell
+    genuinely looking different, not from a text label.
+  - All 68 bats tests still pass unchanged; no test asserted specific
+    prompt content, only that the dotfiles get symlinked.
 - For the fine-grained "what shipped when" list, check CHANGELOG.md's
   `[Unreleased]` section — this file tracks the *why* and what's still
   open, not a full change log.

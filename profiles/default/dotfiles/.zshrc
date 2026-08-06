@@ -128,9 +128,8 @@ fi
 source "$HOME/.local/share/glb/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # ------------------------------------------------------------
-# Starship Prompt (see lib/prompt.sh / `glb prompt`)
+# Starship Prompt (Tokyo Night preset — see lib/prompt.sh / `glb prompt`)
 # ------------------------------------------------------------
-export GLB_SHELL="Ⓩ zsh"
 eval "$(starship init zsh)"
 
 # Must be sourced last
