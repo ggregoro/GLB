@@ -114,6 +114,61 @@ glb_apply_profile_dotfiles() {
 }
 
 # ------------------------------------------------------------
+# Undo a restore: walk $HOME for *.glb-backup files left behind by
+# glb_apply_profile_dotfiles and swap each one back into place.
+# ------------------------------------------------------------
+
+glb_undo_restore() {
+    local backup dest rel
+    local restored=0
+    local skipped=0
+    local failed=()
+
+    while IFS= read -r -d '' backup; do
+        dest="${backup%.glb-backup}"
+        rel="${dest#"$HOME"/}"
+
+        if [[ -e "$dest" || -L "$dest" ]]; then
+            if [[ ! -L "$dest" ]]; then
+                glb_log_warn "Skipping ~/$rel: not a symlink, may have changed since restore"
+                skipped=$((skipped + 1))
+                continue
+            fi
+
+            if ! rm "$dest"; then
+                glb_log_error "Failed to remove ~/$rel"
+                failed+=("$rel")
+                continue
+            fi
+        fi
+
+        if mv "$backup" "$dest"; then
+            glb_log_success "Restored ~/$rel"
+            restored=$((restored + 1))
+        else
+            glb_log_error "Failed to restore ~/$rel"
+            failed+=("$rel")
+        fi
+    done < <(find "$HOME" -name '*.glb-backup' -print0)
+
+    if [[ "$restored" -eq 0 && "$skipped" -eq 0 && ${#failed[@]} -eq 0 ]]; then
+        glb_log_info "No .glb-backup files found, nothing to undo."
+        return 0
+    fi
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        glb_log_error "Undo finished with errors: restored $restored, skipped $skipped, failed ${#failed[@]} (${failed[*]})"
+        return 1
+    fi
+
+    if [[ "$skipped" -gt 0 ]]; then
+        glb_log_success "Undo complete: restored $restored file(s), skipped $skipped"
+    else
+        glb_log_success "Undo complete: restored $restored file(s)"
+    fi
+}
+
+# ------------------------------------------------------------
 # Apply a named profile: packages, then dotfiles
 # ------------------------------------------------------------
 

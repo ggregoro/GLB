@@ -39,6 +39,7 @@ glb_show_help() {
     printf "  remove     Remove a package\n"
     printf "  update     Update all system packages\n"
     printf "  restore    Apply a profile (packages + dotfiles)\n"
+    printf "  restore --undo   Undo the last restore's dotfile changes\n"
     printf "  profiles   List available profiles\n"
     printf "  prompt     Install and configure the Starship shell prompt\n"
     printf "\n"
@@ -100,7 +101,11 @@ case "${1:-}" in
         ;;
 
     restore)
-        glb_apply_profile "${2:-}"
+        if [[ "${2:-}" == "--undo" ]]; then
+            glb_undo_restore
+        else
+            glb_apply_profile "${2:-}"
+        fi
         ;;
 
     profiles)

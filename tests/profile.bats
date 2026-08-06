@@ -261,6 +261,89 @@ teardown() {
     [ -L "$HOME/.zshrc.glb-backup" ]
 }
 
+# --- glb_undo_restore -------------------------------------------------------
+
+@test "undo restores a flat backed-up file and removes the symlink" {
+    echo 'old content' > "$HOME/.bashrc.glb-backup"
+    ln -s "/glb/dotfiles/.bashrc" "$HOME/.bashrc"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Restored ~/.bashrc"* ]]
+    [ ! -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "old content" ]
+    [ ! -e "$HOME/.bashrc.glb-backup" ]
+}
+
+@test "undo restores a nested backed-up file" {
+    mkdir -p "$HOME/.config/fish"
+    echo 'old fish config' > "$HOME/.config/fish/config.fish.glb-backup"
+    ln -s "/glb/dotfiles/.config/fish/config.fish" "$HOME/.config/fish/config.fish"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [ "$(cat "$HOME/.config/fish/config.fish")" = "old fish config" ]
+}
+
+@test "undo restores every backup found, not just the first" {
+    echo 'old bashrc' > "$HOME/.bashrc.glb-backup"
+    ln -s "/glb/dotfiles/.bashrc" "$HOME/.bashrc"
+    echo 'old zshrc' > "$HOME/.zshrc.glb-backup"
+    ln -s "/glb/dotfiles/.zshrc" "$HOME/.zshrc"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"restored 2 file(s)"* ]]
+    [ "$(cat "$HOME/.bashrc")" = "old bashrc" ]
+    [ "$(cat "$HOME/.zshrc")" = "old zshrc" ]
+}
+
+@test "undo does nothing and reports cleanly when there are no backups" {
+    ln -s "/glb/dotfiles/.bashrc" "$HOME/.bashrc"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nothing to undo"* ]]
+    [ -L "$HOME/.bashrc" ]
+}
+
+@test "undo skips a destination that was modified since restore (no longer a symlink)" {
+    echo 'old content' > "$HOME/.bashrc.glb-backup"
+    echo 'manually edited' > "$HOME/.bashrc"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Skipping ~/.bashrc"* ]]
+    [ "$(cat "$HOME/.bashrc")" = "manually edited" ]
+    [ -e "$HOME/.bashrc.glb-backup" ]
+}
+
+@test "undo restores a backup even when the symlink was already removed" {
+    echo 'old content' > "$HOME/.bashrc.glb-backup"
+
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [ "$(cat "$HOME/.bashrc")" = "old content" ]
+    [ ! -e "$HOME/.bashrc.glb-backup" ]
+}
+
+@test "undo is idempotent: a second run finds nothing left to undo" {
+    echo 'old content' > "$HOME/.bashrc.glb-backup"
+    ln -s "/glb/dotfiles/.bashrc" "$HOME/.bashrc"
+
+    glb_undo_restore
+    run glb_undo_restore
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nothing to undo"* ]]
+}
+
 # --- glb_apply_profile / glb_list_profiles ---------------------------------
 
 @test "glb_apply_profile fails cleanly for an unknown profile" {

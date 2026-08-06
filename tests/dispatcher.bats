@@ -102,6 +102,34 @@ teardown() {
     [[ "$output" == *"Profile not found"* ]]
 }
 
+@test "glb restore --undo reverses a prior restore's dotfile changes" {
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles"
+    echo 'new content' > "$GLB_ROOT/profiles/default/dotfiles/.bashrc"
+    echo 'old content' > "$HOME/.bashrc"
+
+    run "$GLB_ROOT/glb" restore default
+    [ "$status" -eq 0 ]
+    [ -L "$HOME/.bashrc" ]
+    [ -f "$HOME/.bashrc.glb-backup" ]
+
+    run "$GLB_ROOT/glb" restore --undo
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Restored ~/.bashrc"* ]]
+    [ ! -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "old content" ]
+    [ ! -e "$HOME/.bashrc.glb-backup" ]
+}
+
+@test "glb restore --undo reports cleanly when there is nothing to undo" {
+    run "$GLB_ROOT/glb" restore --undo
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nothing to undo"* ]]
+}
+
 @test "glb remove without a package name errors instead of crashing" {
     run "$GLB_ROOT/glb" remove
     [ "$status" -eq 1 ]

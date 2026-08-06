@@ -196,6 +196,24 @@ branches on it.
      `new-to-linux` is the one meant for them without reading docs.
   4. **Shell completions for `glb` itself** (bash/zsh/fish) — smallest
      of the four, standard polish expected of a finished CLI tool.
+  - **Item 1 done (2026-08-06): `glb restore --undo` built and tested.**
+    `glb_undo_restore` (`lib/profile.sh`) walks `$HOME` for
+    `*.glb-backup` files and swaps each one back into place, removing
+    the symlink `glb_apply_profile_dotfiles` created. If a destination
+    is no longer a symlink (edited by hand since the restore), it's
+    skipped with a warning rather than clobbered — the backup is left
+    in place for the user to resolve manually. Wired up as `glb restore
+    --undo` in the dispatcher (`glb`), not a separate top-level
+    command, matching the roadmap's original naming. 12 new bats tests
+    (7 unit-level in `tests/profile.bats`, 2 dispatcher end-to-end in
+    `tests/dispatcher.bats`, all 77 total passing) cover: flat and
+    nested restores, restoring multiple backups in one pass, the
+    no-backups-found case, skipping a hand-modified destination,
+    restoring when the symlink was already manually removed, and
+    idempotency (running it twice is a safe no-op the second time).
+    Verified end-to-end against a real (sandboxed) restore + undo
+    round-trip, not just the unit tests. **Next up: item 2,
+    dry-run/preview.**
   - **Considered and deliberately rejected** as over-complicating GLB
     for its actual scope: templating (different values per machine),
     encrypted secrets, a plugin system — the kind of thing chezmoi/

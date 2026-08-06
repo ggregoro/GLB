@@ -114,6 +114,14 @@ Expand shell support.
 
 Improve the installation experience.
 
+### Completed
+
+- **Rollback/undo (2026-08-06).** `glb restore --undo` walks `$HOME`
+  for `*.glb-backup` files left by `glb_apply_profile_dotfiles` and
+  swaps each one back into place, removing the GLB-created symlink.
+  Skips (doesn't clobber) any destination that's no longer a symlink,
+  since that means it was touched since the restore. See CLAUDE.md.
+
 ### Planned
 
 - Express installation
@@ -125,13 +133,6 @@ Improve the installation experience.
   through logic that already exists. See CLAUDE.md for full reasoning.
 - Configuration summary
 - Progress reporting
-- **Rollback/undo — agreed priority (2026-08-06), not on the original
-  list.** A `glb restore --undo` (name TBD) that restores from the
-  `.glb-backup` files `glb_apply_profile_dotfiles` already creates,
-  reversing the most recent restore. The single best trust-building
-  addition for a stranger trying GLB relative to the effort involved —
-  the backup mechanism already exists, this just needs a command that
-  reads it in reverse. See CLAUDE.md.
 - **Interactive profile picker — agreed priority (2026-08-06), not on
   the original list.** `glb restore` with no profile argument lists
   profiles and lets the user pick, reusing the numbered-menu UX
