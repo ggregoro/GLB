@@ -29,7 +29,7 @@ When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
 branches on it.
 
-## Current state (as of 2026-08-05)
+## Current state (as of 2026-08-06)
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
   `update`, `restore [profile] [--undo|--dry-run]` (no profile name
@@ -165,6 +165,49 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Next session: pick up here, in this order (agreed 2026-08-06).**
+  All four items from the prior session-wrap-up brainstorm just below
+  (rollback/undo, dry-run, interactive profile picker, shell
+  completions) are done, plus a follow-up resyncing `new-to-linux`'s
+  prompt dotfiles to match `default`. Greg then asked for a
+  recommendation on what's next and confirmed taking the list "in
+  order" — nothing on this list is built yet:
+  1. **Verify `new-to-linux`'s per-distro package overrides on real
+     hardware.** `firefox:zypper` → `MozillaFirefox` and
+     `libreoffice:pacman` → `libreoffice-fresh`
+     (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) were added when
+     `new-to-linux` was built (2026-08-06) but never empirically
+     confirmed, unlike every other override in that table (all of
+     which were validated via real per-distro testing during the
+     cross-distro effort). Needs an actual `glb restore new-to-linux`
+     on a real or VM zypper machine and a real or VM Arch-family
+     machine — not something a sandboxed session can verify on its
+     own; Greg will need to run it and report back, same pattern as
+     the original cross-distro testing.
+  2. **Developer/Server profiles.** Candidates already brainstormed
+     and recorded further down this file (Docker vs Podman, a
+     build-toolchain per-distro override, a language version-manager
+     story, `gh`/`lazygit`/`jq` for Developer; `htop`/a firewall
+     tool/unattended security updates/`rsync`+backup/`fail2ban` for
+     Server) but nothing built. The open design question flagged at
+     the time, still unresolved: who is each profile actually *for* —
+     someone who already knows what they want (a rigid curated list
+     adds little value there), or someone newer to that role who wants
+     a complete kit without researching it themselves (closer to
+     `new-to-linux`'s "here's what's good" value prop than `default`'s
+     "restore my exact setup")? Resolve that before picking packages,
+     not after.
+  3. **Original Version 0.5 items never promoted to "agreed
+     priority": express installation, guided configuration wizard,
+     configuration summary, progress reporting.** None of these are
+     concretely scoped yet (unlike the four just-finished items, which
+     each already had a clear one-line mechanism in mind before
+     building) — will need defining/scoping as part of picking this
+     up, not just implementing.
+  4. **Version 0.6 — Configuration Management: installation
+     manifests, configuration export/import, repairing existing
+     installations, updating installed components.** Not started, not
+     yet scoped in detail. See `docs/ROADMAP.md`.
 - **Session wrap-up brainstorm, agreed as real priorities (2026-08-06),
   not yet built — pick up here next session.** End-of-session
   discussion: what would a user *other than Greg* appreciate, without
