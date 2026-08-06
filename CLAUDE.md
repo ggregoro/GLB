@@ -112,8 +112,35 @@ branches on it.
   `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
   report back distro name + specific errors (package not found, or
   installed under a different binary name like `bat`/`batcat`) so they
-  can be turned into override entries. Nothing to do here until he
-  reports results.
+  can be turned into override entries.
+  - **CachyOS (pacman) result (2026-08-05, tested via Claude Code in a
+    sandboxed shell on a CachyOS test VM):** `glb info` detected `pacman`
+    correctly. This was an *existing* VM (not fresh), so most of
+    `packages.txt` was already installed and the test mostly confirms
+    the dotfiles/plugin path rather than fresh-repo package availability:
+    `git`, `zsh`, `fish`, `curl`, `ripgrep`, `fzf`, `eza`, `bat`,
+    `zoxide`, `fastfetch` were all already present. **No pacman
+    `_GLB_PACKAGE_OVERRIDES` gaps found** — none of the tested names
+    needed a pacman-specific override. `tmux` and `neovim` were not yet
+    installed; both are valid, unambiguous pacman package names (no
+    override needed), but the actual `sudo pacman -S` install couldn't
+    be verified end-to-end because the sandboxed shell has no TTY for
+    the sudo password prompt (`sudo: a terminal is required...`) and its
+    sudo timestamp cache doesn't share with a real terminal session
+    either — an environment limitation of testing via Claude Code, not a
+    GLB bug. Dotfiles + plugins path worked cleanly: `~/.bashrc`,
+    `~/.config/fish/config.fish`, `~/.config/starship.toml`, `~/.zshrc`
+    were all correctly backed up to `*.glb-backup` and symlinked;
+    Starship, `zsh-autosuggestions`, `zsh-syntax-highlighting` all
+    installed fine. Separately noted: `/etc/os-release` on CachyOS (a
+    rolling release) has no `VERSION_ID`, so `glb info` shows a blank
+    Version field — cosmetic, `glb_detect_version` isn't relied on
+    anywhere for logic, not worth fixing unless it starts to matter.
+    **Confirmed:** Greg ran `sudo pacman -S --noconfirm tmux neovim`
+    directly in a real terminal on the VM, and both installed cleanly
+    (`tmux 3.7_b-1.1`, `neovim 0.12.4-1.1`, verified via `pacman -Q`) —
+    so `packages.txt` is fully covered on pacman/CachyOS with zero
+    overrides needed.
 - WezTerm config is done (see "Current state"). Ghostty turned out to
   **not** be installed or available via Flatpak on this machine (the
   original "Greg already uses both" premise was wrong) — dropped from
