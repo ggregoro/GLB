@@ -97,10 +97,9 @@ branches on it.
     no prior config at all. JetBrainsMono Nerd Font, Tokyo Night color
     scheme, minimal tab bar. Validated with WezTerm's own CLI
     (`wezterm --config-file <path> show-keys`), not just `bash -n`, since
-    it's Lua, not shell. `glb restore` symlinks this config but does
-    **not** install WezTerm itself — Flatpak-installed apps aren't
-    covered by `packages.txt` (apt/dnf/pacman/zypper only), tied to the
-    still-open "non-package-manager installs" roadmap item below.
+    it's Lua, not shell. As of 2026-08-06, `glb restore` also installs
+    WezTerm itself via the new `extras.txt`/Flatpak mechanism (see
+    Roadmap) — previously it only symlinked this config.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
@@ -153,9 +152,10 @@ branches on it.
   unified bash/zsh/fish + Starship + `GLB_SHELL` shell setup as
   `default` (Greg's choice: not app-only). Fresh has no native
   apt/dnf/pacman/zypper package (curl script/AUR/`.deb`/Flatpak/cargo/
-  npm only), so it's listed **aspirationally** in `packages.txt` — same
-  treatment as `fastfetch` in `default` — and will fail to install
-  until the "non-package-manager installs" roadmap item exists.
+  npm only) — originally listed aspirationally in `packages.txt`
+  (would silently fail), moved to `extras.txt` on 2026-08-06 once the
+  non-package-manager install mechanism was built (see Roadmap), where
+  it now actually installs.
   Notably `default`'s dotfiles already had unused `editbash`/
   `editstarship` aliases checking for `fresh-editor`/`fresh` on `$PATH`
   before this — the pick lines up with groundwork already in place.
@@ -392,9 +392,98 @@ branches on it.
   GLB — "restore my exact setup" doesn't help someone who has no setup to
   restore, "here's what's good" does. Probably the highest-leverage way to
   make GLB useful to people beyond Greg.
-- Add a mechanism for installs outside the package manager (flatpak,
-  AppImage, curl-install scripts) — doesn't fit the plain `packages.txt`
-  model yet
+  - **Developer/Server profile content — brainstormed 2026-08-06, not
+    built, revisit when picked up:**
+    - Developer candidates: Docker or Podman (containers — real fork to
+      decide, not just a name swap: Docker is more familiar, Podman is
+      daemonless/rootless and fits GLB's philosophy better), the C/C++
+      build toolchain meta-package (another per-distro naming override
+      like `libreoffice`/`firefox` — `build-essential`/`base-devel`/
+      dnf's `Development Tools` group/zypper equivalent), a language
+      version-manager story (per-language like `nvm`/`pyenv`/`rustup`
+      vs. a universal one like `asdf`/`mise` — also a real fork to
+      decide deliberately), `gh` (GitHub CLI), maybe `lazygit`/`delta`,
+      `postgresql-client`/`sqlite3`, `jq`.
+    - Server candidates: `htop`/`btop` (see cross-cutting gap below),
+      a firewall tool (`ufw` vs `firewalld` — same kind of per-distro
+      fork as Docker/Podman), unattended security updates
+      (`unattended-upgrades`/`dnf-automatic`/equivalents), `rsync` +
+      a backup tool (`restic`/`borgbackup`), `fail2ban`. Keep the
+      `GLB_SHELL` indicator — arguably *more* useful here than
+      anywhere else, for telling apart SSH sessions into different
+      boxes.
+    - **Design nuance Greg raised, not yet resolved:** someone who
+      already identifies as "a developer" or "a server admin" likely
+      already knows what tools they want and how to install them
+      themselves — a rigid curated list may add little value for that
+      audience (unlike `new-to-linux`, where the audience by
+      definition doesn't know the options). The real target for a
+      built-out Developer/Server profile may be someone newer to that
+      role who wants "give me a solid complete kit" without having to
+      research it — closer in spirit to `new-to-linux`'s value prop
+      than to `default`'s "restore my exact setup." Worth deciding
+      explicitly who each profile is *for* before building it out, not
+      just what packages to put in it.
+    - **Cross-cutting gap found while brainstorming, independent of
+      any new profile — fixed (2026-08-06):** no profile — including
+      `default` — had a live resource monitor (`htop`/`btop`).
+      `fastfetch` is a one-shot system-info banner, not a monitor.
+      Added `htop` to `profiles/default/packages.txt` (picked over
+      `btop`: htop's been the zero-doubt universal pick across every
+      distro's base repos for over a decade, no strong reason to carry
+      both). Scoped to `default` only, not `new-to-linux` — a process
+      monitor is the same kind of power-user CLI tool as
+      `tmux`/`neovim`/`ripgrep`, already excluded there for the same
+      reason.
+- **Non-package-manager install mechanism — built (2026-08-06).** New
+  `lib/extras.sh` + a per-profile `extras.txt` manifest
+  (`<method> <name> <spec>` per line, comments/blank lines stripped
+  like `packages.txt`). Supports `curl` (runs `curl -fsSL <url> | sh`,
+  tracked via `command -v <name>`) and `flatpak` (ensures the flathub
+  remote, `flatpak install -y flathub <app-id>`, tracked via
+  `flatpak info`) — not AppImage, no real candidate for it yet, but
+  the format doesn't need a redesign to add it later.
+  `glb_apply_profile` (`lib/profile.sh`) now calls
+  `glb_apply_profile_extras` after packages, before Starship/dotfiles.
+  On a failed install, reuses `glb_prompt_manual_step`
+  (`lib/package.sh`, built earlier today for sudo-gated package
+  installs) — same pause/print-the-command/wait-for-confirm-or-skip
+  UX, now shared across both install paths. Closes two real gaps this
+  session surfaced:
+  - **Fresh** (the `new-to-linux` code editor) was listed
+    "aspirationally" in `packages.txt` and silently failed every
+    restore — moved to `extras.txt` (`curl`) in both `default` and
+    `new-to-linux`, where it now actually installs. `default`'s
+    dotfiles already had unused `editbash`/`editstarship` aliases
+    checking for `fresh`/`fresh-editor` on `$PATH`; this is what
+    finally makes those real.
+  - **WezTerm**: `default`'s dotfiles symlink
+    `.config/wezterm/wezterm.lua`, but `glb restore` never installed
+    the app itself (Greg set it up manually via Flatpak). Added to
+    `default/extras.txt` (`flatpak`, app id
+    `org.wezfurlong.wezterm`); also added plain `flatpak` to
+    `default/packages.txt` since the extras entry needs the `flatpak`
+    binary itself first.
+  - A real bash gotcha caught while building this: `PIPESTATUS` gets
+    clobbered by the very next simple command — even a plain
+    assignment — so reading `${PIPESTATUS[0]}` then `${PIPESTATUS[1]}`
+    on separate lines silently lost the second value. Fixed by
+    capturing the whole array in one shot:
+    `pipe_status=("${PIPESTATUS[@]}")`.
+  - New `tests/extras.bats` (manifest parsing, both methods,
+    pause/confirm/skip, the PIPESTATUS-masking case explicitly) plus
+    real end-to-end restores of both actual profiles in
+    `tests/dispatcher.bats`. All 68 tests pass.
+  - **Not done, deliberately:** no live `glb restore` was run for real
+    on this laptop — everything above was built and verified entirely
+    through stubbed `curl`/`sh`/`flatpak` in bats, never touching the
+    real network or actually installing Fresh/WezTerm. Running a real
+    restore to verify the actual installs work is something Greg would
+    do himself in a real terminal, not something run automatically
+    here — deliberately the same category of boundary as the sudo
+    installs earlier (don't execute a downloaded script/perform a real
+    install without Greg's own hands on it), just for a different
+    reason (untrusted-execution caution, not a TTY limitation).
 - Terminal prompt/shell customization for `profiles/default` is **done**
   (see "Current state" above — Starship + unified bash/zsh/fish +
   framework-free plugins, locked in as standard). One narrower piece

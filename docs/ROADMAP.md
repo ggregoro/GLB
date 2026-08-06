@@ -43,6 +43,12 @@ Develop the core installation framework.
   command to run manually, and waits for confirmation (or a skip)
   instead of failing the whole restore outright. See CLAUDE.md for
   details.
+- ~~Non-package-manager installs (flatpak, AppImage, curl-install
+  scripts)~~ **Done for curl/Flatpak (2026-08-06)** — new
+  `lib/extras.sh` + per-profile `extras.txt`, reusing the same
+  pause/resume prompt above on failure. Not AppImage — no real
+  candidate for it yet. Closes the Fresh (code editor) and WezTerm
+  install gaps in `default`/`new-to-linux`. See CLAUDE.md for details.
 
 ---
 
@@ -57,15 +63,18 @@ Introduce workstation profiles.
   from Windows/macOS who don't yet know the Linux-native equivalents of
   the software they're used to (one solid choice per category, rather
   than a wall of options), built as `profiles/new-to-linux`: Firefox
-  (browser), Fresh (code editor — aspirational, no package-manager
-  install path yet, see below), LibreOffice (office suite), GIMP (image
+  (browser), Fresh (code editor, installed via the `extras.txt`
+  mechanism below), LibreOffice (office suite), GIMP (image
   editing), VLC (media player) — plus the same unified bash/zsh/fish +
   Starship shell setup as the `default` profile, minus Greg-specific
   bits (`.gitconfig`, ranger, WezTerm) that don't fit this profile's
   scope.
 - Minimal
-- Developer
-- Server
+- Developer — candidate tools and an open question on who this profile
+  is really for (see CLAUDE.md, 2026-08-06 brainstorm) brainstormed but
+  not built
+- Server — same, candidate tools brainstormed but not built (see
+  CLAUDE.md)
 - Custom
 
 Profiles will define complete workstation experiences rather than individual package selections.

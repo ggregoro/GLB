@@ -60,17 +60,40 @@ teardown() {
     cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
     stub_command starship 'exit 0'
     stub_command git 'mkdir -p "$5"; exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 0'
 
     run "$GLB_ROOT/glb" restore new-to-linux <<< ''
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"Profile applied: new-to-linux"* ]]
+    [[ "$output" == *"Installing fresh via curl-install script"* ]]
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.zshrc" ]
     [ -L "$HOME/.config/fish/config.fish" ]
     [ -L "$HOME/.config/starship.toml" ]
     [ ! -e "$HOME/.gitconfig" ]
     [ ! -e "$HOME/.config/ranger" ]
+}
+
+@test "glb restore applies the real default profile end to end" {
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 0'
+    stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'
+
+    run "$GLB_ROOT/glb" restore default <<< ''
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Profile applied: default"* ]]
+    [[ "$output" == *"Installing fresh via curl-install script"* ]]
+    [[ "$output" == *"Installing wezterm via Flatpak"* ]]
+    grep -q "install -y flathub org.wezfurlong.wezterm" "$TEST_TMP/calls"
+    [ -L "$HOME/.bashrc" ]
+    [ -L "$HOME/.gitconfig" ]
+    [ -L "$HOME/.config/wezterm/wezterm.lua" ]
 }
 
 @test "glb restore fails cleanly for an unknown profile" {

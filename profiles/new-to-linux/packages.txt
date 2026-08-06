@@ -28,11 +28,5 @@ gimp
 libreoffice
 vlc
 
-# Code editor — not yet in any distro's default apt/dnf/pacman/zypper
-# index (installed via curl script/AUR/.deb/Flatpak/cargo/npm upstream:
-# getfresh.dev). Kept here aspirationally, like fastfetch in the
-# default profile, until GLB gets a non-package-manager install
-# mechanism (see docs/ROADMAP.md). The default profile's dotfiles
-# already wire up editbash/editstarship aliases that look for this on
-# $PATH.
-fresh
+# Code editor (Fresh, getfresh.dev) is installed via extras.txt, not
+# here — it has no native package on any of these managers.

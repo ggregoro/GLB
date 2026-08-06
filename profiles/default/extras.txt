@@ -1,0 +1,22 @@
+# GLB profile: default — extras (installs outside apt/dnf/pacman/zypper)
+#
+# Format: <method> <name> <spec>
+#   curl <name> <url>       - runs `curl -fsSL <url> | sh`. <name> is
+#                              checked with `command -v` to detect an
+#                              existing install.
+#   flatpak <name> <app-id> - ensures the flathub remote, then
+#                              `flatpak install -y flathub <app-id>`.
+#                              <name> is just a display label; <app-id>
+#                              is checked via `flatpak info`.
+#
+# Blank lines and lines starting with '#' are ignored, same as
+# packages.txt.
+
+# Code editor - default's dotfiles already wire up editbash/
+# editstarship aliases that look for this on $PATH.
+curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/master/scripts/install.sh
+
+# Terminal - default's dotfiles symlink .config/wezterm/wezterm.lua but
+# never installed the app itself until now. Requires flatpak itself
+# (see packages.txt).
+flatpak wezterm   org.wezfurlong.wezterm

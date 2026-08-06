@@ -21,8 +21,11 @@ eza
 bat
 zoxide
 ranger
+htop
+flatpak    # needed for the wezterm extras.txt entry below
 
 # Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
-# setup) — may need a PPA or manual install. Kept here anyway since GLB
-# doesn't have a non-package-manager install mechanism yet.
+# setup) — may need a PPA or manual install. No known curl-install
+# script to move this to extras.txt like fresh/wezterm; it's a
+# repo-availability gap, not a wrong-install-method one.
 fastfetch

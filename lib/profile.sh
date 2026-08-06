@@ -131,6 +131,7 @@ glb_apply_profile() {
     glb_log_info "Applying profile: $name"
 
     glb_apply_profile_packages "$profile_dir" || status=1
+    glb_apply_profile_extras "$profile_dir" || status=1
     glb_install_starship || status=1
     glb_install_zsh_plugins || status=1
     glb_apply_profile_dotfiles "$profile_dir" || status=1
