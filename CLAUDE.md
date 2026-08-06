@@ -114,6 +114,51 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Session wrap-up brainstorm, agreed as real priorities (2026-08-06),
+  not yet built — pick up here next session.** End-of-session
+  discussion: what would a user *other than Greg* appreciate, without
+  over-complicating GLB or the end-user experience. Four items, all
+  confirmed as agreed direction (added to `docs/ROADMAP.md` Version
+  0.5, three of them new additions to that version's original list):
+  1. **Rollback/undo** (highest value for the effort) — a
+     `glb restore --undo`-style command that restores from the
+     `.glb-backup` files `glb_apply_profile_dotfiles`
+     (`lib/profile.sh`) already creates on every restore. The backup
+     mechanism already exists; this is "just" a command that walks
+     `$HOME` looking for `*.glb-backup` and reverses the symlink swap.
+     Turns "I hope this works" into "I can experiment risk-free" for
+     someone trying GLB for the first time — the single best
+     trust-building addition relative to how little new mechanism it
+     needs.
+  2. **Dry-run/preview** — `glb restore <profile> --dry-run` prints
+     what packages would install, what extras would run, what
+     dotfiles would be symlinked/backed up, without doing any of it.
+     Was already on the roadmap as "Installation preview"; elevated in
+     priority specifically for the "stranger trying this for the first
+     time" reason. Threads a flag through `glb_apply_profile_packages`/
+     `glb_apply_profile_extras`/`glb_apply_profile_dotfiles`
+     (`lib/profile.sh`, `lib/extras.sh`) rather than needing new
+     mechanism.
+  3. **Interactive profile picker** — `glb restore` with no profile
+     argument lists profiles (`glb_list_profiles`, `lib/profile.sh`)
+     and lets the user pick one, reusing the numbered-menu pattern
+     `glb_configure_starship` (`lib/prompt.sh`) already has for
+     Starship presets. Helps someone who doesn't know `default` vs
+     `new-to-linux` is the one meant for them without reading docs.
+  4. **Shell completions for `glb` itself** (bash/zsh/fish) — smallest
+     of the four, standard polish expected of a finished CLI tool.
+  - **Considered and deliberately rejected** as over-complicating GLB
+    for its actual scope: templating (different values per machine),
+    encrypted secrets, a plugin system — the kind of thing chezmoi/
+    dotbot offer. Doesn't fit "curate, don't reinvent."
+  - **Reference point, not a model to port:** DHH's *Omakub* is doing
+    something similar in spirit (curated, opinionated fresh-Ubuntu
+    setup, interactive TUI menu, one confident choice per category —
+    close to what `new-to-linux` already does) and has had a lot of
+    public feedback on this exact "what does a stranger want" question.
+    It's Ruby-based, so nothing to port directly given GLB's
+    intentional Bash-only constraint — just worth a look for
+    inspiration if picking this back up.
 - **Sudo-gated install pause/resume built (2026-08-06):** `glb_install_package`
   (`lib/package.sh`) now catches a failed install and pauses via a new
   `glb_prompt_manual_step` helper — prints the exact resolved command

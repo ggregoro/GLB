@@ -118,9 +118,30 @@ Improve the installation experience.
 
 - Express installation
 - Guided configuration wizard
-- Installation preview
+- **Installation preview** — agreed priority (2026-08-06): `glb restore
+  <profile> --dry-run` showing what would install/symlink/back up
+  without touching anything. Highest-value trust-builder for someone
+  other than Greg trying GLB for the first time; mostly threads a flag
+  through logic that already exists. See CLAUDE.md for full reasoning.
 - Configuration summary
 - Progress reporting
+- **Rollback/undo — agreed priority (2026-08-06), not on the original
+  list.** A `glb restore --undo` (name TBD) that restores from the
+  `.glb-backup` files `glb_apply_profile_dotfiles` already creates,
+  reversing the most recent restore. The single best trust-building
+  addition for a stranger trying GLB relative to the effort involved —
+  the backup mechanism already exists, this just needs a command that
+  reads it in reverse. See CLAUDE.md.
+- **Interactive profile picker — agreed priority (2026-08-06), not on
+  the original list.** `glb restore` with no profile argument lists
+  profiles and lets the user pick, reusing the numbered-menu UX
+  `lib/prompt.sh`'s `glb_configure_starship` already has for Starship
+  presets. Helps someone who doesn't know which profile name
+  (`default` vs `new-to-linux`) is meant for them. See CLAUDE.md.
+- **Shell completions for `glb` itself — agreed priority (2026-08-06),
+  not on the original list.** bash/zsh/fish completion for `glb
+  <TAB>` — small effort, standard polish expected of a finished CLI
+  tool. See CLAUDE.md.
 
 ---
 
