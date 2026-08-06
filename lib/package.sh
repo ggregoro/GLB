@@ -46,6 +46,40 @@ glb_resolve_package_name() {
 }
 
 # ------------------------------------------------------------
+# Pause and let the user complete a failed step manually, then
+# continue. Used when a command GLB ran (e.g. a sudo-gated install)
+# fails and retrying automatically wouldn't help - most commonly a
+# sudo password prompt GLB can't satisfy non-interactively.
+#
+# Reads a line from stdin: empty/anything else means "done, continue",
+# a leading s/S means "skip". If stdin has no input to give (already
+# at EOF - GLB invoked non-interactively with nothing piped in),
+# doesn't hang: treats that the same as skipping.
+# ------------------------------------------------------------
+
+glb_prompt_manual_step() {
+    local cmd="$1"
+    local description="${2:-this step}"
+    local reply
+
+    glb_log_warn "Could not $description automatically."
+    printf "\n  Run this yourself, then come back here:\n\n"
+    printf "    %s\n\n" "$cmd"
+
+    if ! read -r -p "  Press Enter once it's done (or type 's' to skip): " reply; then
+        glb_log_warn "No input available; skipping: $description"
+        return 1
+    fi
+
+    if [[ "$reply" =~ ^[sS] ]]; then
+        glb_log_warn "Skipped: $description"
+        return 1
+    fi
+
+    return 0
+}
+
+# ------------------------------------------------------------
 # Install package
 # ------------------------------------------------------------
 
@@ -53,6 +87,7 @@ glb_install_package() {
     local package="$1"
     local pkg_mgr
     local resolved
+    local cmd
 
     if [[ -z "$package" ]]; then
         glb_log_error "No package specified."
@@ -74,22 +109,38 @@ glb_install_package() {
 
     case "$pkg_mgr" in
         apt)
-            sudo apt install -y "$resolved"
+            cmd=(sudo apt install -y "$resolved")
             ;;
         dnf)
-            sudo dnf install -y "$resolved"
+            cmd=(sudo dnf install -y "$resolved")
             ;;
         pacman)
-            sudo pacman -S --noconfirm "$resolved"
+            cmd=(sudo pacman -S --noconfirm "$resolved")
             ;;
         zypper)
-            sudo zypper install -y "$resolved"
+            cmd=(sudo zypper install -y "$resolved")
             ;;
         *)
             glb_log_error "Unsupported package manager: $pkg_mgr"
             return 1
             ;;
     esac
+
+    if "${cmd[@]}"; then
+        return 0
+    fi
+
+    if ! glb_prompt_manual_step "${cmd[*]}" "install $package"; then
+        return 1
+    fi
+
+    if glb_package_installed "$package" 2>/dev/null; then
+        glb_log_success "Confirmed installed after manual step: $package"
+        return 0
+    fi
+
+    glb_log_warn "Still not detected as installed: $package"
+    return 1
 }
 
 # ------------------------------------------------------------

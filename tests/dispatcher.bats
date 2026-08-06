@@ -56,6 +56,23 @@ teardown() {
     [ -L "$HOME/.gitconfig" ]
 }
 
+@test "glb restore applies the real new-to-linux profile end to end" {
+    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+
+    run "$GLB_ROOT/glb" restore new-to-linux <<< ''
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Profile applied: new-to-linux"* ]]
+    [ -L "$HOME/.bashrc" ]
+    [ -L "$HOME/.zshrc" ]
+    [ -L "$HOME/.config/fish/config.fish" ]
+    [ -L "$HOME/.config/starship.toml" ]
+    [ ! -e "$HOME/.gitconfig" ]
+    [ ! -e "$HOME/.config/ranger" ]
+}
+
 @test "glb restore fails cleanly for an unknown profile" {
     run "$GLB_ROOT/glb" restore no-such-profile
     [ "$status" -eq 1 ]

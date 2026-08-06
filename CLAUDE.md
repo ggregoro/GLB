@@ -115,6 +115,34 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Sudo-gated install pause/resume built (2026-08-06):** `glb_install_package`
+  (`lib/package.sh`) now catches a failed install and pauses via a new
+  `glb_prompt_manual_step` helper — prints the exact resolved command
+  (e.g. `sudo apt install -y fresh`) and waits on stdin for Enter
+  (continue, rechecking via `glb_package_installed`) or `s` (skip). If
+  stdin has nothing to give (EOF, no interactive input available at
+  all), it doesn't hang — treats that the same as skip. This is the
+  roadmap item recorded earlier today after cross-distro testing kept
+  hitting manual sudo installs; closes it out. Scoped to installs only
+  (not `remove`/`update`) since that's what testing actually surfaced.
+  5 new tests in `tests/package.bats` cover pause-then-confirm,
+  pause-then-skip, no-input-available, and the post-manual-step
+  recheck.
+- **bats test suite actually run for the first time on this laptop
+  (2026-08-06):** installed via `sudo apt install -y bats` (Greg ran it
+  manually — same sudo/TTY limitation as everything else). First run
+  surfaced a real pre-existing gap: `tests/profile.bats`'s `setup()`
+  only stubbed `glb_package_installed`/`glb_install_package`, not
+  `glb_install_starship`/`glb_install_zsh_plugins` (also called
+  unconditionally by `glb_apply_profile`) — two tests were crashing on
+  "command not found", a third silently passed for the wrong reason.
+  Fixed by stubbing those too, same isolation pattern as the existing
+  ones. Also added: coverage for the new `firefox:zypper`/
+  `libreoffice:pacman` overrides, and a `dispatcher.bats` test that
+  copies the *real* `profiles/new-to-linux` directory (not a synthetic
+  fixture) into the sandbox and restores it end-to-end, checking the
+  right dotfiles land and `.gitconfig`/ranger are correctly absent.
+  All 55 tests pass as of this note.
 - **`profiles/new-to-linux` built (2026-08-06):** the first profile
   beyond `default`, picked as the next multi-profile step since
   `docs/ROADMAP.md` flags it as highest-leverage — a different value
@@ -388,8 +416,9 @@ branches on it.
   overrides, and the dispatcher's remove/update/restore/profiles commands.
   Runs in an isolated `GLB_ROOT`/`HOME` with sudo and package managers
   stubbed, so nothing touches the real system. Run with `bats tests/`
-  (needs `bats` installed — not present on the Dell laptop as of
-  2026-08-05, so run there or on the Zorin VM until it's installed).
+  — installed on the Dell laptop as of 2026-08-06 (`sudo apt install -y
+  bats`); all 55 tests pass as of that date (see Roadmap section for
+  what surfaced the first time it was actually run here).
 
 ## Conventions
 

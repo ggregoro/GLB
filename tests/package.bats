@@ -34,6 +34,16 @@ teardown() {
     [ "$output" = "ripgrep" ]
 }
 
+@test "resolve_package_name returns the override for firefox on zypper" {
+    run bash -c "source '$GLB_ROOT/lib/package.sh'; glb_resolve_package_name firefox zypper"
+    [ "$output" = "MozillaFirefox" ]
+}
+
+@test "resolve_package_name returns the override for libreoffice on pacman" {
+    run bash -c "source '$GLB_ROOT/lib/package.sh'; glb_resolve_package_name libreoffice pacman"
+    [ "$output" = "libreoffice-fresh" ]
+}
+
 @test "install_package installs the resolved name, not the generic name" {
     stub_command apt 'exit 0'
     stub_command sudo 'echo "sudo $*" >> "$TEST_TMP/calls"; exit 0'
@@ -99,4 +109,66 @@ teardown() {
         glb_install_package
     "
     [ "$status" -eq 1 ]
+}
+
+# --- manual-step pause/resume on install failure ---------------------------
+
+@test "install_package pauses on failure, prints the exact resolved command, and succeeds once the user confirms" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+    stub_command dpkg 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_install_package fd <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Run this yourself"* ]]
+    [[ "$output" == *"sudo apt install -y fd-find"* ]]
+    [[ "$output" == *"Confirmed installed after manual step: fd"* ]]
+}
+
+@test "install_package returns failure when the user skips the manual step" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_install_package ripgrep <<< 's'
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Skipped: install ripgrep"* ]]
+}
+
+@test "install_package fails without hanging when no input is available to wait on" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_install_package ripgrep </dev/null
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"No input available"* ]]
+}
+
+@test "install_package warns but still fails if the package still isn't detected after the manual step" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+    stub_command dpkg 'exit 1'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_install_package ripgrep <<< ''
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Still not detected as installed: ripgrep"* ]]
 }
