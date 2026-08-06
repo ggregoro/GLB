@@ -124,9 +124,13 @@ branches on it.
   `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
   report back distro name + specific errors (package not found, or
   installed under a different binary name like `bat`/`batcat`) so they
-  can be turned into override entries. Fedora and CachyOS are now done
-  (both clean); **openSUSE (zypper) is the only priority distro still
-  untested.**
+  can be turned into override entries. **Fedora, CachyOS, and now
+  openSUSE are all done and all three came back clean** — every
+  priority distro has zero `_GLB_PACKAGE_OVERRIDES` gaps. Only Mint
+  remains, and it's apt-based/lowest-priority (already validated via
+  Pop!_OS/Zorin), so this cross-distro testing effort is effectively
+  complete pending Greg's manual confirmation of the openSUSE package
+  installs below.
   - **Fedora 44 (dnf) result (2026-08-05, tested via Claude Code on a
     Fedora Workstation test VM, confirmed a throwaway machine — not a
     real install):** `glb info` detected `dnf` correctly. This was an
@@ -191,6 +195,35 @@ branches on it.
     the GLB restore test itself): Claude Desktop installed easily —
     Greg's preferred way to work over the web UI. Unrelated to GLB
     functionality, noted for context only.
+  - **openSUSE Tumbleweed (zypper) result (2026-08-06, tested via Claude
+    Code running directly on the openSUSE VM itself — this session's own
+    machine, not inspected remotely):** `glb info` detected `zypper`
+    correctly and reported the distro as `opensuse-tumbleweed`. This was
+    an *existing* VM, so most of `packages.txt` was already present:
+    `git`, `zsh`, `fish`, `curl`, `fzf`, `eza`, `bat`, `zoxide`, `ranger`,
+    `fastfetch` were all already installed. `tmux`, `neovim`, and
+    `ripgrep` were missing, so this test covered real fresh-install
+    signal for those three. **No zypper `_GLB_PACKAGE_OVERRIDES` gaps
+    found** — every name in `packages.txt` matches the real zypper/RPM
+    package name exactly, confirmed via `zypper info`. As with
+    CachyOS/Fedora, the sandboxed Claude Code shell has no TTY for the
+    sudo password prompt, so `sudo zypper install -y tmux neovim
+    ripgrep` couldn't be run end-to-end from within the session — Greg
+    needs to run it directly in a real terminal on the VM. One false
+    alarm caught and ruled out mid-test: `rg` initially looked like it
+    resolved to an installed binary, but turned out to be a shell
+    function Claude Code itself injects into the session (a wrapper
+    around its own ripgrep tool) — `rpm -q ripgrep` confirmed ripgrep is
+    genuinely not installed, not a GLB bug. Dotfiles + plugin restore
+    path passed cleanly: all 7 dotfiles (`.bashrc`, `.zshrc`,
+    `.gitconfig`, `.config/fish/config.fish`, `.config/starship.toml`,
+    `.config/ranger/rc.conf`, `.config/wezterm/wezterm.lua`) were
+    correctly backed up to `*.glb-backup` and symlinked; Starship
+    (already present) and both zsh plugins installed fine.
+    **`packages.txt` is fully covered on zypper/openSUSE with zero
+    overrides needed**, same conclusion as dnf/Fedora and pacman/CachyOS
+    — pending Greg's manual confirmation that `tmux`/`neovim`/`ripgrep`
+    install cleanly via `sudo zypper install`.
   - **ranger added to `profiles/default` (2026-08-05):** originally just
     a `docs/PHILOSOPHY.md` example of a "curate, don't reinvent"
     candidate tool, ranger is now a real part of Greg's base profile —
