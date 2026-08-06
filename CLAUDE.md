@@ -112,6 +112,27 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Debian (apt) result (2026-08-06, tested via Claude Code on Greg's real
+  Debian 13 machine, the one linked to GitHub — a genuine daily-driver
+  restore, not a throwaway VM):** `glb info` detected `apt` correctly.
+  `git`, `zsh`, `fish`, `curl`, `fzf`, `eza`, `zoxide`, `ranger`,
+  `fastfetch` were already present; `bat` was too, installed as `batcat`
+  (Debian's package-name convention) — confirmed the dotfiles' existing
+  `command -v batcat` fallback (present in `.bashrc`/`.zshrc`/
+  `config.fish`) already handles this correctly, no gap. **No apt
+  `_GLB_PACKAGE_OVERRIDES` gaps found**, closing out the last untested
+  package manager (apt itself was only previously validated via Pop!_OS/
+  Zorin VMs, not Debian directly). `tmux`, `neovim`, `ripgrep` were
+  missing — same sandboxed-shell-has-no-TTY-for-sudo limitation as every
+  other distro, Greg ran `sudo apt install -y tmux neovim ripgrep`
+  directly. Dotfiles + plugin restore path passed cleanly: all 7
+  dotfiles backed up to `*.glb-backup` and symlinked, Starship (already
+  present) and both zsh plugins installed fine. **Confirmed:** Greg ran
+  the sudo install manually and all three came up cleanly — `tmux 3.5a`,
+  `nvim 0.10.4`, `ripgrep 14.1.1`. `packages.txt` is fully covered on
+  apt/Debian with zero overrides needed. **All five
+  GLB-supported/tested package managers (apt, dnf, pacman, zypper, plus
+  apt again here on real hardware) are now confirmed clean end-to-end.**
 - **Next priority (agreed 2026-08-06, after cross-distro testing wrapped
   up): multi-profile support.** Greg agreed this is the next area of
   focus — see the "Support multiple named profiles" bullet further down
