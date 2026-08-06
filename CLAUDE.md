@@ -74,9 +74,14 @@ branches on it.
     Checked directly (2026-08-05): COSMIC Terminal (`cosmic-term`) is
     already correctly configured (`~/.config/cosmic/com.system76
     .CosmicTerm/v1/font_name` = `JetBrainsMono Nerd Font`) — nothing to
-    do there. Konsole isn't installed on this machine at all, was only
-    raised earlier as a hypothetical example. WezTerm now has a real
-    vendored config (see below).
+    do there. Konsole isn't installed on this machine (the Dell laptop)
+    at all, was only raised earlier as a hypothetical example. WezTerm
+    now has a real vendored config (see below).
+    - **Confirmed on the CachyOS test VM (2026-08-05):** Konsole renders
+      the Nerd Font glyphs correctly — `GLB_SHELL` indicators (`Ⓑ`/`Ⓩ`/`Ⓕ`)
+      and `eza`'s file-type icons both display properly after `glb
+      restore default`, screenshot-verified by Greg. One more terminal
+      emulator off the "does the font actually render" list.
   - `.config/wezterm/wezterm.lua` (2026-08-05): written from scratch —
     Greg's WezTerm (installed via Flatpak, `org.wezfurlong.wezterm`) had
     no prior config at all. JetBrainsMono Nerd Font, Tokyo Night color
