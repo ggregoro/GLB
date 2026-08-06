@@ -28,6 +28,16 @@ setup() {
         fi
         echo "$1" >> "$INSTALL_LOG"
     }
+
+    # Test doubles standing in for lib/prompt.sh / lib/plugins.sh, which
+    # glb_apply_profile calls unconditionally and which otherwise hit
+    # the real network (starship.rs, GitHub git clone).
+    glb_install_starship() {
+        return 0
+    }
+    glb_install_zsh_plugins() {
+        return 0
+    }
 }
 
 teardown() {
