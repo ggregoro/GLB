@@ -55,12 +55,29 @@ alias cls='clear'
 alias reload='source ~/.config/fish/config.fish'
 
 # ------------------------------------------------------------
-# APT shortcuts (Pop!_OS / Ubuntu / Debian)
+# Package manager shortcuts (auto-detected: apt/dnf/pacman/zypper)
 # ------------------------------------------------------------
-alias update='sudo apt update && sudo apt upgrade'
-alias install='sudo apt install'
-alias remove='sudo apt remove'
-alias search='apt search'
+if command -q apt
+    alias update='sudo apt update && sudo apt upgrade'
+    alias install='sudo apt install'
+    alias remove='sudo apt remove'
+    alias search='apt search'
+else if command -q dnf
+    alias update='sudo dnf upgrade'
+    alias install='sudo dnf install'
+    alias remove='sudo dnf remove'
+    alias search='dnf search'
+else if command -q pacman
+    alias update='sudo pacman -Syu'
+    alias install='sudo pacman -S'
+    alias remove='sudo pacman -R'
+    alias search='pacman -Ss'
+else if command -q zypper
+    alias update='sudo zypper refresh && sudo zypper update'
+    alias install='sudo zypper install'
+    alias remove='sudo zypper remove'
+    alias search='zypper search'
+end
 
 # ------------------------------------------------------------
 # Editors
