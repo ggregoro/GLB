@@ -739,7 +739,11 @@ branches on it.
     icon-based git-status indicator that failed to render on the
     CachyOS VM (a Nerd Font glyph gap, never root-caused) rather than
     fixing it directly. `draw_borders` is also set explicitly since
-    that's what looked good on CachyOS. If Greg later wants icon-based
+    that's what looked good on CachyOS.
+    **Confirmed working again on the new Pop!_OS test VM (2026-08-06,
+    see "Test environments"):** borders and the letter-based git-status
+    indicators both render correctly after `glb restore default` there
+    too, matching the CachyOS result. If Greg later wants icon-based
     (not letter-based) git status, that likely means a `devicons`-style
     ranger plugin, which needs an actual plugin-install step (like
     `lib/plugins.sh` does for zsh) — dotfiles alone can't do it.
