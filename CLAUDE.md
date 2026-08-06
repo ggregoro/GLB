@@ -259,8 +259,31 @@ branches on it.
       answer for real. See the "no real restore on laptop" memory —
       this is why every verification after that point stubs the
       package manager and flatpak explicitly rather than trusting a
-      sandboxed `$HOME` alone. **Next up: item 3, interactive profile
-      picker.**
+      sandboxed `$HOME` alone.
+  - **Item 3 done (2026-08-06): interactive profile picker built and
+    tested.** `glb_restore_interactive` (`lib/profile.sh`) is called
+    by the dispatcher (`glb`) only when `restore` gets no profile
+    name — it scans `$GLB_ROOT/profiles/*/` (same glob
+    `glb_list_profiles` already uses), prints a numbered menu, reads
+    one line, and applies whichever profile was chosen via the normal
+    `glb_apply_profile`, `--dry-run` included. Deliberately did *not*
+    change `glb_apply_profile`'s own default-to-`default` behavior —
+    that stays for any direct/scripted caller (and the existing test
+    asserting it); only the dispatcher treats a truly-empty profile
+    argument as "show the picker" instead of "assume default". Invalid
+    input (out-of-range number, non-numeric) errors cleanly rather
+    than guessing. 8 new bats tests (6 unit-level in
+    `tests/profile.bats`, 2 dispatcher end-to-end in
+    `tests/dispatcher.bats`; 102 total passing) cover: listing and
+    applying the chosen profile by number, `--dry-run` passthrough, an
+    out-of-range choice, non-numeric input, no profiles present, and a
+    missing profiles directory entirely. Verified end-to-end in the
+    same fully-stubbed-hostile sandbox pattern used for the dry-run
+    work (sudo/apt/dpkg/flatpak/starship/curl/sh/git all exit 1),
+    against the real `default`/`new-to-linux` profiles: menu renders
+    correctly, dry-run preview of the chosen profile works, invalid
+    choice errors without crashing. **Next up: item 4, shell
+    completions.**
   - **Considered and deliberately rejected** as over-complicating GLB
     for its actual scope: templating (different values per machine),
     encrypted secrets, a plugin system — the kind of thing chezmoi/

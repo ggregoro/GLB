@@ -226,6 +226,48 @@ glb_apply_profile() {
 }
 
 # ------------------------------------------------------------
+# Interactively pick a profile (numbered menu, like
+# glb_configure_starship in lib/prompt.sh) and apply it. Used by the
+# dispatcher when `glb restore` is run with no profile name.
+# ------------------------------------------------------------
+
+glb_restore_interactive() {
+    local dry_run="${1:-}"
+    local profiles_root="$GLB_ROOT/profiles"
+    local profiles=()
+    local dir choice i
+
+    if [[ ! -d "$profiles_root" ]]; then
+        glb_log_warn "No profiles directory found."
+        return 1
+    fi
+
+    for dir in "$profiles_root"/*/; do
+        [[ -d "$dir" ]] || continue
+        profiles+=("$(basename "$dir")")
+    done
+
+    if [[ ${#profiles[@]} -eq 0 ]]; then
+        glb_log_warn "No profiles found."
+        return 1
+    fi
+
+    printf "\n"
+    printf "Choose a profile to restore:\n"
+    for i in "${!profiles[@]}"; do
+        printf "  %d) %s\n" "$((i + 1))" "${profiles[$i]}"
+    done
+    read -r -p "> " choice
+
+    if ! [[ "$choice" =~ ^[0-9]+$ ]] || (( choice < 1 || choice > ${#profiles[@]} )); then
+        glb_log_error "Invalid choice: $choice"
+        return 1
+    fi
+
+    glb_apply_profile "${profiles[$((choice - 1))]}" "$dry_run"
+}
+
+# ------------------------------------------------------------
 # List available profiles
 # ------------------------------------------------------------
 

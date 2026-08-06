@@ -131,6 +131,15 @@ Improve the installation experience.
   `lib/extras.sh`) plus `glb_install_starship`/`glb_install_zsh_plugins`
   (`lib/prompt.sh`, `lib/plugins.sh`), exactly as planned — no new
   mechanism needed. See CLAUDE.md.
+- **Interactive profile picker (2026-08-06).** `glb restore` with no
+  profile name shows a numbered menu (`glb_restore_interactive`,
+  `lib/profile.sh`) reusing the same UX pattern as
+  `glb_configure_starship` (`lib/prompt.sh`), and applies whichever
+  profile is chosen — `--dry-run` still works, picked before or after
+  the (absent) profile name. `glb_apply_profile` itself is untouched
+  (still defaults to `default` for direct/scripted callers); only the
+  dispatcher routes a truly-empty profile argument to the picker. See
+  CLAUDE.md.
 
 ### Planned
 
@@ -138,12 +147,6 @@ Improve the installation experience.
 - Guided configuration wizard
 - Configuration summary
 - Progress reporting
-- **Interactive profile picker — agreed priority (2026-08-06), not on
-  the original list.** `glb restore` with no profile argument lists
-  profiles and lets the user pick, reusing the numbered-menu UX
-  `lib/prompt.sh`'s `glb_configure_starship` already has for Starship
-  presets. Helps someone who doesn't know which profile name
-  (`default` vs `new-to-linux`) is meant for them. See CLAUDE.md.
 - **Shell completions for `glb` itself — agreed priority (2026-08-06),
   not on the original list.** bash/zsh/fish completion for `glb
   <TAB>` — small effort, standard polish expected of a finished CLI

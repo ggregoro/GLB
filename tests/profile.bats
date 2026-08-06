@@ -467,3 +467,67 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"No profiles directory found"* ]]
 }
+
+# --- glb_restore_interactive -------------------------------------------------
+
+@test "restore_interactive lists profiles and applies the one chosen by number" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/profiles/default/packages.txt"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    run glb_restore_interactive <<< '2'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"1) default"* ]]
+    [[ "$output" == *"2) work"* ]]
+    [[ "$output" == *"Profile applied: work"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "zsh" ]
+}
+
+@test "restore_interactive passes --dry-run through to the chosen profile" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    run glb_restore_interactive "--dry-run" <<< '2'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for profile: work"* ]]
+    [[ "$output" == *"Would install: zsh"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "" ]
+}
+
+@test "restore_interactive rejects an out-of-range choice" {
+    mkdir -p "$GLB_ROOT/profiles/default"
+
+    run glb_restore_interactive <<< '99'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Invalid choice: 99"* ]]
+}
+
+@test "restore_interactive rejects non-numeric input" {
+    mkdir -p "$GLB_ROOT/profiles/default"
+
+    run glb_restore_interactive <<< 'nope'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Invalid choice: nope"* ]]
+}
+
+@test "restore_interactive warns when no profiles exist" {
+    run glb_restore_interactive <<< '1'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"No profiles found"* ]]
+}
+
+@test "restore_interactive warns when the profiles directory itself is missing" {
+    rm -rf "$GLB_ROOT/profiles"
+
+    run glb_restore_interactive <<< '1'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"No profiles directory found"* ]]
+}

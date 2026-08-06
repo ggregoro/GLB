@@ -157,6 +157,32 @@ teardown() {
     [ ! -e "$HOME/.gitconfig" ]
 }
 
+@test "glb restore with no profile name shows a picker and applies the chosen profile" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/profiles/default/packages.txt"
+    echo 'x' > "$GLB_ROOT/profiles/work/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore <<< '2'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Choose a profile to restore"* ]]
+    [[ "$output" == *"1) default"* ]]
+    [[ "$output" == *"2) work"* ]]
+    [[ "$output" == *"Profile applied: work"* ]]
+    [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb restore with no profile name and --dry-run picks interactively then previews" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
+    echo 'x' > "$GLB_ROOT/profiles/work/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --dry-run <<< '2'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for profile: work"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
 @test "glb remove without a package name errors instead of crashing" {
     run "$GLB_ROOT/glb" remove
     [ "$status" -eq 1 ]
