@@ -124,13 +124,12 @@ branches on it.
   `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
   report back distro name + specific errors (package not found, or
   installed under a different binary name like `bat`/`batcat`) so they
-  can be turned into override entries. **Fedora, CachyOS, and now
-  openSUSE are all done and all three came back clean** — every
-  priority distro has zero `_GLB_PACKAGE_OVERRIDES` gaps. Only Mint
-  remains, and it's apt-based/lowest-priority (already validated via
-  Pop!_OS/Zorin), so this cross-distro testing effort is effectively
-  complete pending Greg's manual confirmation of the openSUSE package
-  installs below.
+  can be turned into override entries. **Fedora, CachyOS, and openSUSE
+  are all done, fully confirmed end-to-end, and all three came back
+  clean** — every priority distro has zero `_GLB_PACKAGE_OVERRIDES`
+  gaps. Only Mint remains, and it's apt-based/lowest-priority (already
+  validated via Pop!_OS/Zorin), so **this cross-distro testing effort
+  is complete.**
   - **Fedora 44 (dnf) result (2026-08-05, tested via Claude Code on a
     Fedora Workstation test VM, confirmed a throwaway machine — not a
     real install):** `glb info` detected `dnf` correctly. This was an
@@ -223,9 +222,17 @@ branches on it.
     correctly backed up to `*.glb-backup` and symlinked; Starship
     (already present) and both zsh plugins installed fine.
     **`packages.txt` is fully covered on zypper/openSUSE with zero
-    overrides needed**, same conclusion as dnf/Fedora and pacman/CachyOS
-    — pending Greg's manual confirmation that `tmux`/`neovim`/`ripgrep`
-    install cleanly via `sudo zypper install`.
+    overrides needed**, same conclusion as dnf/Fedora and pacman/CachyOS.
+    **Confirmed:** Greg ran `sudo zypper install -y tmux neovim ripgrep`
+    directly in a real terminal on the VM; despite some install-time
+    messages Greg flagged as possible errors, all three installed
+    cleanly — verified via `rpm -q` (`tmux-3.7b-1.2`, `neovim-0.12.4-1.1`,
+    `ripgrep-15.2.0-1.2`) and functionally: `tmux -V`/`nvim --version`
+    both ran fine, and a detached `tmux new-session`/`kill-session`
+    round-trip produced no errors with no `~/.tmux.conf` present. The
+    flagged install-time messages didn't reproduce as any functional
+    problem, most likely a benign zypper notice (e.g. a vendor-change
+    confirmation or dependency note) rather than a real failure.
   - **ranger added to `profiles/default` (2026-08-05):** originally just
     a `docs/PHILOSOPHY.md` example of a "curate, don't reinvent"
     candidate tool, ranger is now a real part of Greg's base profile —
