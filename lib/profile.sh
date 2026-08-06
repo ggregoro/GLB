@@ -27,6 +27,7 @@ _glb_profile_dir() {
 
 glb_apply_profile_packages() {
     local profile_dir="$1"
+    local dry_run="${2:-}"
     local packages_file="$profile_dir/packages.txt"
     local line package
     local failed=()
@@ -44,6 +45,11 @@ glb_apply_profile_packages() {
 
         if glb_package_installed "$package" 2>/dev/null; then
             glb_log_info "Already installed: $package"
+            continue
+        fi
+
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_info "Would install: $package"
             continue
         fi
 
@@ -66,6 +72,7 @@ glb_apply_profile_packages() {
 
 glb_apply_profile_dotfiles() {
     local profile_dir="$1"
+    local dry_run="${2:-}"
     local dotfiles_dir="$profile_dir/dotfiles"
     local src rel dest
     local failed=()
@@ -79,14 +86,23 @@ glb_apply_profile_dotfiles() {
         rel="${src#"$dotfiles_dir"/}"
         dest="$HOME/$rel"
 
-        if ! glb_create_directory "$(dirname "$dest")"; then
-            glb_log_error "Failed to create directory for ~/$rel"
-            failed+=("$rel")
+        if [[ -L "$dest" ]] && [[ "$(readlink -f "$dest")" == "$(readlink -f "$src")" ]]; then
+            glb_log_info "Already linked: ~/$rel"
             continue
         fi
 
-        if [[ -L "$dest" ]] && [[ "$(readlink -f "$dest")" == "$(readlink -f "$src")" ]]; then
-            glb_log_info "Already linked: ~/$rel"
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            if [[ -e "$dest" || -L "$dest" ]]; then
+                glb_log_info "Would back up ~/$rel -> ~/$rel.glb-backup, then link"
+            else
+                glb_log_info "Would link ~/$rel"
+            fi
+            continue
+        fi
+
+        if ! glb_create_directory "$(dirname "$dest")"; then
+            glb_log_error "Failed to create directory for ~/$rel"
+            failed+=("$rel")
             continue
         fi
 
@@ -174,6 +190,7 @@ glb_undo_restore() {
 
 glb_apply_profile() {
     local name="${1:-default}"
+    local dry_run="${2:-}"
     local profile_dir
     local status=0
     profile_dir="$(_glb_profile_dir "$name")"
@@ -183,16 +200,24 @@ glb_apply_profile() {
         return 1
     fi
 
-    glb_log_info "Applying profile: $name"
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        glb_log_info "Dry run for profile: $name (nothing will be installed or changed)"
+    else
+        glb_log_info "Applying profile: $name"
+    fi
 
-    glb_apply_profile_packages "$profile_dir" || status=1
-    glb_apply_profile_extras "$profile_dir" || status=1
-    glb_install_starship || status=1
-    glb_install_zsh_plugins || status=1
-    glb_apply_profile_dotfiles "$profile_dir" || status=1
+    glb_apply_profile_packages "$profile_dir" "$dry_run" || status=1
+    glb_apply_profile_extras "$profile_dir" "$dry_run" || status=1
+    glb_install_starship "$dry_run" || status=1
+    glb_install_zsh_plugins "$dry_run" || status=1
+    glb_apply_profile_dotfiles "$profile_dir" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then
-        glb_log_success "Profile applied: $name"
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_success "Dry run complete: $name"
+        else
+            glb_log_success "Profile applied: $name"
+        fi
     else
         glb_log_error "Profile applied with errors: $name"
     fi

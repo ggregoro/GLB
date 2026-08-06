@@ -212,8 +212,55 @@ branches on it.
     restoring when the symlink was already manually removed, and
     idempotency (running it twice is a safe no-op the second time).
     Verified end-to-end against a real (sandboxed) restore + undo
-    round-trip, not just the unit tests. **Next up: item 2,
-    dry-run/preview.**
+    round-trip, not just the unit tests.
+  - **Item 2 done (2026-08-06): `glb restore <profile> --dry-run`
+    built and tested.** Threaded a `dry_run` parameter (the literal
+    string `"--dry-run"` or empty) through
+    `glb_apply_profile_packages`/`glb_apply_profile_extras`/
+    `glb_apply_profile_dotfiles` (`lib/profile.sh`, `lib/extras.sh`)
+    and `glb_install_starship`/`glb_install_zsh_plugins`
+    (`lib/prompt.sh`, `lib/plugins.sh`) — exactly the "thread a flag
+    through existing logic" approach the roadmap called for, no new
+    mechanism. Each already-installed check stays real (read-only:
+    `dpkg -s`, `flatpak info`, `command -v`, symlink comparison); only
+    the actual install/link/backup calls are skipped and replaced with
+    a "Would ..." log line. The dotfiles function's "already linked"
+    check was reordered ahead of directory creation so dry-run can
+    bail out before any real `mkdir`. Dispatcher parses `--dry-run`
+    anywhere after `restore` (before or after the profile name), same
+    pattern as `--undo`. 21 new bats tests across `tests/profile.bats`,
+    `tests/extras.bats`, and two new files — `tests/prompt.bats` and
+    `tests/plugins.bats`, neither module had dedicated tests before —
+    plus 2 dispatcher end-to-end tests; 94 total passing.
+    - **Found and fixed a real latent bug along the way:**
+      `declare -A _GLB_ZSH_PLUGINS` in `lib/plugins.sh` (and
+      `_GLB_PACKAGE_OVERRIDES` in `lib/package.sh`) becomes
+      **function-scoped, not global**, when sourced from inside a bash
+      function — which is exactly what bats' `setup()` is. The array
+      would silently vanish before the test body ran, making every
+      plugin-related assertion fail with empty output. Fixed by adding
+      `-g` to both `declare -A` calls. Zero behavior change for the
+      real `glb` script (already sourced at top level there, so
+      already effectively global) — this was purely a test-sourcing
+      footgun, but a real one worth knowing about if either array is
+      ever touched again.
+    - Verified end-to-end in a sandbox with `sudo`/`apt`/`dpkg`/
+      `flatpak`/`starship`/`curl`/`sh`/`git` **all stubbed to exit 1**
+      (deliberately hostile, so anything actually invoked would be
+      loud and obvious) against the real `default` profile: every
+      package/extra/starship/plugin/dotfile line printed correctly,
+      exit code 0, and confirmed zero real side effects (no symlinks,
+      no `.local` plugins dir, `.bashrc` untouched).
+    - This sandboxed-verification discipline is itself a direct fix
+      for a mistake earlier the same session: an unstubbed manual
+      "smoke test" of the undo feature accidentally ran a real
+      `flatpak install --system` for `default`'s WezTerm extra,
+      triggering a genuine PolicyKit password prompt Greg had to
+      answer for real. See the "no real restore on laptop" memory —
+      this is why every verification after that point stubs the
+      package manager and flatpak explicitly rather than trusting a
+      sandboxed `$HOME` alone. **Next up: item 3, interactive profile
+      picker.**
   - **Considered and deliberately rejected** as over-complicating GLB
     for its actual scope: templating (different values per machine),
     encrypted secrets, a plugin system — the kind of thing chezmoi/

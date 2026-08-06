@@ -26,7 +26,7 @@ fi
 # through unchanged.
 # ------------------------------------------------------------
 
-declare -A _GLB_PACKAGE_OVERRIDES=(
+declare -gA _GLB_PACKAGE_OVERRIDES=(
     [fd:apt]="fd-find"
     [firefox:zypper]="MozillaFirefox"
     [libreoffice:pacman]="libreoffice-fresh"

@@ -17,7 +17,7 @@ fi
 # Curated zsh plugins (name -> git repo URL)
 # ------------------------------------------------------------
 
-declare -A _GLB_ZSH_PLUGINS=(
+declare -gA _GLB_ZSH_PLUGINS=(
     [zsh-autosuggestions]="https://github.com/zsh-users/zsh-autosuggestions"
     [zsh-syntax-highlighting]="https://github.com/zsh-users/zsh-syntax-highlighting"
 )
@@ -27,11 +27,14 @@ declare -A _GLB_ZSH_PLUGINS=(
 # ------------------------------------------------------------
 
 glb_install_zsh_plugins() {
+    local dry_run="${1:-}"
     local plugins_dir="$HOME/.local/share/glb/plugins"
     local name repo dest
     local failed=()
 
-    glb_create_directory "$plugins_dir"
+    if [[ "$dry_run" != "--dry-run" ]]; then
+        glb_create_directory "$plugins_dir"
+    fi
 
     for name in "${!_GLB_ZSH_PLUGINS[@]}"; do
         repo="${_GLB_ZSH_PLUGINS[$name]}"
@@ -39,6 +42,11 @@ glb_install_zsh_plugins() {
 
         if [[ -d "$dest" ]]; then
             glb_log_info "Already installed: $name"
+            continue
+        fi
+
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_info "Would install zsh plugin: $name"
             continue
         fi
 

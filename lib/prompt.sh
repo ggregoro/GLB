@@ -18,8 +18,15 @@ fi
 # ------------------------------------------------------------
 
 glb_install_starship() {
+    local dry_run="${1:-}"
+
     if glb_command_exists starship; then
         glb_log_info "Already installed: starship"
+        return 0
+    fi
+
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        glb_log_info "Would install: starship"
         return 0
     fi
 

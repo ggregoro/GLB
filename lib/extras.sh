@@ -110,6 +110,7 @@ glb_install_extra() {
 
 glb_apply_profile_extras() {
     local profile_dir="$1"
+    local dry_run="${2:-}"
     local extras_file="$profile_dir/extras.txt"
     local line method name spec
     local failed=()
@@ -128,6 +129,11 @@ glb_apply_profile_extras() {
 
         if glb_extra_installed "$method" "$name" "$spec"; then
             glb_log_info "Already installed: $name"
+            continue
+        fi
+
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_info "Would install: $name (via $method)"
             continue
         fi
 

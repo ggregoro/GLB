@@ -44,6 +44,30 @@ teardown() {
     [[ "$output" == *"Already installed: fresh"* ]]
 }
 
+@test "dry-run: announces what would install without calling curl/sh" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: fresh (via curl)"* ]]
+}
+
+@test "dry-run: still reports already-installed extras as such, not as a would-install" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    stub_command fresh 'exit 0'
+    printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Already installed: fresh"* ]]
+    [[ "$output" != *"Would install"* ]]
+}
+
 @test "unknown method is logged as a failure" {
     local pdir="$TEST_TMP/profile"
     mkdir -p "$pdir"

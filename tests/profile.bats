@@ -103,6 +103,21 @@ teardown() {
     [ "$output" = "$(printf 'git\nzsh')" ]
 }
 
+@test "dry-run: announces what would install without installing anything" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'git\nzsh\n' > "$pdir/packages.txt"
+    ALREADY_INSTALLED="zsh"
+
+    run glb_apply_profile_packages "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: git"* ]]
+    [[ "$output" == *"Already installed: zsh"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "" ]
+}
+
 @test "warns and does nothing when packages.txt is missing" {
     local pdir="$TEST_TMP/profile"
     mkdir -p "$pdir"
@@ -176,6 +191,47 @@ teardown() {
 
     [[ "$output" == *"Already linked"* ]]
     [ ! -e "$HOME/.zshrc.glb-backup" ]
+}
+
+@test "dry-run: announces a fresh link without creating anything" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles/.config/nvim"
+    echo 'nvim config' > "$pdir/dotfiles/.config/nvim/init.vim"
+
+    run glb_apply_profile_dotfiles "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would link ~/.config/nvim/init.vim"* ]]
+    [ ! -e "$HOME/.config/nvim/init.vim" ]
+    [ ! -d "$HOME/.config" ]
+}
+
+@test "dry-run: announces a backup+link without touching the existing file" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'new content' > "$pdir/dotfiles/.bashrc"
+    echo 'old content' > "$HOME/.bashrc"
+
+    run glb_apply_profile_dotfiles "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would back up ~/.bashrc -> ~/.bashrc.glb-backup, then link"* ]]
+    [ ! -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "old content" ]
+    [ ! -e "$HOME/.bashrc.glb-backup" ]
+}
+
+@test "dry-run: still reports an already-correct link as such, not as a would-link" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'content' > "$pdir/dotfiles/.zshrc"
+    ln -s "$pdir/dotfiles/.zshrc" "$HOME/.zshrc"
+
+    run glb_apply_profile_dotfiles "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Already linked"* ]]
+    [[ "$output" != *"Would link"* ]]
 }
 
 @test "ignores .gitkeep files" {
@@ -373,6 +429,23 @@ teardown() {
 
     [ "$status" -eq 1 ]
     [[ "$output" == *"Profile applied with errors: work"* ]]
+}
+
+@test "glb_apply_profile --dry-run installs nothing and links nothing" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/profiles/work/packages.txt"
+    echo 'x' > "$GLB_ROOT/profiles/work/dotfiles/.gitconfig"
+
+    run glb_apply_profile "work" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for profile: work"* ]]
+    [[ "$output" == *"Would install: git"* ]]
+    [[ "$output" == *"Would link ~/.gitconfig"* ]]
+    [[ "$output" == *"Dry run complete: work"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "" ]
+    [ ! -e "$HOME/.gitconfig" ]
 }
 
 @test "glb_apply_profile defaults to the 'default' profile when no name is given" {

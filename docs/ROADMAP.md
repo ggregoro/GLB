@@ -121,16 +121,21 @@ Improve the installation experience.
   swaps each one back into place, removing the GLB-created symlink.
   Skips (doesn't clobber) any destination that's no longer a symlink,
   since that means it was touched since the restore. See CLAUDE.md.
+- **Installation preview (2026-08-06).** `glb restore <profile>
+  --dry-run` (flag can go before or after the profile name) prints
+  what packages/extras/starship/zsh plugins/dotfiles would
+  install/symlink/back up, without doing any of it — verified with a
+  fully-stubbed sudo/apt/flatpak/starship/curl/git sandbox to confirm
+  zero real side effects. Threaded a `dry_run` parameter through
+  `glb_apply_profile_packages`/`_extras`/`_dotfiles` (`lib/profile.sh`,
+  `lib/extras.sh`) plus `glb_install_starship`/`glb_install_zsh_plugins`
+  (`lib/prompt.sh`, `lib/plugins.sh`), exactly as planned — no new
+  mechanism needed. See CLAUDE.md.
 
 ### Planned
 
 - Express installation
 - Guided configuration wizard
-- **Installation preview** — agreed priority (2026-08-06): `glb restore
-  <profile> --dry-run` showing what would install/symlink/back up
-  without touching anything. Highest-value trust-builder for someone
-  other than Greg trying GLB for the first time; mostly threads a flag
-  through logic that already exists. See CLAUDE.md for full reasoning.
 - Configuration summary
 - Progress reporting
 - **Interactive profile picker — agreed priority (2026-08-06), not on

@@ -130,6 +130,33 @@ teardown() {
     [[ "$output" == *"nothing to undo"* ]]
 }
 
+@test "glb restore --dry-run previews the real default profile without changing anything" {
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+
+    run "$GLB_ROOT/glb" restore default --dry-run
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for profile: default"* ]]
+    [[ "$output" == *"Would install: git"* ]]
+    [[ "$output" == *"Would link ~/.bashrc"* ]]
+    [[ "$output" == *"Dry run complete: default"* ]]
+    [ ! -e "$HOME/.bashrc" ]
+    [ ! -e "$HOME/.gitconfig" ]
+    [ ! -d "$HOME/.config" ]
+}
+
+@test "glb restore --dry-run also works with the flag before the profile name" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/profiles/default/packages.txt"
+    echo 'x' > "$GLB_ROOT/profiles/default/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --dry-run default
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for profile: default"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
 @test "glb remove without a package name errors instead of crashing" {
     run "$GLB_ROOT/glb" remove
     [ "$status" -eq 1 ]
