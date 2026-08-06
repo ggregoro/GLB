@@ -153,6 +153,12 @@ branches on it.
     (`tmux 3.7_b-1.1`, `neovim 0.12.4-1.1`, verified via `pacman -Q`) —
     so `packages.txt` is fully covered on pacman/CachyOS with zero
     overrides needed.
+  - Mid-testing, CachyOS (rolling release) pushed a major system upgrade
+    on its own. Greg waited for it to finish and re-ran a test
+    afterward — nothing broke, `glb restore default` still worked fine
+    post-upgrade. Not a rigorous regression test, just a good sign that
+    GLB doesn't depend on anything fragile enough to be upset by a
+    rolling-release update.
   - Also on that CachyOS VM (2026-08-05, Greg's own notes, not part of
     the GLB restore test itself): Claude Desktop installed easily —
     Greg's preferred way to work over the web UI. Unrelated to GLB
