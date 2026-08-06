@@ -30,19 +30,26 @@ Whenever practical, GLB should leverage mature and well-maintained software rath
 
 Examples include:
 
-- Oh My Zsh
-- Fisher
-- Bash-it
 - Starship
-- Powerlevel10k
 - eza
 - bat
 - zoxide
 - ranger
 - tmux
+- Neovim
+- fzf
+- ripgrep
+- fastfetch
+- WezTerm
+- Fresh
 - Git
 
 GLB provides the framework that brings these projects together into a cohesive workstation.
+
+Where a whole framework doesn't fit — e.g. zsh's autosuggestions and syntax-highlighting — GLB
+vendors the individual plugins directly (git-cloned into `~/.local/share/glb/plugins`) rather than
+adopting a plugin manager like Oh My Zsh or Fisher. Same principle at a smaller grain: bring in the
+project that does the job well, without inheriting a framework's extra weight.
 
 ---
 
@@ -50,7 +57,8 @@ GLB provides the framework that brings these projects together into a cohesive w
 
 GLB provides carefully selected defaults based on extensive real-world experience.
 
-The default profile, **Greg's Recommended**, represents the environment used to develop and maintain GLB.
+The `default` profile represents the environment used to develop and maintain GLB — Greg's own,
+real setup, not a placeholder.
 
 Users who prefer different tools or workflows should always have the ability to customize their installation.
 
@@ -64,7 +72,8 @@ Users should choose experiences rather than individual packages.
 
 Examples include:
 
-- Greg's Recommended
+- `default` (Greg's own, real setup) ✅
+- New to Linux ✅
 - Minimal
 - Developer
 - Server
@@ -137,7 +146,7 @@ The project should serve as an example of professional Bash development.
 
 GLB aims to become a complete Linux workstation builder capable of transforming a fresh installation into a polished development environment through either:
 
-- Express Installation using **Greg's Recommended**
+- Express Installation using the `default` profile
 - A guided customization wizard
 
 Both paths should deliver reliable, reproducible, and maintainable systems.
