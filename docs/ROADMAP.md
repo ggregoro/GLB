@@ -38,6 +38,16 @@ Develop the core installation framework.
 - Module execution framework
 - Installation verification
 - Error recovery
+- Pause/resume for sudo-gated steps — if a package install needs a sudo
+  password prompt GLB can't satisfy non-interactively, pause with a clear
+  "run this yourself, then press enter to continue" rather than failing
+  the whole restore. Surfaced repeatedly during cross-distro testing (see
+  CLAUDE.md), where every distro hit at least one package needing a
+  manual `sudo install` in a real terminal. Low bar to clear: a single
+  copy-paste command plus a password prompt was not a real inconvenience
+  during testing — the goal is for a real restore to degrade to that same
+  low-effort stop-and-prompt if a step genuinely can't be automated, not
+  to eliminate manual sudo entry entirely.
 
 ---
 

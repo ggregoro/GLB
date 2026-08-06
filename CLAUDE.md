@@ -115,6 +115,25 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **New roadmap item (agreed 2026-08-06): pause/resume for sudo-gated
+  installs.** Across every distro tested in cross-distro testing, at
+  least one package needed a manual `sudo install` because the testing
+  shell had no TTY for the password prompt — Greg had to switch to a
+  real terminal each time. That was a testing-environment limitation,
+  not a GLB bug, but Greg pointed out the real product gap it exposes:
+  a real user hitting *any* sudo prompt GLB can't satisfy (password
+  needed, package held back, etc.) currently has no graceful path — the
+  restore should be able to pause with a clear "run this yourself, then
+  press enter to continue" instead of just failing. Greg was explicit
+  this wasn't a real inconvenience during testing itself — Claude handed
+  him one copy-paste command each time, and all he had to do was paste
+  it, enter his password, and press enter — so the ask isn't to eliminate
+  that step, just to make sure the real `glb restore` flow degrades to
+  something equally low-effort (stop, show the exact command, wait for
+  enter) if the sudo step genuinely can't be automated, rather than
+  failing outright. Added to `docs/ROADMAP.md` under Version 0.2
+  (Installation Engine), alongside the existing "Error recovery" item.
+  Not started — captured as a roadmap item only.
 - **Debian (apt) result (2026-08-06, tested via Claude Code on Greg's real
   Debian 13 machine, the one linked to GitHub — a genuine daily-driver
   restore, not a throwaway VM):** `glb info` detected `apt` correctly.
