@@ -24,6 +24,13 @@ reasonably clean and documented, not just "works on my machine."
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
   here on 2026-08-06 (see Roadmap section) — a second real daily-driver
   machine alongside the Dell laptop, not just a test VM
+- **New (2026-08-06): a dedicated Pop!_OS test VM** — a fresh VM Greg set
+  up with its own SSH key, cloned separately from the Dell laptop/Debian
+  machine. Distinct from the Dell E7450 above despite same distro; this
+  one exists purely for testing, not as a daily driver. First session
+  here ran `glb restore default` for real (first time on this machine)
+  and found/fixed a genuine bug in the process — see the manual-step
+  pause entry in Roadmap below.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -873,6 +880,20 @@ branches on it.
   — installed on the Dell laptop as of 2026-08-06 (`sudo apt install -y
   bats`); all 55 tests pass as of that date (see Roadmap section for
   what surfaced the first time it was actually run here).
+- **`bats` is not installed on the new Pop!_OS test VM** (2026-08-06) and
+  couldn't be via `sudo apt install` from a sandboxed Claude Code shell
+  (no TTY, same limitation as every package install elsewhere in this
+  file). Ran the suite there via a locally cloned `bats-core`
+  (`git clone --depth 1 https://github.com/bats-core/bats-core` into the
+  scratchpad, then its `bin/bats` directly — no install/sudo needed) —
+  works fine as a one-off but isn't persisted anywhere on that VM, so a
+  future session there will need to either re-clone it or actually
+  install the package for real (in a real terminal). 113 tests total as
+  of that date; 3 fail specifically on that VM because it happens to
+  already have `fresh-editor` at `/usr/bin/fresh` pre-installed, which
+  a few tests don't isolate against — see the manual-step bug entry in
+  Roadmap for details, confirmed via `git stash` to be pre-existing and
+  unrelated to that session's fix.
 
 ## Conventions
 
@@ -910,3 +931,13 @@ branches on it.
   bullet at the top of Roadmap and the "Support multiple named profiles"
   bullet further down for the full reasoning). Nothing has been started
   on it yet; that's the right place to pick up.
+- **Handoff from the new Pop!_OS test VM session (2026-08-06):** first
+  session on this VM (see "Test environments" above) — ran
+  `glb restore default` for real here for the first time, which
+  surfaced and led to fixing a genuine manual-step-pause bug (see the
+  Roadmap entry above for the full root cause). Pushed as commit
+  `19b13ff`, the latest on `origin/main` as of this note. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming any other
+  machine is caught up. Multi-profile support (the agreed next
+  priority, noted just above) was not touched this session — this was
+  purely a real-restore-and-fix session, not a feature session.
