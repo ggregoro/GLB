@@ -137,6 +137,26 @@ branches on it.
     genuinely looking different, not from a text label.
   - All 68 bats tests still pass unchanged; no test asserted specific
     prompt content, only that the dotfiles get symlinked.
+  - Two follow-ups the same session: fish's dirty marker was expanded
+    from a single `*` to the same symbol set Starship's `git_status`
+    uses by default (`=` conflicted, `$` stashed, `✘` deleted, `»`
+    renamed, `!` modified, `+` staged, `?` untracked), parsed from
+    `git status --porcelain` — verified against both this repo's real
+    state and a synthetic scratch repo exercising every symbol.
+    Separately, zsh's Tokyo Night preset doesn't include a
+    `cmd_duration` module by default, so one was added (5s threshold,
+    styled to match the existing `$time` segment).
+  - **Locked in (2026-08-06): Greg confirmed all three are good as-is
+    — "everything should be locked in regarding shell prompts."** His
+    read on each: bash-as-plain-default "will provide some level of
+    comfort" (i.e. familiar/unsurprising for that shell), fish "looks
+    like it should" (matches the Pure aesthetic he wanted), zsh "has
+    some pizzazz" (Tokyo Night's the deliberately flashier one of the
+    three). Treat per-shell distinct prompts (not a shared
+    Starship-everywhere look) as the standing design for `default`
+    going forward — same status the old unified approach had before
+    this session, now superseded by this. Pushed to `origin/main` as
+    commits `08d8769` and `dc0465a`.
 - For the fine-grained "what shipped when" list, check CHANGELOG.md's
   `[Unreleased]` section — this file tracks the *why* and what's still
   open, not a full change log.
