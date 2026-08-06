@@ -69,6 +69,12 @@ This project follows a simple versioning approach:
   tab bar — written from scratch since Greg's WezTerm (Flatpak-installed)
   had no prior config. `glb restore` doesn't install WezTerm itself yet
   (Flatpak, no install mechanism for that in GLB — see Planned).
+- Added `ranger` to the `default` profile's `packages.txt` plus a new
+  `.config/ranger/rc.conf`: explicit `draw_borders`, and `vcs_aware`/
+  `vcs_backend_git` so git status shows via ranger's built-in
+  colored-letter indicators (avoids depending on an icon font).
+- Added `docs/screenshots/` for test-confirmation screenshots and future
+  tutorial images.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
@@ -86,7 +92,6 @@ This project follows a simple versioning approach:
 
 - Initial bootstrap framework
 - Documentation system
-- Ranger configuration
 - Git bootstrap
 - SSH bootstrap
 - Samba support

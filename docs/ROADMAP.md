@@ -59,6 +59,12 @@ Introduce workstation profiles.
 
 Profiles will define complete workstation experiences rather than individual package selections.
 
+`ranger` (added to `profiles/default`'s `packages.txt` on 2026-08-05, see
+CLAUDE.md) is default-on for Greg's own profile but shouldn't necessarily be
+default-on for every future profile — e.g. Minimal or Server may not want a
+TUI file manager. Once per-profile package selection exists, packages like
+this should be opt-in per profile rather than baked into a shared list.
+
 The "New to Linux" profile in particular targets a different value
 proposition from the others: the rest of GLB (and Greg's own "Recommended"
 profile) solve *restoring your own exact setup*, but someone installing

@@ -43,12 +43,14 @@ branches on it.
   Homebrew — far more developed than the old `.zshrc`, which only had one
   alias):
   - `packages.txt`: git, zsh, fish, tmux, neovim, curl, ripgrep, fzf,
-    eza, bat, zoxide, fastfetch (tmux/neovim/ripgrep/fastfetch kept as
-    aspirational even where not apt-installable on every distro).
+    eza, bat, zoxide, fastfetch, ranger (tmux/neovim/ripgrep/fastfetch
+    kept as aspirational even where not apt-installable on every
+    distro).
   - `dotfiles/`: `.bashrc`, `.zshrc`, `.config/fish/config.fish`,
-    `.gitconfig`, `.config/starship.toml` (Greg's real hand-crafted
-    config — plain text style: directory, git info, colored `❯`, no
-    icons/segments, visually different from the old Powerlevel10k look).
+    `.gitconfig`, `.config/starship.toml`, `.config/ranger/rc.conf`
+    (Greg's real hand-crafted config — plain text style: directory, git
+    info, colored `❯`, no icons/segments, visually different from the
+    old Powerlevel10k look).
     All three shells now share the same aliases (eza-based `ls` family,
     `bat` as `cat`, nav shortcuts, apt shortcuts, zoxide, guarded
     Homebrew shellenv) and all three now init Starship (bash and fish
@@ -82,6 +84,11 @@ branches on it.
       and `eza`'s file-type icons both display properly after `glb
       restore default`, screenshot-verified by Greg. One more terminal
       emulator off the "does the font actually render" list.
+    - **Independently reconfirmed (2026-08-05):** Greg took a second
+      screenshot on the CachyOS VM itself and reviewed it in a separate
+      Claude session running there (via Claude Desktop, which also
+      installed cleanly on that Arch-based distro) — same result, Konsole
+      renders fine on Arch-based distros too.
   - `.config/wezterm/wezterm.lua` (2026-08-05): written from scratch —
     Greg's WezTerm (installed via Flatpak, `org.wezfurlong.wezterm`) had
     no prior config at all. JetBrainsMono Nerd Font, Tokyo Night color
@@ -146,6 +153,32 @@ branches on it.
     (`tmux 3.7_b-1.1`, `neovim 0.12.4-1.1`, verified via `pacman -Q`) —
     so `packages.txt` is fully covered on pacman/CachyOS with zero
     overrides needed.
+  - Also on that CachyOS VM (2026-08-05, Greg's own notes, not part of
+    the GLB restore test itself): Claude Desktop installed easily —
+    Greg's preferred way to work over the web UI. Unrelated to GLB
+    functionality, noted for context only.
+  - **ranger added to `profiles/default` (2026-08-05):** originally just
+    a `docs/PHILOSOPHY.md` example of a "curate, don't reinvent"
+    candidate tool, ranger is now a real part of Greg's base profile —
+    he asked for it in after noticing it was already on the CachyOS VM
+    and liking it, borders and all. Added `ranger` to `packages.txt` and
+    a new `dotfiles/.config/ranger/rc.conf`. The rc.conf explicitly
+    turns on `vcs_aware`/`vcs_backend_git` so git status shows via
+    ranger's *built-in* colored-letter indicators — this sidesteps the
+    icon-based git-status indicator that failed to render on the
+    CachyOS VM (a Nerd Font glyph gap, never root-caused) rather than
+    fixing it directly. `draw_borders` is also set explicitly since
+    that's what looked good on CachyOS. If Greg later wants icon-based
+    (not letter-based) git status, that likely means a `devicons`-style
+    ranger plugin, which needs an actual plugin-install step (like
+    `lib/plugins.sh` does for zsh) — dotfiles alone can't do it.
+    **Per-profile scope:** ranger is default-on for Greg's own
+    `profiles/default` only. Once the multi-profile system in
+    `docs/ROADMAP.md` V0.3 (Minimal/Developer/Server/Custom/etc.) is
+    built, ranger should be an *optional* package for those other
+    profiles, not mandatory — not every profile needs a TUI file
+    manager. Not yet enforceable in code since only `default` exists
+    today.
 - WezTerm config is done (see "Current state"). Ghostty turned out to
   **not** be installed or available via Flatpak on this machine (the
   original "Greg already uses both" premise was wrong) — dropped from
