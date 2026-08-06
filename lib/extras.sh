@@ -119,7 +119,11 @@ glb_apply_profile_extras() {
         return 0
     fi
 
-    while IFS= read -r line || [[ -n "$line" ]]; do
+    # Read extras_file on fd 3, not stdin (fd 0) - same reasoning as
+    # glb_apply_profile_packages in lib/profile.sh: glb_install_extra can
+    # fall through to glb_prompt_manual_step's interactive `read -p`,
+    # which needs real stdin free rather than the next extras_file line.
+    while IFS= read -r line <&3 || [[ -n "$line" ]]; do
         line="${line%%#*}"
         line="$(echo "$line" | xargs)"
 
@@ -141,7 +145,7 @@ glb_apply_profile_extras() {
             glb_log_error "Failed to install: $name"
             failed+=("$name")
         fi
-    done < "$extras_file"
+    done 3< "$extras_file"
 
     if [[ ${#failed[@]} -gt 0 ]]; then
         glb_log_error "Failed to install ${#failed[@]} extra(s): ${failed[*]}"

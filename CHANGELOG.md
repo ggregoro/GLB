@@ -87,6 +87,15 @@ This project follows a simple versioning approach:
   configure this automatically. `.zshrc` now sets it explicitly, which
   broke Ctrl-R (fzf history search) in zsh specifically — bash and fish
   were unaffected.
+- Fixed the sudo-gated manual-step pause (`glb_prompt_manual_step`)
+  never actually waiting for the user when triggered from
+  `glb_apply_profile_packages`/`glb_apply_profile_extras`. Both loops
+  read `packages.txt`/`extras.txt` via `done < "$file"`, which binds
+  stdin for the whole loop body to that file — so the manual step's
+  interactive `read -p` silently consumed the *next line of the
+  manifest* instead of waiting on the real terminal, and anything
+  listed after a failed package/extra vanished without being
+  processed. Fixed by reading each manifest on fd 3 instead of stdin.
 
 ### Planned
 

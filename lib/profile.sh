@@ -37,7 +37,12 @@ glb_apply_profile_packages() {
         return 0
     fi
 
-    while IFS= read -r line || [[ -n "$line" ]]; do
+    # Read packages_file on fd 3, not stdin (fd 0) - glb_install_package
+    # can fall through to glb_prompt_manual_step's interactive `read -p`
+    # on a failed install, which needs real stdin free to wait on the
+    # user's actual keypress rather than silently consuming the next
+    # line of packages_file as if it were the answer.
+    while IFS= read -r line <&3 || [[ -n "$line" ]]; do
         package="${line%%#*}"
         package="$(echo "$package" | xargs)"
 
@@ -57,7 +62,7 @@ glb_apply_profile_packages() {
             glb_log_error "Failed to install: $package"
             failed+=("$package")
         fi
-    done < "$packages_file"
+    done 3< "$packages_file"
 
     if [[ ${#failed[@]} -gt 0 ]]; then
         glb_log_error "Failed to install ${#failed[@]} package(s): ${failed[*]}"

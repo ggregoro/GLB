@@ -165,6 +165,57 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real bug found and fixed on the Pop!_OS test VM (2026-08-06):
+  sudo-gated manual-step pause was silently broken whenever it fired
+  from a real `packages.txt`/`extras.txt` run.** Greg ran
+  `glb restore default` for real here (the first restore on this VM),
+  saw the sudo password prompt for `zsh`, entered it correctly, but
+  `zsh` still wasn't installed — he had to run the install manually
+  himself outside of glb. Root cause: `glb_apply_profile_packages`
+  (`lib/profile.sh`) and `glb_apply_profile_extras` (`lib/extras.sh`)
+  each read their manifest file via `done < "$file"`, which rebinds
+  stdin (fd 0) for the *entire loop body* to that file. When a package
+  install fails and falls through to `glb_prompt_manual_step`'s
+  interactive `read -p "Press Enter once it's done..."`
+  (`lib/package.sh`), that read inherited the loop's stdin — so instead
+  of waiting on the real terminal, it silently consumed the **next
+  line of the manifest** as if it were the user's answer. Concretely:
+  packages.txt was `zsh`, `tmux`, ...; when `zsh` failed, the pause
+  "read" `tmux` off the file, decided that wasn't `s`/`S` (dry-run
+  packages.txt reading loop assumed input already, sudo password
+  entry succeeded fine since sudo reads `/dev/tty` directly), so it
+  logged zsh as still-not-installed and moved on — and because the
+  outer loop's next `read` was now positioned past `tmux` in the same
+  file stream, `tmux` itself was silently consumed and never
+  processed at all, not even attempted.
+  - **Never caught by the existing bats suite** because
+    `tests/profile.bats` stubs `glb_install_package` entirely (never
+    calls the real `glb_prompt_manual_step`), and `tests/extras.bats`,
+    while using the real `glb_install_extra`, never drove it through
+    the full `glb_apply_profile_extras` loop with a real multi-line
+    manifest and a failing entry.
+  - **Fix:** both loops now read their manifest on fd 3
+    (`done 3< "$file"`, `read -r line <&3`) instead of stdin, leaving
+    real stdin free for `glb_prompt_manual_step`'s interactive read.
+  - Added regression tests in both `tests/profile.bats` and
+    `tests/extras.bats` using the real (unstubbed) install path
+    through a `run bash -c "..."` subshell — a two-line manifest where
+    the first entry fails and pauses, confirming the manual step reads
+    real stdin (not the manifest) and that the second manifest entry
+    still gets processed afterward. 113 total tests, all passing.
+  - **Separately noticed while testing, not fixed:** this VM already
+    has `fresh-editor` installed at `/usr/bin/fresh` (unclear why —
+    predates this session), which makes 3 pre-existing tests
+    (`tests/extras.bats`'s curl dry-run test, `tests/dispatcher.bats`'s
+    two real-profile end-to-end restores) fail here specifically,
+    since they assume `fresh` isn't already on PATH. Confirmed via
+    `git stash` that these fail identically on unmodified `main`, so
+    it's a pre-existing environment-specific test-isolation gap, not
+    something the stdin fix touched. Not fixed — flagged for whenever
+    it's worth tightening those tests' PATH isolation.
+  - `bats` itself isn't installed on this VM and couldn't be via
+    `sudo apt install` from the sandboxed shell (no TTY) — ran the
+    suite via a locally cloned `bats-core` (no install needed) instead.
 - **Next session: pick up here, in this order (agreed 2026-08-06).**
   All four items from the prior session-wrap-up brainstorm just below
   (rollback/undo, dry-run, interactive profile picker, shell

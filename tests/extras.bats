@@ -80,6 +80,45 @@ teardown() {
     [[ "$output" == *"Failed to install: thing"* ]]
 }
 
+# --- manual-step pause interacting with the extras.txt loop ---------------
+#
+# Regression test for the same stdin-hijack bug fixed in
+# glb_apply_profile_packages (see tests/profile.bats): the extras.txt loop
+# had the identical `done < "$extras_file"` pattern, so a failed extra's
+# manual-step `read -p` would silently consume the next extras.txt line
+# instead of waiting on real stdin, and anything after a failed extra
+# vanished without being processed.
+
+@test "manual-step pause during extras.txt loop waits on real stdin, not the next extras.txt line" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    # "faketool" (not "fresh") deliberately - some real machines already
+    # have a "fresh" binary on PATH (e.g. the fresh-editor apt package),
+    # which would make it look "already installed" and never exercise
+    # the failure/manual-step path this test is actually checking.
+    printf 'curl faketool https://example.test/install.sh\nflatpak wezterm org.wezfurlong.wezterm\n' > "$pdir/extras.txt"
+
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 1'
+    stub_command flatpak 'case "$1" in
+        remote-add) exit 0 ;;
+        install) exit 0 ;;
+        info) exit 1 ;;
+    esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_apply_profile_extras '$pdir' <<< 's'
+    "
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Skipped: install faketool"* ]]
+    [[ "$output" == *"Installing wezterm via Flatpak"* ]]
+}
+
 # --- curl method ---------------------------------------------------------
 
 @test "curl: skips install when the binary is already on PATH" {

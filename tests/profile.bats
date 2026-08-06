@@ -146,6 +146,52 @@ teardown() {
     [ "$output" = "$(printf 'git\ntmux')" ]
 }
 
+# --- manual-step pause interacting with the packages.txt loop --------------
+#
+# Regression test for a real bug: glb_apply_profile_packages used to read
+# packages_file via `done < "$packages_file"`, which binds stdin (fd 0) for
+# the whole loop body to that file. glb_install_package's fallback manual
+# step (lib/package.sh) does an interactive `read -p` on a failed install -
+# with the old code that read silently consumed the *next line of
+# packages.txt* instead of waiting for the user, so any package listed
+# after a failed one vanished without ever being processed. This uses the
+# real (unstubbed) glb_install_package/glb_prompt_manual_step, unlike the
+# other tests in this file, since the bug only manifests through that real
+# interactive read.
+
+@test "manual-step pause during packages.txt loop waits on real stdin, not the next packages.txt line" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'zsh\ntmux\n' > "$pdir/packages.txt"
+
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+    stub_command dpkg '
+        pkg="$2"
+        count_file="$TEST_TMP/dpkg_calls_${pkg}"
+        count=0
+        [[ -f "$count_file" ]] && count=$(cat "$count_file")
+        count=$((count + 1))
+        echo "$count" > "$count_file"
+        if [[ "$pkg" == "zsh" ]]; then
+            [[ "$count" -ge 2 ]] && exit 0 || exit 1
+        fi
+        exit 0
+    '
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/profile.sh'
+        glb_apply_profile_packages '$pdir' <<< ''
+    "
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Confirmed installed after manual step: zsh"* ]]
+    [[ "$output" == *"Already installed: tmux"* ]]
+}
+
 # --- dotfiles symlinking ---------------------------------------------------
 
 @test "symlinks a flat dotfile into HOME" {
