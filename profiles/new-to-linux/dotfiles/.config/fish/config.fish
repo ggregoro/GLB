@@ -179,7 +179,18 @@ end
 function fish_right_prompt
     if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 5000
         set_color yellow
-        printf '%ss' (math -s2 $CMD_DURATION / 1000)
+        set -l total_seconds (math -s0 "$CMD_DURATION / 1000")
+        set -l hours (math -s0 "$total_seconds / 3600")
+        set -l minutes (math -s0 "($total_seconds % 3600) / 60")
+        set -l seconds (math -s0 "$total_seconds % 60")
+
+        if test $hours -gt 0
+            printf '%sh%sm%ss' $hours $minutes $seconds
+        else if test $minutes -gt 0
+            printf '%sm%ss' $minutes $seconds
+        else
+            printf '%ss' $seconds
+        end
         set_color normal
     end
 end
