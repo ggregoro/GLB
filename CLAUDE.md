@@ -124,7 +124,35 @@ branches on it.
   `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
   report back distro name + specific errors (package not found, or
   installed under a different binary name like `bat`/`batcat`) so they
-  can be turned into override entries.
+  can be turned into override entries. Fedora and CachyOS are now done
+  (both clean); **openSUSE (zypper) is the only priority distro still
+  untested.**
+  - **Fedora 44 (dnf) result (2026-08-05, tested via Claude Code on a
+    Fedora Workstation test VM, confirmed a throwaway machine — not a
+    real install):** `glb info` detected `dnf` correctly. This was an
+    *existing* VM, so most of `packages.txt` was already present:
+    `git`, `fish`, `tmux`, `curl`, `ripgrep`, `fzf`, `eza`, `bat`,
+    `zoxide`, `ranger`, `fastfetch` were all already installed. `zsh`
+    and `neovim` were missing, so this test did cover real fresh-install
+    signal for those two. **No dnf `_GLB_PACKAGE_OVERRIDES` gaps
+    found** — every package name in `packages.txt` matches the real dnf
+    package name, confirmed via `dnf info`'s "From repository" field to
+    come from the official `fedora`/`updates` repos specifically (not
+    the Terra/RPM Fusion/COPR third-party repos this VM happened to have
+    enabled — important since a fresh Fedora install wouldn't have
+    those). As with CachyOS, the sandboxed Claude Code shell has no TTY
+    for the sudo password prompt, so `sudo dnf install -y zsh neovim`
+    couldn't be run end-to-end from within the session — Greg ran it
+    directly in a real terminal on the VM instead, and both installed
+    cleanly (`zsh-5.9-21.fc44`, `neovim-0.12.4-3.fc44`, verified via
+    `rpm -q` and `command -v zsh nvim`). Dotfiles + plugin restore path
+    also passed cleanly: `~/.bashrc`, `~/.config/fish/config.fish`,
+    `~/.config/starship.toml` were correctly backed up to
+    `*.glb-backup` and all 7 dotfiles symlinked (including
+    `.config/ranger/rc.conf` and `.config/wezterm/wezterm.lua`);
+    Starship (already present) plus both zsh plugins installed fine.
+    **`packages.txt` is fully covered on dnf/Fedora with zero overrides
+    needed**, same conclusion as pacman/CachyOS.
   - **CachyOS (pacman) result (2026-08-05, tested via Claude Code in a
     sandboxed shell on a CachyOS test VM):** `glb info` detected `pacman`
     correctly. This was an *existing* VM (not fresh), so most of
