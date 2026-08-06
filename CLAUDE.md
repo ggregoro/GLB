@@ -163,7 +163,9 @@ branches on it.
     `packages.txt` was already installed and the test mostly confirms
     the dotfiles/plugin path rather than fresh-repo package availability:
     `git`, `zsh`, `fish`, `curl`, `ripgrep`, `fzf`, `eza`, `bat`,
-    `zoxide`, `fastfetch` were all already present. **No pacman
+    `zoxide`, `fastfetch`, `ranger` were all already present (ranger's
+    presence here is in fact what prompted adding it to `packages.txt`
+    — see the ranger bullet below). **No pacman
     `_GLB_PACKAGE_OVERRIDES` gaps found** — none of the tested names
     needed a pacman-specific override. `tmux` and `neovim` were not yet
     installed; both are valid, unambiguous pacman package names (no
