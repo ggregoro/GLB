@@ -115,6 +115,44 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`profiles/new-to-linux` built (2026-08-06):** the first profile
+  beyond `default`, picked as the next multi-profile step since
+  `docs/ROADMAP.md` flags it as highest-leverage — a different value
+  prop from the rest of GLB ("here's what's good" vs. "restore my exact
+  setup") for someone switching from Windows/macOS. Confirmed with
+  Greg: Firefox (browser), **Fresh** (`getfresh.dev` — a Rust terminal
+  IDE, GPL-2.0) for code editor, LibreOffice, GIMP, VLC — plus the same
+  unified bash/zsh/fish + Starship + `GLB_SHELL` shell setup as
+  `default` (Greg's choice: not app-only). Fresh has no native
+  apt/dnf/pacman/zypper package (curl script/AUR/`.deb`/Flatpak/cargo/
+  npm only), so it's listed **aspirationally** in `packages.txt` — same
+  treatment as `fastfetch` in `default` — and will fail to install
+  until the "non-package-manager installs" roadmap item exists.
+  Notably `default`'s dotfiles already had unused `editbash`/
+  `editstarship` aliases checking for `fresh-editor`/`fresh` on `$PATH`
+  before this — the pick lines up with groundwork already in place.
+  Dotfiles reused from `default` as-is (`.bashrc`, `.zshrc`,
+  `.config/fish/config.fish`, `.config/starship.toml`) but *excluding*
+  `.gitconfig` (Greg's personal git identity — wrong to ship to someone
+  else's restore) and `ranger`/WezTerm config (paired with packages not
+  in this profile). Added two `_GLB_PACKAGE_OVERRIDES` entries in
+  `lib/package.sh`: `firefox:zypper` → `MozillaFirefox`,
+  `libreoffice:pacman` → `libreoffice-fresh` — both well-known distro
+  conventions but **unverified empirically** (unlike every other
+  override, which was confirmed via real per-distro testing); flag for
+  verification next time a zypper or pacman restore is tested.
+  - **Discovered, not fixed:** while copying `default`'s dotfiles,
+    found the `update`/`install`/`remove`/`search` aliases in all three
+    shells (`.bashrc`, `.zshrc`, `config.fish`) are hardcoded to `apt`
+    (comment header even says "Pop!_OS / Ubuntu / Debian") with no
+    dnf/pacman/zypper branch — a pre-existing gap in `default`, already
+    shipped as-is to the Fedora/CachyOS/openSUSE test VMs during
+    cross-distro testing (which checked package installs and symlinks,
+    never exercised these aliases). Copying the files verbatim means
+    `new-to-linux` now carries the same gap. Not fixed here since it
+    touches `default`'s already-working dotfiles beyond what this task
+    asked for — pick up separately if it should be made
+    package-manager-aware.
 - **New roadmap item (agreed 2026-08-06): pause/resume for sudo-gated
   installs.** Across every distro tested in cross-distro testing, at
   least one package needed a manual `sudo install` because the testing

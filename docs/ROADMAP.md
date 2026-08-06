@@ -58,10 +58,16 @@ Introduce workstation profiles.
 ### Planned
 
 - Greg's Recommended ⭐
-- New to Linux — curated picks for people switching from Windows/macOS who
-  don't yet know the Linux-native equivalents of the software they're used
-  to (one solid choice per category: browser, code editor, office suite,
-  image editing, media player, etc.), rather than a wall of options
+- **New to Linux ✅ (2026-08-06)** — curated picks for people switching
+  from Windows/macOS who don't yet know the Linux-native equivalents of
+  the software they're used to (one solid choice per category, rather
+  than a wall of options), built as `profiles/new-to-linux`: Firefox
+  (browser), Fresh (code editor — aspirational, no package-manager
+  install path yet, see below), LibreOffice (office suite), GIMP (image
+  editing), VLC (media player) — plus the same unified bash/zsh/fish +
+  Starship shell setup as the `default` profile, minus Greg-specific
+  bits (`.gitconfig`, ranger, WezTerm) that don't fit this profile's
+  scope.
 - Minimal
 - Developer
 - Server

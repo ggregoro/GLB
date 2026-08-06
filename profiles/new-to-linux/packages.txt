@@ -1,0 +1,38 @@
+# GLB profile: new-to-linux
+#
+# Curated picks for someone switching from Windows/macOS who doesn't yet
+# know the Linux-native software they're used to — one solid choice per
+# category, not a menu of options. See docs/ROADMAP.md (Version 0.3)
+# for the reasoning.
+#
+# Package names are resolved per-distro before being passed to your
+# package manager (apt/dnf/pacman/zypper). See _GLB_PACKAGE_OVERRIDES
+# in lib/package.sh for the few that aren't the same everywhere.
+
+# Shell/prompt foundation — same unified bash/zsh/fish + Starship setup
+# as the default profile (see dotfiles/). git/curl are needed for the
+# Starship + zsh-plugin install steps glb_apply_profile always runs;
+# fzf/eza/bat/zoxide are referenced directly by the shell aliases.
+git
+curl
+zsh
+fish
+fzf
+eza
+bat
+zoxide
+
+# Everyday desktop apps — one solid choice per category
+firefox
+gimp
+libreoffice
+vlc
+
+# Code editor — not yet in any distro's default apt/dnf/pacman/zypper
+# index (installed via curl script/AUR/.deb/Flatpak/cargo/npm upstream:
+# getfresh.dev). Kept here aspirationally, like fastfetch in the
+# default profile, until GLB gets a non-package-manager install
+# mechanism (see docs/ROADMAP.md). The default profile's dotfiles
+# already wire up editbash/editstarship aliases that look for this on
+# $PATH.
+fresh

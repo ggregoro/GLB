@@ -1,0 +1,39 @@
+add_newline = false
+command_timeout = 1000
+
+format = """
+${env_var.GLB_SHELL}\
+$directory\
+$git_branch\
+$git_status\
+$fill\
+$cmd_duration
+$character"""
+
+[character]
+success_symbol = "[❯](bold green)"
+error_symbol = "[❯](bold red)"
+vimcmd_symbol = "[❮](bold yellow)"
+
+[directory]
+truncation_length = 3
+truncate_to_repo = false
+read_only = " 🔒"
+
+[cmd_duration]
+min_time = 5000
+format = "[$duration](yellow)"
+
+[git_branch]
+symbol = " "
+
+[git_status]
+style = "red"
+
+[fill]
+symbol = " "
+
+[env_var.GLB_SHELL]
+variable = "GLB_SHELL"
+style = "bold cyan"
+format = "[$env_value]($style) "
