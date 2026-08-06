@@ -112,6 +112,13 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Next priority (agreed 2026-08-06, after cross-distro testing wrapped
+  up): multi-profile support.** Greg agreed this is the next area of
+  focus — see the "Support multiple named profiles" bullet further down
+  for the reasoning (it's the prerequisite for the "New to Linux"
+  profile, called out there as probably the highest-leverage way to
+  make GLB useful to people beyond Greg). Not started yet as of this
+  note — pick up here.
 - **Done (2026-08-05 to 2026-08-06): Greg cross-distro tested `glb
   restore default` on his ~10 VirtualBox VMs, then personally reviewed
   the full terminal output and signed off — "we're good to go."** All
