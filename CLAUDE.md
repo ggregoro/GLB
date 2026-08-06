@@ -21,6 +21,9 @@ reasonably clean and documented, not just "works on my machine."
 
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
+- Debian 13 machine, linked to GitHub, `glb restore default` run for real
+  here on 2026-08-06 (see Roadmap section) — a second real daily-driver
+  machine alongside the Dell laptop, not just a test VM
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -353,3 +356,15 @@ branches on it.
   test suite) that the laptop session only found out about when a push
   was rejected. Don't assume you have the full picture from this file
   alone if it's been a while since the last pull on this machine.
+- **Handoff to the Dell laptop session (2026-08-06):** Greg just ran
+  `glb restore default` for real on the Debian machine (see "Debian
+  (apt) result" in Roadmap above) and pushed the result — commit
+  `b36c5f2` is the latest on `origin/main` as of this note. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming the laptop
+  is caught up; it was ~24 commits behind at one point earlier this week
+  and there's no guarantee it's been synced since. Cross-distro testing
+  is now fully done (apt/dnf/pacman/zypper, five machines total) — **the
+  agreed next step is multi-profile support** (see the "Next priority"
+  bullet at the top of Roadmap and the "Support multiple named profiles"
+  bullet further down for the full reasoning). Nothing has been started
+  on it yet; that's the right place to pick up.
