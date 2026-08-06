@@ -1,0 +1,25 @@
+#compdef glb
+#
+# Zsh completion for glb. Installed by `glb restore` (see
+# lib/completions.sh) as a symlink into
+# ~/.local/share/zsh/completions/_glb, which .zshrc adds to fpath
+# before calling compinit.
+
+local -a commands profiles
+
+commands=(help version info install remove update restore profiles prompt)
+
+if (( CURRENT == 2 )); then
+    compadd -a commands
+    return
+fi
+
+if [[ "${words[2]}" == "restore" ]]; then
+    # Every glb invocation prints a banner first, so pick out only
+    # lines that are a single indented token (how glb_list_profiles
+    # formats each profile name) rather than assuming a fixed number
+    # of header lines to skip.
+    profiles=(${(f)"$(glb profiles 2>/dev/null | awk 'NF==1 && /^[[:space:]]/ {print \$1}')"})
+    compadd -a profiles
+    compadd -- --undo --dry-run
+fi

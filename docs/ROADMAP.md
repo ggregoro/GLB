@@ -140,6 +140,18 @@ Improve the installation experience.
   (still defaults to `default` for direct/scripted callers); only the
   dispatcher routes a truly-empty profile argument to the picker. See
   CLAUDE.md.
+- **Shell completions for `glb` itself (2026-08-06).** New
+  `completions/` directory (`glb.bash`, `_glb` for zsh, `glb.fish`)
+  plus `lib/completions.sh`, called from `glb_apply_profile` like the
+  other install steps: symlinks `glb` itself into `~/.local/bin` (a
+  prerequisite this didn't have before — nothing previously put `glb`
+  on `PATH`) and each shell's completion file into its standard
+  auto-loaded location. `.bashrc`/`.zshrc` (both profiles) gained a
+  `~/.local/bin` `PATH` export; `.zshrc` also gained `fpath`+`compinit`
+  since zsh had no completion system initialized at all before this.
+  `bash-completion` added to both profiles' `packages.txt`. See
+  CLAUDE.md — including a real `GLB_ROOT` symlink-resolution bug this
+  surfaced and fixed.
 
 ### Planned
 
@@ -147,10 +159,6 @@ Improve the installation experience.
 - Guided configuration wizard
 - Configuration summary
 - Progress reporting
-- **Shell completions for `glb` itself — agreed priority (2026-08-06),
-  not on the original list.** bash/zsh/fish completion for `glb
-  <TAB>` — small effort, standard polish expected of a finished CLI
-  tool. See CLAUDE.md.
 
 ---
 

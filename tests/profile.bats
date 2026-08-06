@@ -11,6 +11,7 @@ setup() {
     source "$GLB_ROOT/lib/logging.sh"
     source "$GLB_ROOT/lib/utils.sh"
     source "$GLB_ROOT/lib/extras.sh"
+    source "$GLB_ROOT/lib/completions.sh"
     source "$GLB_ROOT/lib/profile.sh"
 
     INSTALL_LOG="$TEST_TMP/installed.log"

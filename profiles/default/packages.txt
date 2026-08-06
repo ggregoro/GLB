@@ -23,6 +23,7 @@ zoxide
 ranger
 htop
 flatpak    # needed for the wezterm extras.txt entry below
+bash-completion    # loads glb's completion file - see lib/completions.sh
 
 # Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
 # setup) — may need a PPA or manual install. No known curl-install

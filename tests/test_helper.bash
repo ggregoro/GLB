@@ -17,6 +17,7 @@ glb_setup_sandbox() {
     cp "$GLB_REPO_ROOT/glb" "$GLB_ROOT/glb"
     cp "$GLB_REPO_ROOT/VERSION" "$GLB_ROOT/VERSION"
     cp -r "$GLB_REPO_ROOT/lib" "$GLB_ROOT/lib"
+    cp -r "$GLB_REPO_ROOT/completions" "$GLB_ROOT/completions"
     mkdir -p "$GLB_ROOT/profiles"
 
     STUB_BIN="$TEST_TMP/bin"

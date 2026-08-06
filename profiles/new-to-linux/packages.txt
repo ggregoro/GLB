@@ -21,6 +21,7 @@ fzf
 eza
 bat
 zoxide
+bash-completion    # loads glb's completion file - see lib/completions.sh
 
 # Everyday desktop apps — one solid choice per category
 firefox

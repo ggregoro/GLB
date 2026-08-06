@@ -32,10 +32,12 @@ branches on it.
 ## Current state (as of 2026-08-05)
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
-  `update`, `restore [profile]`, `profiles`, `prompt`.
+  `update`, `restore [profile] [--undo|--dry-run]` (no profile name
+  shows an interactive picker), `profiles`, `prompt`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
-  `lib/detect.sh`, `lib/package.sh`, `lib/profile.sh`, `lib/prompt.sh`,
-  `lib/plugins.sh` — all sourced by the `glb` dispatcher.
+  `lib/detect.sh`, `lib/package.sh`, `lib/extras.sh`, `lib/profile.sh`,
+  `lib/prompt.sh`, `lib/plugins.sh`, `lib/completions.sh` — all sourced
+  by the `glb` dispatcher.
 - `profiles/default/` is now Greg's real setup, not a placeholder, and
   **`glb restore default` has been run for real on this laptop** — Oh My
   Zsh + Powerlevel10k are no longer active (backed up to `~/.zshrc
@@ -282,8 +284,72 @@ branches on it.
     work (sudo/apt/dpkg/flatpak/starship/curl/sh/git all exit 1),
     against the real `default`/`new-to-linux` profiles: menu renders
     correctly, dry-run preview of the chosen profile works, invalid
-    choice errors without crashing. **Next up: item 4, shell
-    completions.**
+    choice errors without crashing.
+  - **Item 4 done (2026-08-06): shell completions built and tested —
+    all four session-wrap-up priorities now complete.** New
+    `completions/` directory at repo root (not per-profile, since
+    completions are a property of `glb` itself): `glb.bash`, `_glb`
+    (zsh), `glb.fish`. New `lib/completions.sh` with
+    `glb_install_self_symlink` and `glb_install_completions`, both
+    wired into `glb_apply_profile` alongside the existing
+    starship/zsh-plugins steps (dry-run included, via the same shared
+    `_glb_link_with_backup` helper both functions use).
+    - **Real prerequisite this exposed: nothing previously put `glb`
+      on `PATH`.** Confirmed with Greg before building
+      (`AskUserQuestion`) rather than assuming — he chose to add it.
+      `glb_install_self_symlink` symlinks the repo's `glb` script into
+      `~/.local/bin/glb`; `.bashrc`/`.zshrc` (both profiles now, not
+      just `default`) gained a `~/.local/bin` `PATH` export to match
+      what `config.fish` already had via `fish_add_path`.
+    - **zsh had no completion system initialized at all** (no
+      `compinit` anywhere — Oh My Zsh used to handle this, nothing
+      replaced it when it was removed). Added `fpath`+`compinit` to
+      `.zshrc` (both profiles), pointing `fpath` at
+      `~/.local/share/zsh/completions` where the `_glb` file gets
+      symlinked.
+    - `bash-completion` added to both profiles' `packages.txt` — the
+      dotfiles already conditionally sourced it, but nothing had
+      guaranteed it was actually installed.
+    - **Two real bugs found and fixed via end-to-end testing, not
+      caught by the unit tests alone:**
+      1. `GLB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"`
+         (`glb`, top of file) doesn't resolve symlinks —
+         `${BASH_SOURCE[0]}` when invoked via the new
+         `~/.local/bin/glb` symlink is the symlink's own path, so
+         `GLB_ROOT` resolved to `~/.local/bin` instead of the real
+         repo, breaking every `source "$GLB_ROOT/lib/*.sh"` call.
+         Fixed with `readlink -f` before `dirname`. Found by actually
+         restoring in a sandbox, adding the symlink to `PATH`, and
+         running `glb version` through it — not something a unit test
+         sourcing `lib/*.sh` directly would ever exercise.
+      2. The bash/zsh completion scripts' dynamic profile-name lookup
+         parsed `glb profiles` output with `awk 'NR>3 && NF'`, assuming
+         a fixed number of header lines to skip — but every `glb`
+         invocation prints a 6-line banner first
+         (`glb_show_banner`/`lib/banner.sh`), so real output actually
+         had banner text (`"Version ============"`, etc.) leaking into
+         the completion candidates. Fixed by matching structurally
+         instead of counting lines: `awk 'NF==1 && /^[[:space:]]/'`
+         picks out only single-token indented lines (exactly how
+         `glb_list_profiles` formats each name), which no banner or
+         header line matches regardless of how long the banner ever
+         gets. Fish's completion used a regex (`^\s+(\S+)$`) that was
+         already structurally correct from the start — only bash/zsh's
+         line-counting approach was wrong. Found by literally sourcing
+         the installed completion file in a real `bash -c` and a real
+         `fish -c 'complete -C...'` and checking the actual candidate
+         list, not just a syntax check.
+    - 9 new bats tests in `tests/completions.bats` (self-symlink and
+      completions: fresh install, already-linked, backup-existing,
+      dry-run for both, permission-failure reporting) plus updated
+      `tests/test_helper.bash` to copy the new `completions/`
+      directory into the sandbox; 111 total passing.
+    - Deliberately did **not** resync `new-to-linux`'s still-old
+      unified-prompt dotfiles (the `GLB_SHELL`/starship-for-bash setup
+      predating this session's prompt differentiation work, flagged
+      but left alone at the time) — only added the `PATH`/`compinit`
+      lines it needs for completions to function, nothing else, to
+      stay scoped to what was actually asked for this round.
   - **Considered and deliberately rejected** as over-complicating GLB
     for its actual scope: templating (different values per machine),
     encrypted secrets, a plugin system — the kind of thing chezmoi/

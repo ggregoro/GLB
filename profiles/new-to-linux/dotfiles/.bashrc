@@ -46,6 +46,11 @@ if ! shopt -oq posix; then
 fi
 
 # ------------------------------------------------------------
+# User binaries (glb itself lives here - see lib/completions.sh)
+# ------------------------------------------------------------
+export PATH="$HOME/.local/bin:$PATH"
+
+# ------------------------------------------------------------
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then

@@ -15,6 +15,20 @@ setopt INC_APPEND_HISTORY
 setopt SHARE_HISTORY
 
 # ------------------------------------------------------------
+# User binaries (glb itself lives here - see lib/completions.sh)
+# ------------------------------------------------------------
+export PATH="$HOME/.local/bin:$PATH"
+
+# ------------------------------------------------------------
+# Completions (zsh has no completion system on its own -- Oh My Zsh
+# used to init this too; glb's own completion lives in the fpath dir
+# below, see lib/completions.sh)
+# ------------------------------------------------------------
+fpath=("$HOME/.local/share/zsh/completions" $fpath)
+autoload -Uz compinit
+compinit
+
+# ------------------------------------------------------------
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then

@@ -5,8 +5,9 @@
 # Main Program
 # ============================================================
 
-# Project root directory
-GLB_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+# Project root directory (resolve symlinks - glb is meant to be run via
+# a symlink at ~/.local/bin/glb, see lib/completions.sh)
+GLB_ROOT="$(cd "$(dirname "$(readlink -f "${BASH_SOURCE[0]}")")" && pwd)"
 
 # Read version
 GLB_VERSION="$(<"$GLB_ROOT/VERSION")"
@@ -21,6 +22,7 @@ source "$GLB_ROOT/lib/extras.sh"
 source "$GLB_ROOT/lib/profile.sh"
 source "$GLB_ROOT/lib/prompt.sh"
 source "$GLB_ROOT/lib/plugins.sh"
+source "$GLB_ROOT/lib/completions.sh"
 
 # ------------------------------------------------------------
 # Display help

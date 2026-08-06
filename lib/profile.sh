@@ -210,6 +210,8 @@ glb_apply_profile() {
     glb_apply_profile_extras "$profile_dir" "$dry_run" || status=1
     glb_install_starship "$dry_run" || status=1
     glb_install_zsh_plugins "$dry_run" || status=1
+    glb_install_self_symlink "$dry_run" || status=1
+    glb_install_completions "$dry_run" || status=1
     glb_apply_profile_dotfiles "$profile_dir" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then
