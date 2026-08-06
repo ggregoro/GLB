@@ -344,12 +344,35 @@ branches on it.
       dry-run for both, permission-failure reporting) plus updated
       `tests/test_helper.bash` to copy the new `completions/`
       directory into the sandbox; 111 total passing.
-    - Deliberately did **not** resync `new-to-linux`'s still-old
-      unified-prompt dotfiles (the `GLB_SHELL`/starship-for-bash setup
-      predating this session's prompt differentiation work, flagged
-      but left alone at the time) — only added the `PATH`/`compinit`
-      lines it needs for completions to function, nothing else, to
-      stay scoped to what was actually asked for this round.
+    - At the time, deliberately did **not** resync `new-to-linux`'s
+      still-old unified-prompt dotfiles (the `GLB_SHELL`/starship-for-
+      bash setup predating this session's prompt differentiation work)
+      — only added the `PATH`/`compinit` lines needed for completions,
+      to stay scoped to what was actually asked for that round.
+      **Resynced right after, as an explicit follow-up (2026-08-06):**
+      Greg asked for recommended next steps once all four priorities
+      landed; this was the top pick — a small, already-scoped, already-
+      tested gap versus the other open items (per-distro override
+      verification needs real hardware Greg would have to run; the
+      Developer/Server profiles need a design decision made first; the
+      rest of Version 0.5/0.6 aren't concretely scoped yet). Since
+      `.bashrc`/`.zshrc`/`config.fish`/`starship.toml` are meant to be
+      byte-for-byte the same "standard" shell/prompt setup regardless
+      of profile (no `new-to-linux`-specific customization in any of
+      them — confirmed via `diff` before touching anything, the only
+      differences were the stale prompt sections plus the dead
+      `editstarship`/`editconfig` aliases), copied all four files from
+      `default` over `new-to-linux` wholesale rather than hand-patching
+      — simpler and less error-prone than re-deriving the same edits.
+      All 111 bats tests still pass unchanged (none assert
+      profile-specific prompt content). Verified end-to-end in the
+      same fully-stubbed sandbox pattern: real `new-to-linux` restore,
+      `--dry-run` and for-real, confirms all four dotfiles link
+      correctly and zero `GLB_SHELL` references remain anywhere.
+      `new-to-linux` and `default` now share the exact same shell/
+      prompt setup, matching how `new-to-linux` was originally
+      described when built ("same unified bash/zsh/fish + Starship
+      setup as the default profile").
   - **Considered and deliberately rejected** as over-complicating GLB
     for its actual scope: templating (different values per machine),
     encrypted secrets, a plugin system — the kind of thing chezmoi/
