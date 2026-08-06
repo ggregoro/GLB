@@ -141,18 +141,20 @@ branches on it.
   conventions but **unverified empirically** (unlike every other
   override, which was confirmed via real per-distro testing); flag for
   verification next time a zypper or pacman restore is tested.
-  - **Discovered, not fixed:** while copying `default`'s dotfiles,
-    found the `update`/`install`/`remove`/`search` aliases in all three
-    shells (`.bashrc`, `.zshrc`, `config.fish`) are hardcoded to `apt`
-    (comment header even says "Pop!_OS / Ubuntu / Debian") with no
-    dnf/pacman/zypper branch — a pre-existing gap in `default`, already
-    shipped as-is to the Fedora/CachyOS/openSUSE test VMs during
-    cross-distro testing (which checked package installs and symlinks,
-    never exercised these aliases). Copying the files verbatim means
-    `new-to-linux` now carries the same gap. Not fixed here since it
-    touches `default`'s already-working dotfiles beyond what this task
-    asked for — pick up separately if it should be made
-    package-manager-aware.
+  - **Fixed (2026-08-06):** the `update`/`install`/`remove`/`search`
+    aliases in all three shells (`.bashrc`, `.zshrc`, `config.fish`)
+    were hardcoded to `apt` (comment header even said "Pop!_OS / Ubuntu
+    / Debian") with no dnf/pacman/zypper branch — a pre-existing gap in
+    `default`, already shipped as-is to the Fedora/CachyOS/openSUSE
+    test VMs during cross-distro testing (which checked package
+    installs and symlinks, never exercised these aliases), and
+    duplicated into `new-to-linux` when that profile was built. Now
+    auto-detects apt/dnf/pacman/zypper via `command -v`/`command -q`
+    (same detection order as `lib/package.sh`) in all three shells and
+    both profiles. Verified apt still resolves correctly post-fix on
+    this machine (bash, zsh, fish) — behavior on dnf/pacman/zypper
+    machines not yet re-verified live, same "confirm empirically" caveat
+    as the new `firefox`/`libreoffice` overrides above.
 - **New roadmap item (agreed 2026-08-06): pause/resume for sudo-gated
   installs.** Across every distro tested in cross-distro testing, at
   least one package needed a manual `sudo install` because the testing
