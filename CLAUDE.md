@@ -112,24 +112,29 @@ branches on it.
 
 ## Roadmap / in progress
 
-- **In progress (2026-08-05): Greg is cross-distro testing `glb restore
-  default` on his ~10 VirtualBox VMs** — Fedora (dnf), openSUSE (zypper),
-  and CachyOS (pacman) are the priority ones (Mint is apt-based, lowest
-  priority — already validated on Pop!_OS/Zorin). Testing both existing
-  VMs (may already have some tools manually installed, masking gaps) and
-  fresh installs (the real signal — whether `packages.txt`'s tools are
-  actually available via each distro's default repos). Goal: find real
-  gaps in `_GLB_PACKAGE_OVERRIDES` (`lib/package.sh`) — currently only
-  has one entry (`fd` → `fd-find` on apt) — for `eza`, `bat`, `zoxide`,
-  `fastfetch`, `fish`, etc. across dnf/pacman/zypper. Waiting on Greg to
-  report back distro name + specific errors (package not found, or
-  installed under a different binary name like `bat`/`batcat`) so they
-  can be turned into override entries. **Fedora, CachyOS, and openSUSE
-  are all done, fully confirmed end-to-end, and all three came back
-  clean** — every priority distro has zero `_GLB_PACKAGE_OVERRIDES`
-  gaps. Only Mint remains, and it's apt-based/lowest-priority (already
-  validated via Pop!_OS/Zorin), so **this cross-distro testing effort
-  is complete.**
+- **Done (2026-08-05 to 2026-08-06): Greg cross-distro tested `glb
+  restore default` on his ~10 VirtualBox VMs, then personally reviewed
+  the full terminal output and signed off — "we're good to go."** All
+  four GLB-supported package managers are now confirmed clean
+  end-to-end: apt (Debian-family — Pop!_OS/Zorin, previously
+  validated), dnf (Fedora), pacman (Arch-family — CachyOS), and zypper
+  (openSUSE). Tested both existing VMs (may already have some tools
+  manually installed, masking gaps) and fresh-install signal (missing
+  tools that genuinely needed installing). Goal was finding real gaps
+  in `_GLB_PACKAGE_OVERRIDES` (`lib/package.sh`) — which started with
+  only one entry (`fd` → `fd-find` on apt) — for `eza`, `bat`,
+  `zoxide`, `fastfetch`, `fish`, etc. across dnf/pacman/zypper.
+  **Zero gaps found on any of them** — every name in
+  `profiles/default/packages.txt` matches the real package name on
+  every tested distro/package manager. The only recurring friction was
+  sudo-gated installs (`zsh`/`neovim` on Fedora, `tmux`/`neovim` on
+  CachyOS, `tmux`/`neovim`/`ripgrep` on openSUSE) that Greg had to run
+  manually in a real terminal, since the sandboxed Claude Code shell
+  has no TTY for a sudo password prompt — an environment limitation of
+  testing this way, not a GLB bug. Mint (apt-based, lowest priority)
+  was never separately tested but didn't need to be — apt was already
+  validated via Pop!_OS/Zorin. Full per-distro results below.
+  **This cross-distro testing effort is complete.**
   - **Fedora 44 (dnf) result (2026-08-05, tested via Claude Code on a
     Fedora Workstation test VM, confirmed a throwaway machine — not a
     real install):** `glb info` detected `dnf` correctly. This was an
