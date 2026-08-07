@@ -65,7 +65,7 @@ branches on it.
   <name>]` (no profile name shows a guided picker — descriptions, an
   automatic `--dry-run` preview, then a confirm prompt before applying;
   `--dry-run` explicitly passed skips the confirm and just previews),
-  `profiles`, `prompt`, `export`, `diff <a> <b>`.
+  `profiles`, `prompt`, `export`, `diff <a> <b>`, `repair <profile>`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
   `lib/detect.sh`, `lib/package.sh`, `lib/extras.sh`, `lib/profile.sh`,
   `lib/export.sh`, `lib/diff.sh`, `lib/prompt.sh`, `lib/plugins.sh`,
@@ -197,6 +197,78 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`glb repair` built (2026-08-07, openSUSE VM, same session as the
+  scoping below) — closes out "repairing existing installations."**
+  Followed `docs/design/repair.md`'s plan exactly, built right after
+  writing it.
+  - New `lib/repair.sh`: `glb_repair <profile>` — `mktemp -d`s an
+    ephemeral directory, calls `glb_export_packages`/
+    `glb_export_dotfiles` (`lib/export.sh`) against it directly (not
+    the full `glb_export_snapshot`, since `shell.txt`/`metadata.yaml`
+    aren't needed and nothing should be saved to disk), then calls
+    `lib/diff.sh`'s own internal `_glb_diff_packages`/
+    `_glb_diff_dotfiles` directly against (ephemeral dir, "current
+    state") vs. (the profile's real directory, the profile name) —
+    deliberately reusing another module's `_glb_`-prefixed "private"
+    helpers directly, the same kind of cross-module reuse
+    `glb_apply_snapshot` (`lib/export.sh`) already does with
+    `lib/profile.sh`'s functions. The ephemeral directory is `rm -rf`'d
+    unconditionally before returning, whichever path is taken. No
+    drift → logs healthy, exit 0. Drift → prints the same-shaped report
+    `glb diff` produces, then asks "Re-run 'glb restore <profile>' now
+    to fix this?" (same confirm-prompt pattern as the guided wizard);
+    confirming calls the real `glb_apply_profile <profile>` and returns
+    its status, declining or no input leaves the machine untouched and
+    returns 1.
+  - Wired into the dispatcher as `repair <profile>`.
+  - 8 new bats tests in `tests/repair.bats` (missing/unknown profile,
+    clean report, drift-then-confirm actually installing for real,
+    decline, no-input, ephemeral-directory cleanup verified by stubbing
+    `mktemp` to a known path and confirming it's gone afterward, and a
+    changed-dotfile-detection case) plus 3 new dispatcher end-to-end
+    tests (`tests/dispatcher.bats`, real `default` profile: finds real
+    drift and fixes it once confirmed, declines cleanly, unknown
+    profile). 182/186 total pass — same 4 pre-existing `fresh`-on-PATH
+    failures, unrelated. One real bug caught by the dispatcher-level
+    test that a smaller unit test wouldn't have: the first version of
+    that test only stubbed `starship`/`git`/`apt-mark`, and applying
+    the real `default` profile for real also needs
+    `curl`/`sh`/`flatpak`/`unzip`/`fc-cache` stubbed (its `extras.txt`
+    entries) — copied the same full stub set the existing "glb restore
+    applies the real default profile" test already used.
+  - **Real, for-real verification, not just bats:** ran `./glb repair
+    default` on this VM for real, declining the fix. Output was
+    accurate and consistent with this session's earlier `glb
+    export`/`glb diff` verifications against this same profile (same
+    zypper base-package noise, same `default`-only packages missing
+    since this VM was actually restored with `new-to-linux`, not
+    `default`) — confirmed no snapshot directory and no other on-disk
+    trace was left behind after the ephemeral check ran.
+- **"Repairing existing installations" scoped (2026-08-07, openSUSE
+  VM), not yet built.** Reviewed what already exists before assuming
+  anything new was needed: `glb restore <profile>` is already fully
+  idempotent (documented repeatedly across this file's own Roadmap
+  entries — a second restore always comes back clean, reinstalling
+  whatever's missing), so the obvious "something broke, fix it"
+  scenario is already solved. Confirmed via `AskUserQuestion` which of
+  two real remaining gaps to target: a one-shot check-then-fix
+  convenience command (chosen) versus deepening the installed-checks
+  themselves to catch real corruption (deliberately deferred — concrete
+  known example: `glb_install_zsh_plugins`, `lib/plugins.sh`, only
+  checks `[[ -d "$dest" ]]`, so a directory left behind by an
+  interrupted `git clone` would be reported "already installed"
+  forever; not worth auditing every check pre-emptively when this is
+  the only known instance). Wrote `docs/design/repair.md`: `glb repair
+  <profile>` would do an ephemeral export (packages + dotfiles only,
+  reusing `glb_export_packages`/`glb_export_dotfiles` directly, no
+  snapshot saved to disk) diffed against the profile (reusing
+  `lib/diff.sh`'s internal `_glb_diff_packages`/`_glb_diff_dotfiles`
+  directly, bypassing name-based snapshot/profile resolution since real
+  paths are already in hand), then offers to re-run `glb restore` if
+  drift is found — reusing the same confirm-prompt pattern just built
+  for the guided wizard. No new detection mechanism, entirely built
+  from pieces that already existed by the end of this session. Docs
+  only, no code changed this round.
 - **Guided configuration wizard built (2026-08-07, openSUSE VM) —
   closes out the last four Version 0.5 bullets.** Followed the
   scoping this same session already locked down in
@@ -911,16 +983,13 @@ branches on it.
      manifests, configuration export/import, repairing existing
      installations, updating installed components.**
      `docs/design/state-export-import.md`'s configuration export/import
-     plan is now **fully done (2026-08-07, openSUSE VM)** — `glb
-     export`, `glb diff`, and `glb restore --from-snapshot <name>`, all
-     three built and verified for real in one session. See the three
-     Roadmap entries above for the full build, including a real zypper
-     manual-vs-dependency limitation, a real scope gap
-     (extras.txt-installed packages aren't reverse-mapped yet), and a
-     real end-to-end verification chaining all three commands together.
-     Installation manifests, repairing existing installations, and
-     updating installed components are separate, still-unscoped pieces
-     of this same version.
+     plan is **fully done (2026-08-07, openSUSE VM)** — `glb export`,
+     `glb diff`, and `glb restore --from-snapshot <name>`. Repairing
+     existing installations is **also done (2026-08-07, same VM,
+     same session)** — `glb repair <profile>`, see
+     `docs/design/repair.md` and the Roadmap entry above. Still open,
+     genuinely unscoped: installation manifests, updating installed
+     components.
 - **Session wrap-up brainstorm, agreed as real priorities (2026-08-06),
   not yet built — pick up here next session.** End-of-session
   discussion: what would a user *other than Greg* appreciate, without
@@ -1532,12 +1601,13 @@ branches on it.
 
 - **`bats` is not installed on the openSUSE VM** (2026-08-07), same
   no-TTY-for-sudo-install limitation as every other machine — ran via
-  the same locally-cloned `bats-core` workaround. 171/175 tests pass
+  the same locally-cloned `bats-core` workaround. 182/186 tests pass
   (up from 121 after this session's new `tests/export.bats`,
-  `tests/diff.bats`, `tests/restore_snapshot.bats`, and updates to
-  `tests/profile.bats`/`tests/dispatcher.bats` for the guided wizard);
-  the 4 failures are the same pre-existing, already-documented
-  `fresh`-genuinely-on-PATH gap this VM now has from its own real
+  `tests/diff.bats`, `tests/restore_snapshot.bats`, `tests/repair.bats`,
+  and updates to `tests/profile.bats`/`tests/dispatcher.bats` for the
+  guided wizard); the 4 failures are the same pre-existing,
+  already-documented `fresh`-genuinely-on-PATH gap this VM now has from
+  its own real
   `new-to-linux` restore earlier this session (see Roadmap
   entry above), confirmed via `command -v fresh` directly.
 - `tests/` has a bats suite (`tests/detect.bats`, `package.bats`,
@@ -1584,6 +1654,27 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, still going):
+  built `glb repair`, closing out "repairing existing installations."**
+  Followed the scoping (see the entry right below this one) immediately
+  after writing it, same session. New `lib/repair.sh`, wired in as
+  `repair <profile>` — see the Roadmap entry above for the full build,
+  including a real test gap caught (the dispatcher-level `glb repair`
+  test needed the same curl/sh/flatpak/unzip/fc-cache stub set the
+  existing default-profile restore test already uses, not just
+  starship/git). 182/186 bats tests pass — same 4 pre-existing
+  failures. Verified for real on this VM (declining the fix, confirming
+  zero on-disk trace left behind). This commit changes code — confirm
+  it's pushed before assuming another machine has it.
+- **Handoff from the openSUSE VM session (2026-08-07, still going):
+  scoped "repairing existing installations," didn't build it.** Same
+  approach as the wizard scoping earlier this session: checked what
+  already exists first (restore is already idempotent), found the real
+  gap is just a one-shot check-then-fix command, confirmed the
+  direction via `AskUserQuestion`, wrote
+  `docs/design/repair.md`. Deliberately deferred a second real gap
+  (shallow zsh-plugin existence check) as a separate future item rather
+  than scope-creeping this one. Docs-only, no code changed.
 - **Handoff from the openSUSE VM session (2026-08-07, one more time):
   built the guided configuration wizard, closing out Version 0.5
   entirely.** Confirmed the design doc's one open question via

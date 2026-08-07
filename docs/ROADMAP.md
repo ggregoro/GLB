@@ -221,7 +221,20 @@ Improve reproducibility.
     limitation (no manual-vs-dependency package tracking) and a real
     scope gap (extras.txt-installed packages aren't reverse-mapped to
     their canonical name yet).
-- Repair existing installations
+- **Repair existing installations (2026-08-07).** See
+  `docs/design/repair.md`. Most "repair" scenarios turned out to
+  already be solved by `glb restore <profile>`'s existing idempotency
+  (a second restore already comes back clean, reinstalling anything
+  missing) — the real gap was just a one-shot convenience command:
+  `glb repair <profile>` does an ephemeral export + diff against the
+  profile (no snapshot saved to disk), then offers to re-run `glb
+  restore` if drift is found. Built entirely from existing pieces
+  (`glb export`'s and `glb diff`'s own internals), no new detection
+  mechanism. Deliberately deferred: deepening the installed-checks
+  themselves to catch real corruption (concrete known gap:
+  `glb_install_zsh_plugins` only checks that a directory exists, not
+  that the clone inside it is complete) — worth doing once real
+  corruption cases actually show up, not pre-emptively.
 - Update installed components
 
 ---

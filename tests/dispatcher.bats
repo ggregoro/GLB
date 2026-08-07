@@ -388,3 +388,44 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"Not found"* ]]
 }
+
+@test "glb repair finds real drift against the default profile and fixes it once confirmed" {
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 0'
+    stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'
+    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'exit 0'
+    stub_command apt-mark 'printf ""'
+
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+
+    run "$GLB_ROOT/glb" repair default <<< 'y'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Checking profile: default"* ]]
+    [[ "$output" == *"- only in default:"* ]]
+    [[ "$output" == *"Profile applied: default"* ]]
+    [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb repair leaves the machine untouched when declined" {
+    stub_command apt-mark 'printf ""'
+
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+
+    run "$GLB_ROOT/glb" repair default <<< 'n'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Cancelled; nothing changed."* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
+@test "glb repair fails cleanly for an unknown profile" {
+    run "$GLB_ROOT/glb" repair no-such-profile
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Profile not found"* ]]
+}
