@@ -46,6 +46,13 @@ reasonably clean and documented, not just "works on my machine."
   default` end-to-end but predates `new-to-linux`/`developer`/`server`.
   Revisited 2026-08-07 specifically to verify pacman-specific package
   overrides added after that original session (see Roadmap).
+- **The openSUSE Tumbleweed VM (zypper), same VM used for the original
+  zypper cross-distro testing on 2026-08-06** — not a fresh VM. That
+  original session used `glb info`/`glb restore default` end-to-end but
+  predates `new-to-linux`/`developer`/`server`. Revisited 2026-08-07
+  specifically to verify the `firefox:zypper` override on `new-to-linux`
+  (see Roadmap) — the last piece of item 1's per-distro override
+  verification.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -187,6 +194,36 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`new-to-linux`'s `firefox:zypper` override verified for real
+  (2026-08-07, openSUSE Tumbleweed VM — the same VM from the original
+  2026-08-06 zypper cross-distro test).** Closes out the last open piece
+  of item 1 — both the pacman side (CachyOS VM entry below) and the
+  zypper side are now confirmed on real hardware. `glb info` detected
+  `zypper` correctly. Ran a real `glb restore new-to-linux`:
+  - **`firefox:zypper` → `MozillaFirefox` confirmed correct** — the
+    restore reported `Already installed: firefox` on the first run, and
+    `glb_resolve_package_name "firefox" "zypper"` independently confirmed
+    it resolves to `MozillaFirefox`. `rpm -q MozillaFirefox` confirmed a
+    real installed package (`153.0.3-1.1`); `rpm -q firefox` confirmed
+    plain `firefox` isn't a package name on this system at all — so the
+    override is doing real work, not coincidentally matching a binary
+    name.
+  - **`gimp` and `fresh` both hit the same no-TTY-for-sudo limitation as
+    every other distro/profile tested** — Greg ran
+    `sudo zypper install -y gimp` and the `fresh` curl installer manually
+    in a real terminal (a WezTerm split, copy-pasted via WezTerm's
+    click-to-copy/`Ctrl+Shift+V` paste). Both confirmed installed
+    afterward (`gimp-3.2.4-3.1`, `fresh-editor-0.4.7-1` with
+    `/usr/bin/fresh` on PATH), and a second `glb restore new-to-linux`
+    came back fully clean — every line "already installed"/"already
+    linked", exit 0.
+  - `libreoffice` and `vlc` were already present on this VM going in
+    (`libreoffice-26.2.5.1-1.3`, `vlc-3.0.23-7.10`), so this run didn't
+    add fresh-install signal for those two, only for `gimp`/`fresh`.
+  - **Item 1 (verifying `new-to-linux`'s per-distro package overrides on
+    real hardware) is now fully closed** — `firefox:zypper`,
+    `libreoffice:pacman`, and `gh:pacman` are all confirmed on real
+    hardware.
 - **`new-to-linux`'s pacman-specific package overrides verified for real
   (2026-08-07, CachyOS VM — the same VM from the original 2026-08-05
   pacman cross-distro test).** Closes most of item 1 from the "next
@@ -249,10 +286,10 @@ branches on it.
     true here since this session's own restore installed it for real.
     Not a regression; no code changed this session, this was a
     verification-only pass.
-  - **Still open for item 1:** `firefox:zypper` → `MozillaFirefox` is
-    still unverified — needs a real or VM zypper machine, which this
-    session didn't have. `libreoffice:pacman` and `gh:pacman` are now
-    both confirmed (or code-confirmed) on real pacman hardware.
+  - `libreoffice:pacman` and `gh:pacman` are now both confirmed (or
+    code-confirmed) on real pacman hardware; `firefox:zypper` was
+    confirmed separately the next day on the openSUSE VM (see entry
+    above) — item 1 is now fully closed.
 - **`profiles/server` verified with a real restore (2026-08-07, Pop!_OS
   test VM).** Same session as `profiles/developer`'s real verification
   and the backup-overwrite fix above — third profile restored for real
@@ -587,19 +624,16 @@ branches on it.
   brainstorm just below (rollback/undo, dry-run, interactive profile
   picker, shell completions) are done, plus a follow-up resyncing
   `new-to-linux`'s prompt dotfiles to match `default`, plus (as of
-  2026-08-07) item 2 below — Developer/Server profiles:
+  2026-08-07) item 2 below — Developer/Server profiles, plus (also
+  2026-08-07) item 1 below is now fully closed too:
   1. **Verify `new-to-linux`'s per-distro package overrides on real
-     hardware — pacman side done (2026-08-07, CachyOS VM); zypper side
-     still open.** `libreoffice:pacman` → `libreoffice-fresh` and
-     `gh:pacman` → `github-cli` are now confirmed on real pacman
-     hardware — see the Roadmap entry above for the full verification
-     (real restore, real install, resolved-name log line, `pacman -Q`/
-     `pacman -Si` checks, clean idempotent re-run). `firefox:zypper` →
-     `MozillaFirefox` (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) is
-     still unverified — needs an actual `glb restore new-to-linux` on a
-     real or VM zypper machine (the openSUSE VM used for the original
-     cross-distro testing would work, if still available) — not
-     something this session could do without one.
+     hardware — done (2026-08-07: pacman on the CachyOS VM, zypper on
+     the openSUSE VM).** `libreoffice:pacman` → `libreoffice-fresh` and
+     `gh:pacman` → `github-cli` are confirmed on real pacman
+     hardware; `firefox:zypper` → `MozillaFirefox` is confirmed on real
+     zypper hardware — see the two Roadmap entries above for the full
+     verification of each (real restores, real installs, resolved-name
+     checks, clean idempotent re-runs).
   2. **Developer/Server profiles — done (2026-08-07, Dell laptop).**
      See the Roadmap entry below for the full build (packages picked,
      forks resolved via `AskUserQuestion`, dotfiles, extras, new
@@ -1270,15 +1304,27 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07):** verified
+  `new-to-linux`'s `firefox:zypper` override for real on this VM (the
+  same one from the original 2026-08-06 zypper cross-distro test) — see
+  Roadmap above for the full writeup. This was the last open piece of
+  item 1 — **all three per-distro overrides
+  (`firefox:zypper`/`libreoffice:pacman`/`gh:pacman`) are now confirmed
+  on real hardware, item 1 is fully closed.** Not pushed yet as of this
+  note — no code changed this session (verification-only), so this
+  commit is docs-only. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming any other
+  machine is caught up.
 - **Handoff from the CachyOS VM session (2026-08-07):** verified
   `new-to-linux`'s pacman package overrides for real on this VM (the
   same one from the original 2026-08-05 cross-distro test) — see
   Roadmap above for the full writeup, including a real `pam_faillock`
   lockout detour that turned out to be an environment gotcha, not a GLB
-  issue. `libreoffice:pacman`/`gh:pacman` are now confirmed; only
-  `firefox:zypper` remains unverified for item 1. Not pushed yet as of
-  this note — no code changed this session (verification-only), so
-  this commit is docs-only. **Pull first**
+  issue. `libreoffice:pacman`/`gh:pacman` were confirmed there;
+  `firefox:zypper` was confirmed the next day on the openSUSE VM (see
+  entry above) — item 1 is now fully closed. Not pushed yet as of this
+  note — no code changed this session (verification-only), so this
+  commit is docs-only. **Pull first**
   (`git fetch && git log main..origin/main`) before assuming any other
   machine is caught up.
 - **Handoff from the Pop!_OS test VM session (2026-08-07):** ran
