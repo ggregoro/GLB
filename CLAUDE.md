@@ -1688,6 +1688,38 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-07, openSUSE VM) — paused here by Greg's
+  choice, VM being shut down, picking back up on the Dell laptop next.**
+  Everything below is pushed to `origin/main`
+  (`bb6c37d` is the latest commit as of this note) — the detailed
+  per-item entries are further down in this Roadmap section and in the
+  Working notes handoffs right below this one, but the short version:
+  - Verified `new-to-linux`'s `firefox:zypper` override for real — item
+    1 (per-distro override verification) is now **fully closed**
+    across both pacman and zypper.
+  - Built the entire `docs/design/state-export-import.md` plan for
+    real: `glb export`, `glb diff`, `glb restore --from-snapshot`.
+  - Cleaned up `docs/ROADMAP.md`'s Version 0.7 target-distro list to
+    reflect real testing evidence, and removed a stale bullet.
+  - Scoped and built the guided configuration wizard, closing
+    **Version 0.5 entirely**.
+  - Scoped and built `glb repair`, closing "repairing existing
+    installations."
+  - Scoped (**not yet built**) `glb update`'s extension to cover
+    Starship/zsh plugins/extras — see
+    `docs/design/update-components.md`. This is the natural next
+    session's starting point: already scoped, ready to build, same as
+    the wizard and repair were before each got built same-day.
+  - The only item in Version 0.6 with **no plan written at all yet** is
+    installation manifests — would need scoping from scratch, unlike
+    update-components.
+  - This VM (openSUSE Tumbleweed) is being shut down after this
+    session — it won't be reachable for the next session. Nothing left
+    outstanding needs this specific machine; every command actually
+    built this session was already verified live on it before this
+    note was written. **Pull first** (`git fetch && git log
+    main..origin/main`) on the Dell laptop before assuming it's caught
+    up, per the standing multi-machine workflow note below.
 - **Handoff from the openSUSE VM session (2026-08-07, still going):
   scoped "updating installed components," didn't build it.** Same
   approach as the wizard/repair scoping earlier this session: `glb
