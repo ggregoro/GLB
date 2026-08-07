@@ -210,7 +210,6 @@ Improve reproducibility.
     limitation (no manual-vs-dependency package tracking) and a real
     scope gap (extras.txt-installed packages aren't reverse-mapped to
     their canonical name yet).
-- Configuration import
 - Repair existing installations
 - Update installed components
 
