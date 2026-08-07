@@ -197,6 +197,36 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **"Updating installed components" scoped (2026-08-07, openSUSE VM),
+  not yet built — last item in Version 0.6.** Same approach as the
+  wizard and repair scoping earlier this session: checked what already
+  exists first. `glb update` already runs the package manager's own
+  upgrade (apt/dnf/pacman/zypper), unprompted — plain system packages
+  are covered. Everything else GLB installs *outside* the package
+  manager has no update path at all: `extras.txt` entries (curl-installed
+  things like Fresh, Flatpak apps like WezTerm, the Nerd Font),
+  vendored zsh plugins (`git clone --depth 1`, never `git pull`ed), and
+  Starship (its own installer is safe to re-run, but GLB's
+  presence-only check currently prevents that from ever happening
+  automatically). Confirmed via `AskUserQuestion`: extend the existing
+  `glb update` command rather than add a new one, and explicitly leave
+  GLB updating its own code (`git pull` in the GLB repo) out of scope —
+  a meaningfully different, more sensitive operation, deferred as its
+  own future item. One consequence worked out directly (not asked,
+  since it's mechanical rather than debatable): `extras.txt` is
+  per-profile data but `glb update` currently takes no arguments at
+  all, so it needs an *optional* profile argument to know which
+  `extras.txt` to reach — Starship and zsh plugins aren't
+  profile-specific, so they'd update regardless of whether a profile
+  name is given. Wrote `docs/design/update-components.md` with the full
+  plan: `glb_update_starship` (`lib/prompt.sh`),
+  `glb_update_zsh_plugins` (`lib/plugins.sh`), and
+  `glb_update_profile_extras` (`lib/extras.sh`, only when a profile
+  name is given) — no confirmation prompt anywhere in it, deliberately
+  matching `glb update`'s existing unprompted convention rather than
+  the guided-wizard/`glb repair` confirm-first pattern, since this is
+  extending an existing command's established behavior, not inventing
+  a new one. Docs only, no code changed this round.
 - **`glb repair` built (2026-08-07, openSUSE VM, same session as the
   scoping below) — closes out "repairing existing installations."**
   Followed `docs/design/repair.md`'s plan exactly, built right after
@@ -985,11 +1015,15 @@ branches on it.
      `docs/design/state-export-import.md`'s configuration export/import
      plan is **fully done (2026-08-07, openSUSE VM)** — `glb export`,
      `glb diff`, and `glb restore --from-snapshot <name>`. Repairing
-     existing installations is **also done (2026-08-07, same VM,
-     same session)** — `glb repair <profile>`, see
-     `docs/design/repair.md` and the Roadmap entry above. Still open,
-     genuinely unscoped: installation manifests, updating installed
-     components.
+     existing installations is **also done (2026-08-07, same VM, same
+     session)** — `glb repair <profile>`, see `docs/design/repair.md`.
+     Updating installed components is **scoped but not yet built
+     (2026-08-07, same VM, same session)** — see
+     `docs/design/update-components.md` and the Roadmap entry above;
+     next session, this can go straight to building it, same as the
+     wizard and repair did the same day they were scoped. Still
+     genuinely unscoped: installation manifests, the only item left in
+     this version with no plan written yet.
 - **Session wrap-up brainstorm, agreed as real priorities (2026-08-06),
   not yet built — pick up here next session.** End-of-session
   discussion: what would a user *other than Greg* appreciate, without
@@ -1654,6 +1688,15 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, still going):
+  scoped "updating installed components," didn't build it.** Same
+  approach as the wizard/repair scoping earlier this session: `glb
+  update` already covers system packages; the gap is Starship/zsh
+  plugins/`extras.txt` entries, none of which currently have an update
+  path. Confirmed via `AskUserQuestion`: extend `glb update` rather
+  than add a new command, and leave GLB updating its own code out of
+  scope. Wrote `docs/design/update-components.md`. Next session can go
+  straight to building it. Docs-only, no code changed.
 - **Handoff from the openSUSE VM session (2026-08-07, still going):
   built `glb repair`, closing out "repairing existing installations."**
   Followed the scoping (see the entry right below this one) immediately

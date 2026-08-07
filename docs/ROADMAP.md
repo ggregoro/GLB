@@ -235,7 +235,17 @@ Improve reproducibility.
   `glb_install_zsh_plugins` only checks that a directory exists, not
   that the clone inside it is complete) — worth doing once real
   corruption cases actually show up, not pre-emptively.
-- Update installed components
+- **Update installed components — scoped (2026-08-07), not yet
+  built.** See `docs/design/update-components.md`. `glb update` already
+  covers system packages; the real gap is everything GLB installs
+  outside the package manager (Starship, vendored zsh plugins,
+  `extras.txt` entries), which currently has no update path at all.
+  Extends the existing `glb update` command rather than adding a new
+  one, gains an optional profile argument (needed only to reach
+  per-profile `extras.txt` entries — Starship/zsh plugins are global
+  and update regardless), and stays unprompted, matching `glb
+  update`'s existing no-confirmation style. GLB updating its own code
+  is explicitly out of scope, deferred as a separate future item.
 
 ---
 
