@@ -517,7 +517,12 @@ branches on it.
   `new-to-linux`'s prompt dotfiles to match `default`, plus (as of
   2026-08-07) item 2 below — Developer/Server profiles:
   1. **Verify `new-to-linux`'s per-distro package overrides on real
-     hardware — still open.** `firefox:zypper` → `MozillaFirefox` and
+     hardware — still open, blocked (2026-08-07).** Attempted from the
+     Pop!_OS test VM session, but that VM is apt-based — confirmed a
+     zypper or Arch-family machine (real or VM) is required and none
+     was available in that session. Needs a session actually running on
+     one (the openSUSE/CachyOS VMs used for the original cross-distro
+     testing would work) before this can move. `firefox:zypper` → `MozillaFirefox` and
      `libreoffice:pacman` → `libreoffice-fresh`
      (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) were added when
      `new-to-linux` was built (2026-08-06) but never empirically
