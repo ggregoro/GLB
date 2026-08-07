@@ -167,3 +167,53 @@ glb_export_snapshot() {
 
     glb_log_success "Exported snapshot: snapshots/$snapshot_name"
 }
+
+# ------------------------------------------------------------
+# Apply a snapshot the same way glb_apply_profile (lib/profile.sh)
+# applies a profile - a snapshot is the same shape (packages.txt +
+# dotfiles/), just captured from a machine's live state rather than
+# hand-written. Used by `glb restore --from-snapshot <name>`.
+# ------------------------------------------------------------
+
+glb_apply_snapshot() {
+    local name="$1"
+    local dry_run="${2:-}"
+    local snapshot_dir="$GLB_ROOT/snapshots/$name"
+    local status=0
+
+    if [[ -z "$name" ]]; then
+        glb_log_error "Usage: glb restore --from-snapshot <name>"
+        return 1
+    fi
+
+    if [[ ! -d "$snapshot_dir" ]]; then
+        glb_log_error "Snapshot not found: $name"
+        return 1
+    fi
+
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        glb_log_info "Dry run for snapshot: $name (nothing will be installed or changed)"
+    else
+        glb_log_info "Applying snapshot: $name"
+    fi
+
+    glb_apply_profile_packages "$snapshot_dir" "$dry_run" || status=1
+    glb_apply_profile_extras "$snapshot_dir" "$dry_run" || status=1
+    glb_install_starship "$dry_run" || status=1
+    glb_install_zsh_plugins "$dry_run" || status=1
+    glb_install_self_symlink "$dry_run" || status=1
+    glb_install_completions "$dry_run" || status=1
+    glb_apply_profile_dotfiles "$snapshot_dir" "$dry_run" || status=1
+
+    if [[ "$status" -eq 0 ]]; then
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_success "Dry run complete: $name"
+        else
+            glb_log_success "Snapshot applied: $name"
+        fi
+    else
+        glb_log_error "Snapshot applied with errors: $name"
+    fi
+
+    return "$status"
+}

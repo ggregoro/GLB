@@ -182,32 +182,34 @@ Improve reproducibility.
 ### Planned
 
 - Installation manifests
-- **Configuration export — in progress (2026-08-07).** `glb export`
-  captures the current machine's explicitly-installed packages
-  (reverse-mapped through `_GLB_PACKAGE_OVERRIDES` back to canonical
-  names) plus every dotfile any local profile tracks that actually
-  exists in `$HOME`, into a profile-shaped `snapshots/<hostname>-<date>/`
-  directory — same `packages.txt`/`dotfiles/` shape `glb restore`
-  already understands, plus `shell.txt` and `metadata.yaml`. Snapshots
-  are committed in-repo (decided 2026-08-07, see
-  `docs/design/state-export-import.md`), so cross-machine diffing rides
-  the existing `git fetch` workflow for free. See CLAUDE.md for the full
-  build notes, including a real zypper limitation found while building
-  it (no manual-vs-dependency split, so its packages.txt includes
-  base-system/pattern packages) and a real scope gap (extras.txt-installed
-  packages like Fresh show up under their raw package name, not GLB's
-  canonical name, since only `_GLB_PACKAGE_OVERRIDES` is reverse-mapped).
-  `glb restore --from-snapshot` (the rest of the design doc) not started
-  yet.
-- **Drift detection — in progress (2026-08-07).** `glb diff <a> <b>`
-  compares two profile-shaped directories (either name is looked up in
-  `profiles/` then `snapshots/`, so it can compare a snapshot against
-  the profile it should match, two snapshots from different machines,
-  or two profiles) for package and dotfile drift, exiting 0 if
-  identical or 1 if any differences were found (matching `diff`'s own
-  convention). Reuses `packages.txt`/`dotfiles/` directly, no new data
-  shape needed. See CLAUDE.md for the full build notes and a real
-  end-to-end verification chaining it with `glb export`.
+- **Configuration export/import — done (2026-08-07).** All three
+  pieces of `docs/design/state-export-import.md`'s plan are now built:
+  - `glb export` captures the current machine's explicitly-installed
+    packages (reverse-mapped through `_GLB_PACKAGE_OVERRIDES` back to
+    canonical names) plus every dotfile any local profile tracks that
+    actually exists in `$HOME`, into a profile-shaped
+    `snapshots/<hostname>-<date>/` directory — same
+    `packages.txt`/`dotfiles/` shape `glb restore` already understands,
+    plus `shell.txt` and `metadata.yaml`. Snapshots are committed
+    in-repo (decided 2026-08-07), so cross-machine diffing rides the
+    existing `git fetch` workflow for free.
+  - `glb diff <a> <b>` compares two profile-shaped directories (either
+    name is looked up in `profiles/` then `snapshots/`, so it can
+    compare a snapshot against the profile it should match, two
+    snapshots from different machines, or two profiles) for package and
+    dotfile drift, exiting 0 if identical or 1 if any differences were
+    found (matching `diff`'s own convention).
+  - `glb restore --from-snapshot <name>` applies a snapshot the same
+    way `glb restore <profile>` applies a profile (packages, extras,
+    prompt/plugins, dotfiles) — since a snapshot is the exact same
+    shape as a profile, this reuses the existing restore engine almost
+    verbatim.
+  - Verified end-to-end for real on the openSUSE VM, including a full
+    export -> diff -> restore --from-snapshot --dry-run round-trip. See
+    CLAUDE.md for the full build notes, including a real zypper
+    limitation (no manual-vs-dependency package tracking) and a real
+    scope gap (extras.txt-installed packages aren't reverse-mapped to
+    their canonical name yet).
 - Configuration import
 - Repair existing installations
 - Update installed components

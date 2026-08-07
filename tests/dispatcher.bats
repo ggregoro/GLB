@@ -155,6 +155,67 @@ teardown() {
     [[ "$output" == *"Profile not found"* ]]
 }
 
+@test "glb restore --from-snapshot applies a snapshot end to end" {
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+
+    mkdir -p "$GLB_ROOT/snapshots/host-2026-08-07/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/snapshots/host-2026-08-07/packages.txt"
+    echo 'x' > "$GLB_ROOT/snapshots/host-2026-08-07/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --from-snapshot host-2026-08-07
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"apt install -y git"* ]]
+    [[ "$output" == *"Snapshot applied: host-2026-08-07"* ]]
+    [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb restore --from-snapshot works with --dry-run in either order" {
+    mkdir -p "$GLB_ROOT/snapshots/host-2026-08-07/dotfiles"
+    printf 'git\n' > "$GLB_ROOT/snapshots/host-2026-08-07/packages.txt"
+    echo 'x' > "$GLB_ROOT/snapshots/host-2026-08-07/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --from-snapshot host-2026-08-07 --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for snapshot: host-2026-08-07"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+
+    run "$GLB_ROOT/glb" restore --dry-run --from-snapshot host-2026-08-07
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for snapshot: host-2026-08-07"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
+@test "glb restore --from-snapshot fails cleanly for a nonexistent snapshot" {
+    run "$GLB_ROOT/glb" restore --from-snapshot no-such-snapshot
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Snapshot not found"* ]]
+}
+
+@test "glb export then glb restore --from-snapshot round-trips a real machine's state" {
+    stub_command apt-mark 'printf "git\n"'
+    stub_command hostname 'echo test-host'
+    stub_command date 'if [ "$1" = "+%Y-%m-%d" ]; then echo 2026-08-07; else /usr/bin/date "$@"; fi'
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+    printf 'my real bashrc\n' > "$HOME/.bashrc"
+
+    run "$GLB_ROOT/glb" export
+    [ "$status" -eq 0 ]
+
+    rm "$HOME/.bashrc"
+
+    run "$GLB_ROOT/glb" restore --from-snapshot test-host-2026-08-07
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Snapshot applied: test-host-2026-08-07"* ]]
+    [ -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "my real bashrc" ]
+}
+
 @test "glb restore --undo reverses a prior restore's dotfile changes" {
     stub_command starship 'exit 0'
     stub_command git 'mkdir -p "$5"; exit 0'
