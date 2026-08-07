@@ -261,3 +261,94 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"Skipped: install wezterm"* ]]
 }
+
+# --- font method -----------------------------------------------------------
+#
+# Regression coverage for a real gap found on a Linux Mint test VM: every
+# machine tested before this one already had the Nerd Font pre-installed by
+# hand, which masked the fact glb restore never actually installed it.
+
+@test "font: not installed when the destination directory has no font files" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed font jetbrains-mono-nerd-font https://example.test/Font.zip
+    "
+    [ "$status" -ne 0 ]
+}
+
+@test "font: already installed when a font file exists in the destination directory" {
+    mkdir -p "$HOME/.local/share/fonts/jetbrains-mono-nerd-font"
+    touch "$HOME/.local/share/fonts/jetbrains-mono-nerd-font/JetBrainsMonoNerdFont-Regular.ttf"
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed font jetbrains-mono-nerd-font https://example.test/Font.zip
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "dry-run: font extra announces would-install without downloading" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'font jetbrains-mono-nerd-font https://example.test/Font.zip\n' > "$pdir/extras.txt"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: jetbrains-mono-nerd-font (via font)"* ]]
+}
+
+@test "font: downloads and unzips into ~/.local/share/fonts/<name>, then refreshes the font cache" {
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; touch "${@: -1}"; exit 0'
+    stub_command unzip 'echo "unzip $*" >> "$TEST_TMP/calls"; mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'echo "fc-cache $*" >> "$TEST_TMP/calls"; exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra font jetbrains-mono-nerd-font https://example.test/Font.zip
+    "
+    [ "$status" -eq 0 ]
+    [ -f "$HOME/.local/share/fonts/jetbrains-mono-nerd-font/Fake-Regular.ttf" ]
+    grep -q "fc-cache -f $HOME/.local/share/fonts/jetbrains-mono-nerd-font" "$TEST_TMP/calls"
+}
+
+@test "font: pauses on failure, prints the exact command, and succeeds once confirmed" {
+    stub_command curl 'exit 7'
+    mkdir -p "$HOME/.local/share/fonts/jetbrains-mono-nerd-font"
+    touch "$HOME/.local/share/fonts/jetbrains-mono-nerd-font/Fake-Regular.ttf"
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra font jetbrains-mono-nerd-font https://example.test/Font.zip <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Run this yourself"* ]]
+    [[ "$output" == *"curl -fsSL https://example.test/Font.zip -o font.zip"* ]]
+    [[ "$output" == *"Confirmed installed after manual step: jetbrains-mono-nerd-font"* ]]
+}
+
+@test "font: returns failure when the user skips the manual step" {
+    stub_command curl 'exit 1'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra font jetbrains-mono-nerd-font https://example.test/Font.zip <<< 's'
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Skipped: install jetbrains-mono-nerd-font"* ]]
+}

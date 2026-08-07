@@ -75,6 +75,13 @@ This project follows a simple versioning approach:
   colored-letter indicators (avoids depending on an icon font).
 - Added `docs/screenshots/` for test-confirmation screenshots and future
   tutorial images.
+- Added a `font` method to `lib/extras.sh`/`extras.txt`: downloads a Nerd
+  Fonts release zip, extracts it into `~/.local/share/fonts/<name>`, and
+  refreshes the font cache. `default` and `new-to-linux` now both install
+  JetBrainsMono Nerd Font this way (needed for `eza --icons`, and for
+  `default`'s WezTerm config) — previously `glb restore` assumed the font
+  was already present, which every prior test machine happened to have
+  pre-installed by hand.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.

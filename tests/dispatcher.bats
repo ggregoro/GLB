@@ -62,12 +62,15 @@ teardown() {
     stub_command git 'mkdir -p "$5"; exit 0'
     stub_command curl 'exit 0'
     stub_command sh 'exit 0'
+    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'exit 0'
 
     run "$GLB_ROOT/glb" restore new-to-linux <<< ''
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"Profile applied: new-to-linux"* ]]
     [[ "$output" == *"Installing fresh via curl-install script"* ]]
+    [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.zshrc" ]
     [ -L "$HOME/.config/fish/config.fish" ]
@@ -83,6 +86,8 @@ teardown() {
     stub_command curl 'exit 0'
     stub_command sh 'exit 0'
     stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'
+    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'exit 0'
 
     run "$GLB_ROOT/glb" restore default <<< ''
 
@@ -90,6 +95,7 @@ teardown() {
     [[ "$output" == *"Profile applied: default"* ]]
     [[ "$output" == *"Installing fresh via curl-install script"* ]]
     [[ "$output" == *"Installing wezterm via Flatpak"* ]]
+    [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
     grep -q "install -y flathub org.wezfurlong.wezterm" "$TEST_TMP/calls"
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.gitconfig" ]

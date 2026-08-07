@@ -22,6 +22,7 @@ eza
 bat
 zoxide
 bash-completion    # loads glb's completion file - see lib/completions.sh
+unzip              # needed for the font extras.txt entry
 
 # Everyday desktop apps — one solid choice per category
 firefox

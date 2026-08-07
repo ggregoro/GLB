@@ -8,6 +8,12 @@
 #                              `flatpak install -y flathub <app-id>`.
 #                              <name> is just a display label; <app-id>
 #                              is checked via `flatpak info`.
+#   font <name> <zip-url>   - downloads a Nerd Fonts release zip,
+#                              extracts it into
+#                              ~/.local/share/fonts/<name>, then runs
+#                              `fc-cache -f`. <name> becomes the install
+#                              directory, so no spaces. Requires unzip
+#                              (see packages.txt).
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
@@ -20,3 +26,10 @@ curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/mas
 # never installed the app itself until now. Requires flatpak itself
 # (see packages.txt).
 flatpak wezterm   org.wezfurlong.wezterm
+
+# Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
+# aliases) and, on this profile, WezTerm's font (wezterm.lua). Every
+# machine tested before the Linux Mint test VM already had this font
+# pre-installed by hand, which masked the fact glb restore never
+# actually installed it itself - a real fresh-install gap.
+font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip

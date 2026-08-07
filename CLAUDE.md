@@ -31,6 +31,15 @@ reasonably clean and documented, not just "works on my machine."
   here ran `glb restore default` for real (first time on this machine)
   and found/fixed a genuine bug in the process — see the manual-step
   pause entry in Roadmap below.
+- **New (2026-08-07): a Linux Mint 22.3 (Cinnamon) test machine** —
+  another dedicated test box, distinct from every prior environment
+  (first genuinely fresh Mint machine tested; apt itself was already
+  validated via Pop!_OS/Zorin/Debian, but this is the first time GLB
+  hit a machine with the Nerd Font *not* already pre-installed by hand
+  — see Roadmap for the real gap that surfaced). Default terminal here
+  is gnome-terminal (Cinnamon's stock terminal, GNOME Terminal 3.52.0 /
+  VTE 0.76.0); WezTerm also installed via Flatpak during this session's
+  restore.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -172,6 +181,97 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real gaps found and fixed on the new Linux Mint test machine
+  (2026-08-07).** First real `glb restore default` here surfaced a
+  genuine, previously-masked gap: every machine tested before this one
+  already had the Nerd Font pre-installed by hand, so nobody had
+  noticed `glb restore` never actually installed it itself.
+  - **Fix: new `font` method in `lib/extras.sh`/`extras.txt`.**
+    Downloads a Nerd Fonts release zip, extracts it into
+    `~/.local/share/fonts/<name>`, then runs `fc-cache -f`. Detection
+    (`glb_extra_installed`) checks for any `.ttf`/`.otf` file in that
+    directory rather than `command -v` (no binary to check) or
+    `flatpak info` (not a Flatpak). Reuses the existing
+    `glb_prompt_manual_step` pause/skip UX on failure, same as
+    curl/flatpak. Added `unzip` to both profiles' `packages.txt`
+    (needed by the new method, same pattern as `flatpak` being added
+    for the WezTerm extras entry) and a `font jetbrains-mono-nerd-font
+    <nerd-fonts-release-zip-url>` entry to **both** `default` and
+    `new-to-linux`'s `extras.txt` — confirmed both profiles' dotfiles
+    use `eza --icons` in all three shells, not just `default`'s
+    WezTerm config, so both need it. 9 new bats tests in
+    `tests/extras.bats` (detection, dry-run, real download+unzip via
+    stubbed curl/unzip/fc-cache, pause/confirm, pause/skip); the two
+    existing dispatcher end-to-end tests needed `unzip`/`fc-cache`
+    stubs added too, since they restore the real profiles/extras.txt
+    files which now include the font entry. Verified for real on this
+    machine, not just in bats: `jetbrains-mono-nerd-font` downloaded,
+    unzipped, `fc-cache`'d, and `fc-list`/`fc-match` both resolve
+    "JetBrainsMono Nerd Font" to it correctly afterward.
+  - **Real gotcha found verifying the fix, not fixed in code (a
+    terminal-emulator/OS-level issue, not a GLB bug): gnome-terminal
+    didn't pick up the newly-installed font at all**, even after
+    setting its profile to the right font via `gsettings` and opening
+    brand-new windows. Root cause: `gnome-terminal-server` is a single
+    persistent background process shared across all windows/tabs (for
+    performance); it built its Pango font cache once at startup,
+    before the font existed on disk, and neither closing/reopening
+    windows nor `fc-cache` retroactively refreshes an already-running
+    process's font map. Fix (manual, one-time, not something `glb
+    restore` should do): `pkill -f gnome-terminal-server`, then open a
+    new window — confirmed this Claude Code session isn't itself
+    running inside that process before killing it. Separately, the
+    *regular* "Complete" Nerd Font variant rendered icons with broken
+    spacing in gnome-terminal specifically (VTE's fixed-cell-width
+    grid doesn't cope well with that variant's glyph metrics) — the
+    Nerd Fonts project ships a `Mono` variant precisely for this;
+    switching the gsettings profile font to "JetBrainsMono Nerd Font
+    Mono" (combined with the server restart) fully fixed it. **Ruled
+    out as a general GNOME Terminal limitation**, not just a config
+    fix here: Greg independently tested the same font on a Fedora 44
+    GNOME machine's gnome-terminal and icons rendered correctly there
+    without needing the Mono variant — so this was specifically a
+    stale-cache/VTE-version interaction on this Mint machine (GNOME
+    Terminal 3.52.0 / VTE 0.76.0 via Ubuntu Noble's older package
+    versions), not something inherent to gnome-terminal as an app.
+    Confirmed fully working end-to-end afterward: `eza --icons`
+    file-type icons render correctly in both gnome-terminal and
+    WezTerm on this machine.
+  - **Separate real bug found and fixed: `default`'s
+    `.config/wezterm/wezterm.lua` had `window_decorations = "RESIZE"`**
+    (resize border only, no title bar) — on Cinnamon/Muffin specifically,
+    with no title bar to grab, the window couldn't be moved at all. Not
+    machine-specific (it's the shared profile dotfile). Changed to
+    `"TITLE | RESIZE"` (WezTerm's own default) to restore a draggable
+    title bar. Confirmed working immediately since the dotfile is
+    symlinked (no restore re-run needed) — just closing/reopening
+    WezTerm picked it up.
+  - **Linux Mint (apt) package result:** `neovim`/`ripgrep`/`fastfetch`
+    all needed sudo (same no-TTY-in-sandbox limitation as every prior
+    machine) — Greg ran them manually. `fastfetch` specifically **isn't
+    in Mint's apt index at all** (same gap already known on Pop!_OS,
+    now confirmed on Mint too) — apt aborts the *entire* transaction
+    when one package name can't be resolved, so bundling it with
+    `neovim ripgrep` in one manual command silently installed neither;
+    had to split it into two commands. **Decided: not worth adding a
+    fallback for** — Mint already ships `neofetch` preinstalled, which
+    covers the same niche well enough there even though neofetch itself
+    is archived/unmaintained upstream; this is a Mint-specific
+    coincidence, not a reason to build real cross-distro fastfetch/
+    neofetch fallback logic into GLB. `packages.txt`'s existing
+    comment on the `fastfetch` line updated to note this.
+  - **ranger confirmed working here too:** borders and letter-based
+    git-status indicators both render correctly after `glb restore
+    default`, matching every other machine tested so far.
+  - Full bats suite: 116/119 passing. The 3 failures are the exact
+    same pre-existing, already-documented gap as the Pop!_OS VM (see
+    entry below) — this machine also now has `fresh-editor` genuinely
+    installed for real (from this session's own restore), which a few
+    tests don't isolate against. Confirmed via `git stash` to fail
+    identically on unmodified `main`, unrelated to this session's
+    changes. `bats` itself isn't installed on this machine either —
+    ran via a locally cloned `bats-core` in the scratchpad, same
+    workaround as the Pop!_OS VM.
 - **Real bug found and fixed on the Pop!_OS test VM (2026-08-06):
   sudo-gated manual-step pause was silently broken whenever it fired
   from a real `packages.txt`/`extras.txt` run.** Greg ran
@@ -884,6 +984,12 @@ branches on it.
   — installed on the Dell laptop as of 2026-08-06 (`sudo apt install -y
   bats`); all 55 tests pass as of that date (see Roadmap section for
   what surfaced the first time it was actually run here).
+- **`bats` is not installed on the Linux Mint test machine** (2026-08-07)
+  either, same no-TTY-for-sudo-install limitation — ran via the same
+  locally-cloned `bats-core` workaround. 116/119 tests pass; see the
+  Roadmap entry above for the 3 pre-existing, environment-specific
+  failures (this machine now has `fresh-editor` genuinely installed for
+  real) and the new `font` method's own test coverage.
 - **`bats` is not installed on the new Pop!_OS test VM** (2026-08-06) and
   couldn't be via `sudo apt install` from a sandboxed Claude Code shell
   (no TTY, same limitation as every package install elsewhere in this
@@ -935,6 +1041,15 @@ branches on it.
   bullet at the top of Roadmap and the "Support multiple named profiles"
   bullet further down for the full reasoning). Nothing has been started
   on it yet; that's the right place to pick up.
+- **Handoff from the Linux Mint test machine session (2026-08-07):**
+  first session on this machine (see "Test environments" above) — ran
+  `glb restore default` for real here for the first time, which
+  surfaced and led to fixing the Nerd Font provisioning gap (new `font`
+  extras method) and a WezTerm window-decorations bug, plus a
+  gnome-terminal/VTE caching gotcha worth knowing about if it comes up
+  again elsewhere (see Roadmap entry above for all three). **Pull
+  first** (`git fetch && git log main..origin/main`) before assuming
+  any other machine is caught up.
 - **Handoff from the new Pop!_OS test VM session (2026-08-06):** first
   session on this VM (see "Test environments" above) — ran
   `glb restore default` for real here for the first time, which

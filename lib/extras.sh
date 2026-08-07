@@ -32,6 +32,9 @@ glb_extra_installed() {
         flatpak)
             flatpak info "$spec" >/dev/null 2>&1
             ;;
+        font)
+            compgen -G "$HOME/.local/share/fonts/$name/*.[ot]tf" >/dev/null
+            ;;
         *)
             return 1
             ;;
@@ -96,6 +99,23 @@ glb_install_extra() {
             fi
 
             _glb_extras_prompt_and_recheck "$method" "$name" "$spec" "flatpak install -y flathub $spec"
+            ;;
+        font)
+            glb_log_info "Installing font: $name"
+            local font_dir="$HOME/.local/share/fonts/$name"
+            local tmp_zip
+            tmp_zip="$(mktemp --suffix=.zip)"
+
+            if curl -fsSL "$spec" -o "$tmp_zip" && glb_create_directory "$font_dir" \
+                && unzip -o -q "$tmp_zip" -d "$font_dir"; then
+                rm -f "$tmp_zip"
+                glb_command_exists fc-cache && fc-cache -f "$font_dir" >/dev/null 2>&1
+                return 0
+            fi
+
+            rm -f "$tmp_zip"
+            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
+                "curl -fsSL $spec -o font.zip && mkdir -p $font_dir && unzip -o font.zip -d $font_dir && fc-cache -f $font_dir"
             ;;
         *)
             glb_log_error "Unknown extras method: $method"

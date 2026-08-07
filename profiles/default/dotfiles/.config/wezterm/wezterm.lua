@@ -14,7 +14,7 @@ config.color_scheme = "Tokyo Night"
 config.colors = {
 	background = "#000000",
 }
-config.window_decorations = "RESIZE"
+config.window_decorations = "TITLE | RESIZE"
 config.window_padding = {
 	left = 8,
 	right = 8,
