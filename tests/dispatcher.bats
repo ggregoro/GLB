@@ -276,3 +276,31 @@ teardown() {
     [ "$(cat "$GLB_ROOT/snapshots/test-host-2026-08-07/dotfiles/.bashrc")" = "my real bashrc" ]
     [ ! -e "$GLB_ROOT/snapshots/test-host-2026-08-07/dotfiles/.zshrc" ]
 }
+
+@test "glb diff reports real drift between the default and new-to-linux profiles" {
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
+
+    run "$GLB_ROOT/glb" diff default new-to-linux
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Diff: default vs new-to-linux"* ]]
+    # default has .gitconfig, new-to-linux deliberately doesn't
+    [[ "$output" == *"+ only in default: ~/.gitconfig"* ]]
+}
+
+@test "glb diff reports no differences when comparing a profile to itself" {
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+
+    run "$GLB_ROOT/glb" diff default default
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"no package differences"* ]]
+    [[ "$output" == *"no dotfile differences"* ]]
+}
+
+@test "glb diff errors cleanly for an unresolvable name" {
+    run "$GLB_ROOT/glb" diff default nope
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Not found"* ]]
+}

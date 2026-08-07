@@ -197,8 +197,17 @@ Improve reproducibility.
   base-system/pattern packages) and a real scope gap (extras.txt-installed
   packages like Fresh show up under their raw package name, not GLB's
   canonical name, since only `_GLB_PACKAGE_OVERRIDES` is reverse-mapped).
-  `glb diff`/`glb restore --from-snapshot` (the rest of the design doc)
-  not started yet.
+  `glb restore --from-snapshot` (the rest of the design doc) not started
+  yet.
+- **Drift detection — in progress (2026-08-07).** `glb diff <a> <b>`
+  compares two profile-shaped directories (either name is looked up in
+  `profiles/` then `snapshots/`, so it can compare a snapshot against
+  the profile it should match, two snapshots from different machines,
+  or two profiles) for package and dotfile drift, exiting 0 if
+  identical or 1 if any differences were found (matching `diff`'s own
+  convention). Reuses `packages.txt`/`dotfiles/` directly, no new data
+  shape needed. See CLAUDE.md for the full build notes and a real
+  end-to-end verification chaining it with `glb export`.
 - Configuration import
 - Repair existing installations
 - Update installed components
