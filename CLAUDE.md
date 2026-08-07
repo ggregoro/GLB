@@ -181,6 +181,39 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`profiles/developer` verified with a real restore (2026-08-07, Pop!_OS
+  test VM).** First genuinely real (non-sandboxed) `glb restore developer`
+  anywhere — everything built the day before on the Dell laptop was only
+  verified through stubbed bats until now. `glb info` detected `apt`
+  correctly. Most packages (git, curl, zsh, fish, fzf, eza, bat, zoxide,
+  htop, bash-completion, unzip, gcc, make, jq) were already present.
+  `podman` and `gh` hit the same no-TTY-for-sudo limitation as every other
+  distro tested — Greg ran `sudo apt install -y podman` and
+  `sudo apt install -y gh` manually, then a second `glb restore developer`
+  came back fully clean (`[SUCCESS] Profile applied: developer`, every
+  line "already installed"/"already linked" on the re-run, confirming
+  idempotency). Both binaries confirmed functional afterward: `podman
+  version 4.9.3`, `gh version 2.45.0`.
+  - **mise confirmed working for real** — first live verification of the
+    curl-piped `https://mise.run` installer extras method (previously only
+    stubbed in bats). Installed cleanly to `~/.local/bin/mise`
+    (`2026.8.2`); the guarded `mise activate` blocks already present in
+    `.bashrc`/`.zshrc`/`config.fish` from the Dell laptop session work as
+    designed.
+  - **fresh** — already installed on this VM going into the restore (same
+    pre-existing-`fresh-editor` quirk already documented for this machine
+    under "Real bug found... Pop!_OS test VM" further down).
+  - **Nerd Font extras method also confirmed working for real** —
+    downloaded, unzipped into `~/.local/share/fonts/jetbrains-mono-nerd-
+    font/`, `fc-cache`'d, `fc-list` resolves it correctly.
+  - **Real gap found, not a GLB bug:** `fc-list` showed a *second*,
+    separate pre-existing Nerd Font directory already on this VM
+    (`~/.local/share/fonts/JetBrainsMonoNerdFont/`, capitalized/no
+    dashes, dated before this session) — meaning this machine wasn't
+    actually a clean test of the font-gap fix; the font may already have
+    been present by hand before GLB ran here. Worth knowing if this VM
+    is reused for "fresh install" font-gap testing later — it isn't
+    fresh with respect to fonts anymore.
 - **`profiles/developer` and `profiles/server` built (2026-08-07, Dell
   laptop).** Next items in the agreed pick-up-here order after the
   Linux Mint session (see prior entry). Before picking packages,
@@ -1102,6 +1135,16 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the Pop!_OS test VM session (2026-08-07):** ran
+  `glb restore developer` for real here (see Roadmap above) — first
+  live, non-sandboxed verification of the profile built the day before
+  on the Dell laptop. Clean end-to-end after Greg manually ran the two
+  sudo-gated installs (`podman`, `gh`); mise and the Nerd Font extras
+  methods both confirmed working for real too. One real (non-GLB) gap
+  noted: this VM already had a Nerd Font installed by hand before this
+  session, so it's no longer a clean "fresh install" test bed for that
+  specific gap. **Pull first** (`git fetch && git log main..origin/main`)
+  before assuming any other machine is caught up.
 - **Handoff from the Dell laptop session (2026-08-07):** built
   `profiles/developer` and `profiles/server` (see Roadmap above) —
   item 2 of the agreed next-steps order, resolved the "who is each
