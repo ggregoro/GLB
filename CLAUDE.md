@@ -181,6 +181,29 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`profiles/server` verified with a real restore (2026-08-07, Pop!_OS
+  test VM).** Same session as `profiles/developer`'s real verification
+  and the backup-overwrite fix above — third profile restored for real
+  on this VM (`default` -> `developer` -> `server`), so this run also
+  exercised the just-fixed backup logic for real (switching from
+  `default`'s dotfiles to `server`'s correctly created a fresh backup,
+  no clobbering). `glb info` detected `apt` correctly. Most packages
+  (git, curl, zsh, fish, fzf, eza, bat, zoxide, bash-completion, unzip,
+  htop, ufw, rsync) were already present. `restic` and `fail2ban` hit
+  the same no-TTY-for-sudo limitation as every other distro/profile
+  tested — Greg ran `sudo apt install -y restic` and
+  `sudo apt install -y fail2ban` manually, then a second
+  `glb restore server` came back fully clean (`[SUCCESS] Profile
+  applied: server`, every line "already installed"/"already linked" on
+  the re-run). All four confirmed functional afterward: `restic 0.16.4`,
+  `Fail2Ban v1.0.2`, `rsync 3.2.7`, `ufw 0.36.2-6` (`ufw status` itself
+  needs root to query — unrelated to whether the package is installed,
+  confirmed installed via `dpkg -s`).
+  - **All five GLB profiles have now been restored for real on at least
+    one machine** (`default` — many machines; `new-to-linux`,
+    `developer`, `server` — this Pop!_OS VM). Every profile's package
+    list and extras methods are now empirically confirmed working, not
+    just bats-verified, at least on apt.
 - **Real bug found and fixed (2026-08-07, Pop!_OS test VM): a second
   profile restore silently overwrote the `.glb-backup` from the first
   one, permanently destroying the true pre-GLB original config.**
@@ -1198,8 +1221,17 @@ branches on it.
   predicts) — left this VM on `default` afterward, Greg's call. The fix
   prevents this for every future multi-profile switch, but this VM's
   own pre-GLB baseline is gone for good.
-  **Pull first** (`git fetch && git log main..origin/main`) before
-  assuming any other machine is caught up.
+  Same session, finally, also ran `glb restore server` for real (see
+  Roadmap above) — first live verification of that profile too, and a
+  second real-world exercise of the backup-overwrite fix (switching
+  `default` -> `server` correctly created a fresh backup, no
+  clobbering). Clean end-to-end after Greg manually ran the two
+  sudo-gated installs (`restic`, `fail2ban`). **All five GLB profiles
+  are now confirmed working via a real restore on at least one
+  machine** — `new-to-linux`/`developer`/`server` all on this VM,
+  `default` on many. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming any other
+  machine is caught up.
 - **Handoff from the Dell laptop session (2026-08-07):** built
   `profiles/developer` and `profiles/server` (see Roadmap above) —
   item 2 of the agreed next-steps order, resolved the "who is each
