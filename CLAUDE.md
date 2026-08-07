@@ -1521,6 +1521,20 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, further
+  continued):** `docs/ROADMAP.md`'s Version 0.7 (Cross-Distribution
+  Support) target-distro list was just a flat, unchecked bullet list
+  even though every distro on it except Manjaro has real testing
+  evidence already sitting in this file's own Roadmap section — cleaned
+  it up to mark Debian/Ubuntu(-via-derivatives)/Pop!_OS/Fedora/Arch ✅
+  with a one-line pointer to the evidence for each, leaving Manjaro
+  genuinely unmarked (never tested, even though pacman itself is
+  proven via CachyOS). Also flagged that zypper/openSUSE isn't on the
+  target list at all despite now having the deepest real testing of
+  any distro here (this whole session) — noted as a gap, not added
+  unilaterally, since expanding the target list is a real scope
+  decision, not just marking existing work done. Docs-only, no code
+  changed.
 - **Handoff from the openSUSE VM session (2026-08-07, continued):**
   same session as the `firefox:zypper` verification below also built
   and finished `glb export`, `glb diff`, and `glb restore

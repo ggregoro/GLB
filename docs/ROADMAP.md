@@ -222,12 +222,39 @@ Expand platform support.
 
 ### Target Distributions
 
-- Debian
-- Ubuntu
-- Pop!_OS
-- Fedora
-- Arch Linux
-- Manjaro
+- **Debian ✅** — apt confirmed via a real `glb restore default` on an
+  actual Debian 13 daily-driver machine (2026-08-06). Zero package
+  overrides needed.
+- **Ubuntu ✅ (via derivatives)** — apt confirmed via real restores on
+  Ubuntu-based distros: Pop!_OS (daily-driver laptop plus a dedicated
+  test VM), Linux Mint 22.3, and Zorin OS. Stock Ubuntu itself hasn't
+  been separately tested, but it's the same package manager, confirmed
+  clean across every derivative tried.
+- **Pop!_OS ✅** — the most extensively tested target: a real
+  daily-driver laptop plus a dedicated test VM where all five profiles
+  (`default`, `new-to-linux`, `developer`, `server`) have each been
+  restored for real, including the rollback/undo and dry-run paths.
+- **Fedora ✅** — dnf confirmed via a real `glb restore default` on a
+  Fedora 44 Workstation test VM (2026-08-05). Zero package overrides
+  needed.
+- **Arch Linux ✅** — pacman confirmed via a real `glb restore default`
+  plus `new-to-linux`'s pacman-specific overrides (`libreoffice` →
+  `libreoffice-fresh`, `gh` → `github-cli`) on a CachyOS (Arch-based)
+  test VM (2026-08-05, 2026-08-07).
+- **Manjaro** — not tested. Arch-family, so the underlying package
+  manager (pacman) is already confirmed via CachyOS, but Manjaro itself
+  has never actually been run.
+
+All four package managers GLB supports (apt, dnf, pacman, zypper) are
+now confirmed clean end-to-end across real hardware and VMs — see
+CLAUDE.md's Roadmap section for the full per-distro verification
+history. Note: zypper/openSUSE isn't on this target-distro list at all,
+despite being a fully supported package manager that's since received
+the deepest real-world testing of any distro here (the original
+cross-distro pass, per-distro package overrides, and the entire
+state-export-import feature set were all verified on an openSUSE VM) —
+worth adding explicitly if openSUSE becomes a stated target, rather
+than left as an unlisted extra.
 
 Additional distributions will be added as independent modules when practical.
 
