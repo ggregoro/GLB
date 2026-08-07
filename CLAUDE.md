@@ -40,6 +40,12 @@ reasonably clean and documented, not just "works on my machine."
   is gnome-terminal (Cinnamon's stock terminal, GNOME Terminal 3.52.0 /
   VTE 0.76.0); WezTerm also installed via Flatpak during this session's
   restore.
+- **The CachyOS VM (KDE Plasma), confirmed 2026-08-07 to be the same VM
+  used for the original pacman cross-distro testing on 2026-08-05** —
+  not a fresh VM. Session on it that day used `glb info`/`glb restore
+  default` end-to-end but predates `new-to-linux`/`developer`/`server`.
+  Revisited 2026-08-07 specifically to verify pacman-specific package
+  overrides added after that original session (see Roadmap).
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -181,6 +187,72 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`new-to-linux`'s pacman-specific package overrides verified for real
+  (2026-08-07, CachyOS VM — the same VM from the original 2026-08-05
+  pacman cross-distro test).** Closes most of item 1 from the "next
+  session, pick up here" list below. `glb info` detected `pacman`
+  correctly. Ran a real `glb restore new-to-linux`:
+  - **`libreoffice:pacman` → `libreoffice-fresh` confirmed correct** —
+    the install log showed the resolved name explicitly
+    (`Installing package: libreoffice (as libreoffice-fresh)`), and
+    after Greg ran the printed manual command
+    (`sudo pacman -S --noconfirm gimp libreoffice-fresh`),
+    `pacman -Q libreoffice-fresh` confirmed `26.2.5-1.1` installed and
+    a second `glb restore new-to-linux` came back fully clean
+    (`already installed: libreoffice`), confirming the "already
+    installed" detection also checks for the overridden name, not just
+    the generic one.
+  - **`gh:pacman` → `github-cli` confirmed correct** — verified via
+    `glb_resolve_package_name "gh" "pacman"` (returns `github-cli`) plus
+    `pacman -Si github-cli` (real package, `2.97.0-1.1` in
+    `cachyos-extra-v3`). Not exercised through a full `developer`
+    profile restore on this VM — the resolution logic and package
+    existence were both independently confirmed, judged sufficient
+    without a third profile switch on the same test box.
+  - **Real, new finding: the `fresh` curl-installer behaves differently
+    on Arch than on every other distro tested so far.** Instead of
+    dropping a prebuilt binary, `getfresh.dev`'s install script detects
+    Arch and builds `fresh-editor-bin` from source via `makepkg` (no AUR
+    helper present), then does its own `sudo pacman -U` at the end. That
+    final step needs its own sudo prompt, separate from and in addition
+    to GLB's own package-install sudo gate. Ran for real after the
+    lockout below cleared; confirmed installed (`fresh-editor-bin
+    0.4.6-1`, `/usr/bin/fresh` on PATH) and a second restore reports
+    `already installed: fresh` correctly.
+  - **Real (non-GLB) detour mid-session: a `pam_faillock` lockout, not a
+    GLB or sudo config bug.** Three sudo attempts failed in a row
+    (`journalctl _COMM=sudo` showed genuine `pam_unix(sudo:auth):
+    auth could not identify password` failures), which tripped the
+    default `pam_faillock` policy (`deny=3`, all settings in
+    `/etc/security/faillock.conf` are commented/default, so
+    `unlock_time=600`s applies) — `pam_faillock(sudo:auth): Consecutive
+    login failures for user grego account temporarily locked`. Every
+    retry during that 10-minute window failed too, including
+    (apparently) the correct password, which is expected `pam_faillock`
+    behavior, not a sign of a wrong password. Confirmed the account's
+    actual password was fine via a successful lock-screen unlock once
+    the window had mostly elapsed; the next real `sudo` attempt after
+    waiting out the full window succeeded on the first try. Root cause
+    of the original 3 failures themselves was never conclusively
+    identified (Greg was confident he entered the same password
+    correctly each time) — flagged here only as a "if sudo mysteriously
+    rejects a correct password on this VM again, check `faillock
+    --user grego` and `journalctl _COMM=sudo` before assuming the
+    password is wrong" note, not something to chase further right now.
+  - Full bats suite (via a scratchpad-cloned `bats-core`, `bats` itself
+    still not installed on this VM): 120/124 pass. The 4 failures are
+    the exact same pre-existing, already-documented
+    `fresh-editor`-genuinely-on-PATH test-isolation gap seen on the
+    Pop!_OS VM and Linux Mint machine (`tests/dispatcher.bats`'s three
+    real-profile end-to-end tests plus `tests/extras.bats`'s curl
+    dry-run test all assume `fresh` isn't already installed) — now also
+    true here since this session's own restore installed it for real.
+    Not a regression; no code changed this session, this was a
+    verification-only pass.
+  - **Still open for item 1:** `firefox:zypper` → `MozillaFirefox` is
+    still unverified — needs a real or VM zypper machine, which this
+    session didn't have. `libreoffice:pacman` and `gh:pacman` are now
+    both confirmed (or code-confirmed) on real pacman hardware.
 - **`profiles/server` verified with a real restore (2026-08-07, Pop!_OS
   test VM).** Same session as `profiles/developer`'s real verification
   and the backup-overwrite fix above — third profile restored for real
@@ -517,25 +589,17 @@ branches on it.
   `new-to-linux`'s prompt dotfiles to match `default`, plus (as of
   2026-08-07) item 2 below — Developer/Server profiles:
   1. **Verify `new-to-linux`'s per-distro package overrides on real
-     hardware — still open, blocked (2026-08-07).** Attempted from the
-     Pop!_OS test VM session, but that VM is apt-based — confirmed a
-     zypper or Arch-family machine (real or VM) is required and none
-     was available in that session. Needs a session actually running on
-     one (the openSUSE/CachyOS VMs used for the original cross-distro
-     testing would work) before this can move. `firefox:zypper` → `MozillaFirefox` and
-     `libreoffice:pacman` → `libreoffice-fresh`
-     (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) were added when
-     `new-to-linux` was built (2026-08-06) but never empirically
-     confirmed, unlike every other override in that table (all of
-     which were validated via real per-distro testing during the
-     cross-distro effort). Needs an actual `glb restore new-to-linux`
-     on a real or VM zypper machine and a real or VM Arch-family
-     machine — not something a sandboxed session can verify on its
-     own; Greg will need to run it and report back, same pattern as
-     the original cross-distro testing. Also now applies to the new
-     `gh:pacman` → `github-cli` override added with the Developer
-     profile (2026-08-07, see below) — same "confirm on real pacman
-     hardware" caveat.
+     hardware — pacman side done (2026-08-07, CachyOS VM); zypper side
+     still open.** `libreoffice:pacman` → `libreoffice-fresh` and
+     `gh:pacman` → `github-cli` are now confirmed on real pacman
+     hardware — see the Roadmap entry above for the full verification
+     (real restore, real install, resolved-name log line, `pacman -Q`/
+     `pacman -Si` checks, clean idempotent re-run). `firefox:zypper` →
+     `MozillaFirefox` (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) is
+     still unverified — needs an actual `glb restore new-to-linux` on a
+     real or VM zypper machine (the openSUSE VM used for the original
+     cross-distro testing would work, if still available) — not
+     something this session could do without one.
   2. **Developer/Server profiles — done (2026-08-07, Dell laptop).**
      See the Roadmap entry below for the full build (packages picked,
      forks resolved via `AskUserQuestion`, dotfiles, extras, new
@@ -1206,6 +1270,17 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the CachyOS VM session (2026-08-07):** verified
+  `new-to-linux`'s pacman package overrides for real on this VM (the
+  same one from the original 2026-08-05 cross-distro test) — see
+  Roadmap above for the full writeup, including a real `pam_faillock`
+  lockout detour that turned out to be an environment gotcha, not a GLB
+  issue. `libreoffice:pacman`/`gh:pacman` are now confirmed; only
+  `firefox:zypper` remains unverified for item 1. Not pushed yet as of
+  this note — no code changed this session (verification-only), so
+  this commit is docs-only. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming any other
+  machine is caught up.
 - **Handoff from the Pop!_OS test VM session (2026-08-07):** ran
   `glb restore developer` for real here (see Roadmap above) — first
   live, non-sandboxed verification of the profile built the day before
