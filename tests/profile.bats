@@ -568,19 +568,72 @@ teardown() {
 
 # --- glb_restore_interactive -------------------------------------------------
 
-@test "restore_interactive lists profiles and applies the one chosen by number" {
+@test "restore_interactive lists profiles with descriptions, previews, then applies once confirmed" {
     mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
     printf 'git\n' > "$GLB_ROOT/profiles/default/packages.txt"
     printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+    printf 'A work profile.\n' > "$GLB_ROOT/profiles/work/description.txt"
 
-    run glb_restore_interactive <<< '2'
+    run glb_restore_interactive <<< $'2\ny'
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"1) default"* ]]
-    [[ "$output" == *"2) work"* ]]
+    [[ "$output" == *"2) work - A work profile."* ]]
+    [[ "$output" == *"Preview of profile: work"* ]]
+    [[ "$output" == *"Would install: zsh"* ]]
     [[ "$output" == *"Profile applied: work"* ]]
     run cat "$INSTALL_LOG"
     [ "$output" = "zsh" ]
+}
+
+@test "restore_interactive applies with a bare Enter (default yes)" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    run glb_restore_interactive <<< $'1\n\n'
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Profile applied: work"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "zsh" ]
+}
+
+@test "restore_interactive cancels without applying anything when declined" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    run glb_restore_interactive <<< $'1\nn'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Cancelled; nothing changed."* ]]
+    [[ "$output" != *"Profile applied"* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "" ]
+}
+
+@test "restore_interactive doesn't hang and doesn't apply when no confirmation input is available" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    # Here-string '1' becomes stdin "1\n" - the profile-number read
+    # consumes it entirely, leaving true EOF (not just a blank line)
+    # for the confirmation read that follows.
+    run glb_restore_interactive <<< '1'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"No input available; not applying."* ]]
+    run cat "$INSTALL_LOG"
+    [ "$output" = "" ]
+}
+
+@test "restore_interactive falls back to a bare name when a profile has no description.txt" {
+    mkdir -p "$GLB_ROOT/profiles/work/dotfiles"
+    printf 'zsh\n' > "$GLB_ROOT/profiles/work/packages.txt"
+
+    run glb_restore_interactive <<< $'1\nn'
+
+    [[ "$output" == *"1) work"$'\n'* ]] || [[ "$output" == *"1) work"* ]]
+    [[ "$output" != *"1) work -"* ]]
 }
 
 @test "restore_interactive passes --dry-run through to the chosen profile" {

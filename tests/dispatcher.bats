@@ -271,19 +271,42 @@ teardown() {
     [ ! -e "$HOME/.gitconfig" ]
 }
 
-@test "glb restore with no profile name shows a picker and applies the chosen profile" {
+@test "glb restore with no profile name shows a picker, previews, then applies once confirmed" {
     mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
     printf 'git\n' > "$GLB_ROOT/profiles/default/packages.txt"
     echo 'x' > "$GLB_ROOT/profiles/work/dotfiles/.gitconfig"
 
-    run "$GLB_ROOT/glb" restore <<< '2'
+    run "$GLB_ROOT/glb" restore <<< $'2\ny'
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"Choose a profile to restore"* ]]
     [[ "$output" == *"1) default"* ]]
     [[ "$output" == *"2) work"* ]]
+    [[ "$output" == *"Preview of profile: work"* ]]
     [[ "$output" == *"Profile applied: work"* ]]
     [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb restore with no profile name does nothing when the user declines to confirm" {
+    mkdir -p "$GLB_ROOT/profiles/default/dotfiles" "$GLB_ROOT/profiles/work/dotfiles"
+    echo 'x' > "$GLB_ROOT/profiles/work/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore <<< $'2\nn'
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Cancelled; nothing changed."* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
+@test "glb restore with no profile name shows real profile descriptions" {
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
+
+    run "$GLB_ROOT/glb" restore <<< $'1\nn'
+
+    [[ "$output" == *"default - Greg's own daily-driver setup"* ]]
+    [[ "$output" == *"new-to-linux - Curated picks for someone switching"* ]]
 }
 
 @test "glb restore with no profile name and --dry-run picks interactively then previews" {

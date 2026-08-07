@@ -1,0 +1,1 @@
+Greg's own daily-driver setup: shell/prompt, editor, and personal dotfiles.

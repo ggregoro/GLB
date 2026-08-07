@@ -165,21 +165,24 @@ Improve the installation experience.
   `bash-completion` added to both profiles' `packages.txt`. See
   CLAUDE.md — including a real `GLB_ROOT` symlink-resolution bug this
   surfaced and fixed.
+- **Guided configuration wizard (2026-08-07)** — closes out the last
+  four Version 0.5 bullets (express installation, guided wizard,
+  configuration summary, progress reporting) as one small feature, not
+  four separate ones: see `docs/design/guided-wizard.md`. Express
+  installation and progress reporting needed no new code (they're the
+  existing direct `glb restore <profile>` path and the existing
+  step-by-step log lines, respectively). The guided wizard and
+  configuration summary are the same thing: `glb restore` with no
+  profile name now lists each profile with a one-line description
+  (`profiles/<name>/description.txt`), automatically shows a
+  `--dry-run` preview of whichever one is chosen, and asks for
+  confirmation before actually applying it — the new default behavior
+  for the no-argument path. Discovery-only, no per-package
+  customization, per the doc's scope. See CLAUDE.md for the full build.
 
 ### Planned
 
-- **Express installation, guided configuration wizard, configuration
-  summary, progress reporting — scoped (2026-08-07), not yet built.**
-  These four bullets turned out to collapse into one small feature, not
-  four separate ones: see `docs/design/guided-wizard.md`. Express
-  installation and progress reporting need no new code at all (they're
-  the existing direct `glb restore <profile>` path and the existing
-  step-by-step log lines, respectively); configuration summary and the
-  guided wizard are the same thing — a richer version of the existing
-  no-argument `glb restore` picker (profile descriptions + an automatic
-  `--dry-run` preview + a confirm step), discovery-only, not
-  per-package customization. One open question in the doc: whether this
-  becomes bare `glb restore`'s new default behavior or stays opt-in.
+(none — all Version 0.5 items are complete)
 
 ---
 

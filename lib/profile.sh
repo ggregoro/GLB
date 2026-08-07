@@ -22,6 +22,21 @@ _glb_profile_dir() {
 }
 
 # ------------------------------------------------------------
+# Internal helper: a profile's one-line description, if it has one
+# (profiles/<name>/description.txt). Used by glb_restore_interactive's
+# picker. Not every profile needs one - falls back to nothing, and the
+# picker just shows the bare name in that case.
+# ------------------------------------------------------------
+
+_glb_profile_description() {
+    local name="$1"
+    local desc_file
+    desc_file="$(_glb_profile_dir "$name")/description.txt"
+
+    [[ -f "$desc_file" ]] && head -n1 "$desc_file"
+}
+
+# ------------------------------------------------------------
 # Install every package listed in a profile's packages.txt
 # ------------------------------------------------------------
 
@@ -260,13 +275,21 @@ glb_apply_profile() {
 # Interactively pick a profile (numbered menu, like
 # glb_configure_starship in lib/prompt.sh) and apply it. Used by the
 # dispatcher when `glb restore` is run with no profile name.
+#
+# The guided flow (no --dry-run flag given): list profiles with their
+# one-line descriptions, then once one is chosen, automatically show a
+# --dry-run preview and ask for confirmation before actually applying
+# it - someone who runs `glb restore` with no arguments presumably
+# wants guidance, not an immediate irreversible change. If --dry-run
+# was explicitly requested, skip the confirmation and just preview, as
+# before - the caller already said what they want.
 # ------------------------------------------------------------
 
 glb_restore_interactive() {
     local dry_run="${1:-}"
     local profiles_root="$GLB_ROOT/profiles"
     local profiles=()
-    local dir choice i
+    local dir choice i desc chosen confirm
 
     if [[ ! -d "$profiles_root" ]]; then
         glb_log_warn "No profiles directory found."
@@ -286,7 +309,12 @@ glb_restore_interactive() {
     printf "\n"
     printf "Choose a profile to restore:\n"
     for i in "${!profiles[@]}"; do
-        printf "  %d) %s\n" "$((i + 1))" "${profiles[$i]}"
+        desc="$(_glb_profile_description "${profiles[$i]}")"
+        if [[ -n "$desc" ]]; then
+            printf "  %d) %s - %s\n" "$((i + 1))" "${profiles[$i]}" "$desc"
+        else
+            printf "  %d) %s\n" "$((i + 1))" "${profiles[$i]}"
+        fi
     done
     read -r -p "> " choice
 
@@ -295,7 +323,28 @@ glb_restore_interactive() {
         return 1
     fi
 
-    glb_apply_profile "${profiles[$((choice - 1))]}" "$dry_run"
+    chosen="${profiles[$((choice - 1))]}"
+
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        glb_apply_profile "$chosen" "--dry-run"
+        return
+    fi
+
+    printf "\n"
+    printf "Preview of profile: %s\n" "$chosen"
+    glb_apply_profile "$chosen" "--dry-run"
+
+    if ! read -r -p $'\nApply this profile now? [Y/n] ' confirm; then
+        glb_log_warn "No input available; not applying."
+        return 1
+    fi
+
+    if [[ "$confirm" =~ ^[nN] ]]; then
+        glb_log_warn "Cancelled; nothing changed."
+        return 1
+    fi
+
+    glb_apply_profile "$chosen" ""
 }
 
 # ------------------------------------------------------------

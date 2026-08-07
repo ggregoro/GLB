@@ -1,6 +1,6 @@
 # Design: Guided Configuration Wizard
 
-**Status:** Proposed — not yet implemented
+**Status:** Implemented (2026-08-07)
 **Added:** 2026-08-07
 
 ## Motivation
@@ -69,34 +69,26 @@ every tool choice themselves..."), but that prose is written for someone
 editing the file, not for a one-line picker display, and parsing it out
 would be fragile (no fixed format, several sentences long).
 
-Recommended approach: a small explicit `profiles/<name>/description.txt`
-— a single line, the same kind of narrowly-scoped-per-concern file GLB
-already uses (`packages.txt` for packages, `extras.txt` for extras).
-Keeps the picker's data source explicit and stable instead of scraping
-developer-facing comments. Would need one new file added per existing
-profile (`default`, `new-to-linux`, `developer`, `server`) as part of
-building this.
+Built as a small explicit `profiles/<name>/description.txt` — a single
+line, the same kind of narrowly-scoped-per-concern file GLB already
+uses (`packages.txt` for packages, `extras.txt` for extras). Keeps the
+picker's data source explicit and stable instead of scraping
+developer-facing comments. Added to all four existing profiles
+(`default`, `new-to-linux`, `developer`, `server`); optional — a
+profile with no `description.txt` just shows its bare name in the
+picker (`_glb_profile_description`, `lib/profile.sh`).
 
-## Open design question
+## Resolved: new default (2026-08-07, via `AskUserQuestion`)
 
-Should the richer picker flow (list with descriptions → dry-run preview
-→ confirm) become the **new default** behavior of a bare `glb restore`
-with no arguments, or should it be opt-in behind some new flag?
-
-Making it the new default is the more useful outcome (it's the whole
-point of "guided" — someone who runs bare `glb restore` presumably wants
-guidance) but it's a real behavior change: today, `glb_restore_interactive`
-picks a profile and applies it immediately with no extra confirmation
-step. Existing bats tests (`tests/dispatcher.bats`,
-`tests/profile.bats`) that exercise this path assert on that immediate-
-apply behavior and would need updating to feed the new confirmation
-prompt, not just extended with new cases.
-
-Leaning toward "yes, make it the new default" — the express path
-(`glb restore <profile>` with a name) is unaffected and remains the
-zero-friction option for anyone who wants it — but this is worth
-confirming explicitly before implementation, the same way the
-in-repo-snapshots question was confirmed before building `glb export`.
+The richer picker flow (descriptions → dry-run preview → confirm) is
+bare `glb restore`'s new default behavior, not opt-in behind a flag —
+someone who runs `glb restore` with no arguments presumably wants
+guidance. The express path (`glb restore <profile>` with a name) is
+unaffected: it still applies immediately, no picker, no preview, no
+confirmation. `tests/dispatcher.bats` and `tests/profile.bats`'s
+existing interactive-picker tests were updated to feed the new
+confirmation answer rather than just extended with new cases, as
+anticipated when this question was first written.
 
 ## Why this is viable rather than scope creep
 

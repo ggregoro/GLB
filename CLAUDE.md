@@ -62,8 +62,10 @@ branches on it.
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
   `update`, `restore [profile] [--undo|--dry-run|--from-snapshot
-  <name>]` (no profile name shows an interactive picker), `profiles`,
-  `prompt`, `export`, `diff <a> <b>`.
+  <name>]` (no profile name shows a guided picker — descriptions, an
+  automatic `--dry-run` preview, then a confirm prompt before applying;
+  `--dry-run` explicitly passed skips the confirm and just previews),
+  `profiles`, `prompt`, `export`, `diff <a> <b>`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
   `lib/detect.sh`, `lib/package.sh`, `lib/extras.sh`, `lib/profile.sh`,
   `lib/export.sh`, `lib/diff.sh`, `lib/prompt.sh`, `lib/plugins.sh`,
@@ -195,6 +197,67 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Guided configuration wizard built (2026-08-07, openSUSE VM) —
+  closes out the last four Version 0.5 bullets.** Followed the
+  scoping this same session already locked down in
+  `docs/design/guided-wizard.md` (discovery-only, express-install and
+  progress-reporting need no code, and — confirmed via a follow-up
+  `AskUserQuestion` right before building — the richer flow becomes
+  bare `glb restore`'s new default, not an opt-in flag).
+  - **New `profiles/<name>/description.txt`** (one line each) added to
+    all four existing profiles, and a new `_glb_profile_description`
+    helper (`lib/profile.sh`) that reads it, falling back to nothing
+    (bare name shown) if a profile doesn't have one — kept genuinely
+    optional rather than required.
+  - **`glb_restore_interactive` (`lib/profile.sh`) rewritten**: the
+    picker menu now shows each profile's description next to its
+    name; once a number is chosen, it automatically runs the same
+    `--dry-run` preview `glb restore <profile> --dry-run` would show,
+    then asks "Apply this profile now? [Y/n]" before doing a real
+    apply. Explicit `--dry-run` passed to the bare command (`glb
+    restore --dry-run`) skips the confirm step entirely and just
+    previews, unchanged from before — only the fully-bare `glb
+    restore` gained the new confirm gate. A decline, or no input
+    available to answer with, cancels cleanly with nothing changed
+    (same fail-safe posture as `glb_prompt_manual_step`'s existing
+    skip-on-EOF handling) — returns 1, doesn't hang.
+  - **Real gotcha found while writing the tests, not a GLB bug:**
+    bash's `read -p` prints its prompt to neither stdout nor stderr in
+    a way `bats`' `run` can capture when stdin is a redirected
+    here-string/pipe rather than a real terminal — confirmed with a
+    minimal `bash -c 'read -p "X: " v <<< "y"'` repro showing the
+    prompt text simply never appears in captured output at all,
+    regardless of stream redirection. This is why the *existing*
+    `glb_prompt_manual_step` tests (`tests/package.bats`) already never
+    asserted on its own prompt text either — an established pattern in
+    this codebase, not something this session discovered as broken;
+    just something worth knowing if a new interactive prompt's test
+    ever seems to inexplicably not see its own prompt string.
+  - **Deliberately duplicated, not refactored, existing dry-run/apply
+    calls** — `glb_restore_interactive` now calls `glb_apply_profile`
+    twice (once with `"--dry-run"` for the preview, once for real if
+    confirmed) rather than inventing a new "preview-then-commit"
+    primitive. Exactly the "close to free" reuse the design doc
+    predicted: no new mechanism, just two calls to something that
+    already existed.
+  - Existing interactive-picker tests in `tests/profile.bats` and
+    `tests/dispatcher.bats` were **updated, not just extended** — they
+    now feed a second line of input for the new confirmation prompt,
+    since the default behavior genuinely changed (anticipated
+    explicitly in the design doc's now-resolved open question). 9 new
+    tests total across both files (description display, bare-Enter
+    defaults to yes, explicit decline, no-input-available, a profile
+    with no `description.txt` falling back to a bare name, and a
+    dispatcher-level test confirming the real shipped profiles' actual
+    description text renders correctly). 175 total bats tests, 171
+    pass — same 4 pre-existing `fresh`-on-PATH failures, unrelated.
+  - **Real, for-real verification, not just bats:** ran `./glb restore`
+    with no arguments for real on this VM, chose `default`, declined
+    the confirmation — output showed all four real profiles with their
+    real descriptions, a full accurate preview of `default` (including
+    real "already installed" vs. "would install" distinctions for this
+    VM's actual state), and confirmed nothing on the real machine
+    changed after declining.
 - **`glb export` built (2026-08-07, openSUSE VM) — first slice of
   Version 0.6's Configuration Management, picked up after item 1
   (per-distro override verification) closed out on this same machine
@@ -838,13 +901,12 @@ branches on it.
      `gh:pacman` override, bats coverage). Design question resolved:
      both are for someone newer to that role, not someone who already
      knows what they want.
-  3. **Original Version 0.5 items never promoted to "agreed
-     priority": express installation, guided configuration wizard,
-     configuration summary, progress reporting.** None of these are
-     concretely scoped yet (unlike the four just-finished items, which
-     each already had a clear one-line mechanism in mind before
-     building) — will need defining/scoping as part of picking this
-     up, not just implementing.
+  3. **Original Version 0.5 items — done (2026-08-07, openSUSE VM):
+     express installation, guided configuration wizard, configuration
+     summary, progress reporting.** Turned out to collapse into one
+     small feature: see `docs/design/guided-wizard.md` and the Roadmap
+     entry above for the full build. **Version 0.5 has no planned
+     items left.**
   4. **Version 0.6 — Configuration Management: installation
      manifests, configuration export/import, repairing existing
      installations, updating installed components.**
@@ -1470,12 +1532,13 @@ branches on it.
 
 - **`bats` is not installed on the openSUSE VM** (2026-08-07), same
   no-TTY-for-sudo-install limitation as every other machine — ran via
-  the same locally-cloned `bats-core` workaround. 165/169 tests pass
+  the same locally-cloned `bats-core` workaround. 171/175 tests pass
   (up from 121 after this session's new `tests/export.bats`,
-  `tests/diff.bats`, and `tests/restore_snapshot.bats`); the 4 failures
-  are the same pre-existing, already-documented `fresh`-genuinely-on-PATH
-  gap this VM now has from
-  its own real `new-to-linux` restore earlier this session (see Roadmap
+  `tests/diff.bats`, `tests/restore_snapshot.bats`, and updates to
+  `tests/profile.bats`/`tests/dispatcher.bats` for the guided wizard);
+  the 4 failures are the same pre-existing, already-documented
+  `fresh`-genuinely-on-PATH gap this VM now has from its own real
+  `new-to-linux` restore earlier this session (see Roadmap
   entry above), confirmed via `command -v fresh` directly.
 - `tests/` has a bats suite (`tests/detect.bats`, `package.bats`,
   `profile.bats`, `dispatcher.bats`) covering package manager detection,
@@ -1521,6 +1584,19 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, one more time):
+  built the guided configuration wizard, closing out Version 0.5
+  entirely.** Confirmed the design doc's one open question via
+  `AskUserQuestion` (new default behavior for bare `glb restore`, not
+  opt-in), then built it: `_glb_profile_description` +
+  `profiles/*/description.txt` (new file per profile) and a rewritten
+  `glb_restore_interactive` (`lib/profile.sh`) that previews then
+  confirms before applying. See the Roadmap entry above for the full
+  build, including a real `read -p`/bats-capture gotcha (unrelated to
+  GLB itself, just a testing quirk worth knowing) and why existing
+  interactive-picker tests needed updating, not just extending, since
+  the default behavior genuinely changed. This commit changes code —
+  confirm it's pushed before assuming another machine has it.
 - **Handoff from the openSUSE VM session (2026-08-07, yet further
   continued): scoped the guided configuration wizard, didn't build it.**
   Reviewed what already exists (the no-argument `glb restore` picker,

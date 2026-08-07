@@ -1,0 +1,1 @@
+A complete dev toolkit for someone newer to development who wants solid defaults without researching every tool.
