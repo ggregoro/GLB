@@ -1521,6 +1521,27 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, yet further
+  continued): scoped the guided configuration wizard, didn't build it.**
+  Reviewed what already exists (the no-argument `glb restore` picker,
+  `--dry-run`, existing step-by-step logging) and found the four vague
+  Version 0.5 bullets (express install, guided wizard, configuration
+  summary, progress reporting) collapse into one small feature, not
+  four. Confirmed via `AskUserQuestion`: discovery-only (no per-package
+  customization — matches GLB's existing curated/opinionated
+  philosophy), express install needs zero new code (it's the existing
+  direct `glb restore <profile>` path), progress reporting needs zero
+  new code (existing logging already does this). Wrote
+  `docs/design/guided-wizard.md` capturing the scope: enhance the
+  existing picker with a one-line description per profile (recommended
+  source: a new `profiles/<name>/description.txt` per profile, not
+  parsing `packages.txt`'s prose comments) plus an automatic
+  `--dry-run` preview and confirm step before applying. One open
+  question left in the doc for next time, same pattern as the
+  in-repo-snapshots question that preceded `glb export`: should this
+  become bare `glb restore`'s new default behavior (changes existing
+  test assertions that expect immediate-apply) or stay opt-in behind a
+  new flag. Docs-only, no code changed this round.
 - **Handoff from the openSUSE VM session (2026-08-07, further
   continued):** `docs/ROADMAP.md`'s Version 0.7 (Cross-Distribution
   Support) target-distro list was just a flat, unchecked bullet list

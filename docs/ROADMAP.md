@@ -168,10 +168,18 @@ Improve the installation experience.
 
 ### Planned
 
-- Express installation
-- Guided configuration wizard
-- Configuration summary
-- Progress reporting
+- **Express installation, guided configuration wizard, configuration
+  summary, progress reporting — scoped (2026-08-07), not yet built.**
+  These four bullets turned out to collapse into one small feature, not
+  four separate ones: see `docs/design/guided-wizard.md`. Express
+  installation and progress reporting need no new code at all (they're
+  the existing direct `glb restore <profile>` path and the existing
+  step-by-step log lines, respectively); configuration summary and the
+  guided wizard are the same thing — a richer version of the existing
+  no-argument `glb restore` picker (profile descriptions + an automatic
+  `--dry-run` preview + a confirm step), discovery-only, not
+  per-package customization. One open question in the doc: whether this
+  becomes bare `glb restore`'s new default behavior or stays opt-in.
 
 ---
 
