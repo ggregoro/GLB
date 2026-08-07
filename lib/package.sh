@@ -47,6 +47,72 @@ glb_resolve_package_name() {
 }
 
 # ------------------------------------------------------------
+# Reverse of glb_resolve_package_name: given a distro-specific
+# package name and package manager, find the generic name it came
+# from (if any override maps to it). Used by `glb export` to write
+# packages.txt entries in GLB's canonical names rather than raw
+# distro-specific ones.
+# ------------------------------------------------------------
+
+glb_reverse_resolve_package_name() {
+    local resolved="$1"
+    local pkg_mgr="$2"
+    local key
+
+    for key in "${!_GLB_PACKAGE_OVERRIDES[@]}"; do
+        if [[ "$key" == *":$pkg_mgr" && "${_GLB_PACKAGE_OVERRIDES[$key]}" == "$resolved" ]]; then
+            printf "%s\n" "${key%%:*}"
+            return 0
+        fi
+    done
+
+    printf "%s\n" "$resolved"
+}
+
+# ------------------------------------------------------------
+# List packages explicitly installed by the user (not pulled in as
+# a dependency of something else), in each package manager's own
+# distro-specific names. Used by `glb export`.
+#
+# zypper has no first-class "manual vs automatic" query like the
+# other three; it tracks this internally in
+# /var/lib/zypp/AutoInstalled (a plain list of dependency-installed
+# package names libzypp maintains for its own `zypper info`
+# "Installed: Yes (automatically)" reporting) - manual is everything
+# installed minus that list. Note this still includes base-system/
+# pattern packages (e.g. glibc, kernel-default, grub2) that were
+# "manually" installed as part of the OS install itself, not
+# something the user consciously chose - a real limitation callers
+# should account for (see the comment glb_export_packages writes
+# into packages.txt).
+# ------------------------------------------------------------
+
+glb_list_installed_packages() {
+    local pkg_mgr="$1"
+
+    case "$pkg_mgr" in
+        apt)
+            apt-mark showmanual
+            ;;
+        dnf)
+            dnf repoquery --userinstalled --qf '%{name}' 2>/dev/null
+            ;;
+        pacman)
+            pacman -Qqe
+            ;;
+        zypper)
+            comm -23 \
+                <(rpm -qa --qf '%{NAME}\n' | sort -u) \
+                <(grep -v '^#' /var/lib/zypp/AutoInstalled 2>/dev/null | sort -u)
+            ;;
+        *)
+            glb_log_error "Unsupported package manager: $pkg_mgr"
+            return 1
+            ;;
+    esac
+}
+
+# ------------------------------------------------------------
 # Pause and let the user complete a failed step manually, then
 # continue. Used when a command GLB ran (e.g. a sudo-gated install)
 # fails and retrying automatically wouldn't help - most commonly a

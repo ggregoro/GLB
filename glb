@@ -20,6 +20,7 @@ source "$GLB_ROOT/lib/detect.sh"
 source "$GLB_ROOT/lib/package.sh"
 source "$GLB_ROOT/lib/extras.sh"
 source "$GLB_ROOT/lib/profile.sh"
+source "$GLB_ROOT/lib/export.sh"
 source "$GLB_ROOT/lib/prompt.sh"
 source "$GLB_ROOT/lib/plugins.sh"
 source "$GLB_ROOT/lib/completions.sh"
@@ -46,6 +47,7 @@ glb_show_help() {
     printf "  restore --dry-run    Preview what a restore would do, without changing anything\n"
     printf "  profiles   List available profiles\n"
     printf "  prompt     Install and configure the Starship shell prompt\n"
+    printf "  export     Capture this machine's packages/dotfiles into snapshots/\n"
     printf "\n"
 }
 
@@ -131,6 +133,10 @@ case "${1:-}" in
 
     prompt)
         glb_setup_prompt
+        ;;
+
+    export)
+        glb_export_snapshot
         ;;
 
     "")

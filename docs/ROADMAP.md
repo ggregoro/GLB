@@ -182,7 +182,23 @@ Improve reproducibility.
 ### Planned
 
 - Installation manifests
-- Configuration export
+- **Configuration export — in progress (2026-08-07).** `glb export`
+  captures the current machine's explicitly-installed packages
+  (reverse-mapped through `_GLB_PACKAGE_OVERRIDES` back to canonical
+  names) plus every dotfile any local profile tracks that actually
+  exists in `$HOME`, into a profile-shaped `snapshots/<hostname>-<date>/`
+  directory — same `packages.txt`/`dotfiles/` shape `glb restore`
+  already understands, plus `shell.txt` and `metadata.yaml`. Snapshots
+  are committed in-repo (decided 2026-08-07, see
+  `docs/design/state-export-import.md`), so cross-machine diffing rides
+  the existing `git fetch` workflow for free. See CLAUDE.md for the full
+  build notes, including a real zypper limitation found while building
+  it (no manual-vs-dependency split, so its packages.txt includes
+  base-system/pattern packages) and a real scope gap (extras.txt-installed
+  packages like Fresh show up under their raw package name, not GLB's
+  canonical name, since only `_GLB_PACKAGE_OVERRIDES` is reverse-mapped).
+  `glb diff`/`glb restore --from-snapshot` (the rest of the design doc)
+  not started yet.
 - Configuration import
 - Repair existing installations
 - Update installed components

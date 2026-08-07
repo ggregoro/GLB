@@ -62,11 +62,15 @@ Useful standalone, independent of backup/restore — e.g., catching packages ins
 
 Since a snapshot is just a profile variant, this is close to free — same code path as `glb restore default`, pointed at a different profile source.
 
-## Open design question
+## Decision: snapshot location (resolved 2026-08-07)
 
-Should snapshots live in the GLB repo itself (versioned, shareable across machines like `CLAUDE.md`), or in a separate location per machine?
-
-Given the existing multi-machine workflow (`git fetch && git log main..origin/main` at session start), keeping snapshots in-repo would allow diffing snapshots across machines directly — e.g., "what does CachyOS actually have installed" vs. "what does openSUSE actually have installed" — for free, with no extra sync mechanism.
+Snapshots live in-repo, versioned, at `snapshots/<hostname>-<date>/` — same
+tracked-in-git treatment as `CLAUDE.md`. Decided over a separate
+per-machine location (e.g. `~/.glb/snapshots/`) specifically because it
+lets snapshots ride the existing multi-machine `git fetch && git log
+main..origin/main` workflow for free — diffing "what does CachyOS
+actually have installed" vs. "what does openSUSE actually have
+installed" needs no new sync mechanism, just a normal pull.
 
 ## Why this is viable rather than scope creep
 

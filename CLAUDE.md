@@ -58,15 +58,15 @@ When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
 branches on it.
 
-## Current state (as of 2026-08-06)
+## Current state (as of 2026-08-07)
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
   `update`, `restore [profile] [--undo|--dry-run]` (no profile name
-  shows an interactive picker), `profiles`, `prompt`.
+  shows an interactive picker), `profiles`, `prompt`, `export`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
   `lib/detect.sh`, `lib/package.sh`, `lib/extras.sh`, `lib/profile.sh`,
-  `lib/prompt.sh`, `lib/plugins.sh`, `lib/completions.sh` — all sourced
-  by the `glb` dispatcher.
+  `lib/export.sh`, `lib/prompt.sh`, `lib/plugins.sh`,
+  `lib/completions.sh` — all sourced by the `glb` dispatcher.
 - `profiles/default/` is now Greg's real setup, not a placeholder, and
   **`glb restore default` has been run for real on this laptop** — Oh My
   Zsh + Powerlevel10k are no longer active (backed up to `~/.zshrc
@@ -194,6 +194,104 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`glb export` built (2026-08-07, openSUSE VM) — first slice of
+  Version 0.6's Configuration Management, picked up after item 1
+  (per-distro override verification) closed out on this same machine
+  this session.** Read `docs/ROADMAP.md` and
+  `docs/design/state-export-import.md` (written 2026-08-06, previously
+  just "Proposed — not yet implemented") before building — the design
+  doc already had a scoped three-part plan (`glb export` / `glb diff` /
+  `glb restore --from-snapshot`); only `glb export` was built this
+  session, the other two are still just design. One open question in
+  the doc — snapshots in-repo (versioned, diffable across machines via
+  the existing `git fetch` workflow) vs. a separate per-machine
+  location — was resolved via `AskUserQuestion`: **in-repo**, decision
+  recorded directly in the design doc.
+  - New `lib/export.sh`: `glb_export_snapshot` writes
+    `snapshots/<hostname>-<date>/` containing `packages.txt` (same
+    format `glb restore` already reads), `dotfiles/` (real copies, not
+    symlinks), `shell.txt`, and `metadata.yaml`. Wired into the
+    dispatcher (`glb`) as a new `export` command alongside the existing
+    ones.
+  - **Packages:** two new functions in `lib/package.sh` —
+    `glb_list_installed_packages` (per-package-manager query for
+    explicitly-installed-not-just-a-dependency packages: `apt-mark
+    showmanual`, `dnf repoquery --userinstalled`, `pacman -Qqe`) and
+    `glb_reverse_resolve_package_name` (the inverse of the existing
+    `glb_resolve_package_name` — maps a distro-specific name like
+    `fd-find` back to GLB's canonical `fd` via
+    `_GLB_PACKAGE_OVERRIDES`, so exported `packages.txt` reads the same
+    as a hand-written profile would).
+  - **Real gap found building this: zypper has no first-class
+    manual-vs-dependency query** like the other three managers. Worked
+    around using `/var/lib/zypp/AutoInstalled` — a plain-text list
+    libzypp itself maintains internally (confirmed real and current on
+    this VM, dated the same day, 2572 lines) for its own `zypper info`
+    "Installed: Yes (automatically)" reporting; manual = `rpm -qa` minus
+    that list. Verified for real on this VM: 2592 total installed RPMs,
+    43 resolve as "manual" this way. **Real limitation, not fully
+    solved:** that 43 includes genuine base-system/pattern packages
+    (`glibc`, `kernel-default`, `grub2`, `NetworkManager`, `firewalld`,
+    `patterns-base-*`, ...) that were never a deliberate user choice,
+    just part of the OS install itself — zypper's tracking can't tell
+    those apart from something the user actually asked for. Documented
+    both in a code comment (`glb_list_installed_packages`) and as a
+    zypper-only note `glb_export_packages` writes directly into the
+    exported `packages.txt`, rather than silently shipping a misleading
+    file — same "flag the real gap rather than paper over it" pattern
+    as the existing zypper/`unattended-upgrades` and unverified-override
+    notes elsewhere in this file.
+  - **Dotfiles:** exports the union of relative paths across every
+    local profile's `dotfiles/` (not a blind `$HOME` scrape — matches
+    the design doc's explicit scope boundary), copying real content via
+    `cp -L` for whichever of those actually exist in `$HOME` right now
+    — so a file hand-edited since the last restore is captured as its
+    real current content, not the stale symlink target.
+  - **Real scope gap found via a real end-to-end run on this VM, not
+    just bats — deliberately not fixed this session:** the exported
+    `packages.txt` included `fresh-editor` under its raw RPM name, not
+    GLB's canonical `fresh`, because Fresh is installed via
+    `extras.txt`'s curl method, not a `_GLB_PACKAGE_OVERRIDES` entry —
+    only the package-manager path is reverse-mapped right now, extras
+    aren't cross-referenced at all. Flagged here as a known follow-up,
+    not silently left undiscovered.
+  - 16 new bats tests in `tests/export.bats` (reverse-resolution, each
+    package manager's listing command, the zypper
+    AutoInstalled-diffing logic, dotfiles export including the
+    symlink-follows-to-real-content case, shell.txt, metadata.yaml, and
+    two `glb_export_snapshot` integration tests) plus 1 new dispatcher
+    end-to-end test in `tests/dispatcher.bats` (real `default` profile's
+    dotfiles, real `glb export` invocation). Two real bugs caught and
+    fixed by actually running the suite on this VM before calling it
+    done, not by inspection alone: two `export_shell` tests initially
+    read the real host's actually-installed `starship` (this VM has one
+    — same class of real-host-PATH-bleed gap already documented
+    elsewhere in this file for `fresh`), fixed by scoping `PATH` to
+    `STUB_BIN` only, matching the isolation pattern `tests/detect.bats`
+    already established; separately, those same two tests initially
+    forgot to source `lib/detect.sh` (needed for `glb_detect_shell`)
+    inside their restricted-PATH subshell, caught by the very next test
+    run. 137/141 bats tests pass overall — the same 4 pre-existing,
+    already-documented `fresh`-genuinely-on-PATH failures this VM has
+    from this session's real `new-to-linux` restore earlier (see
+    Testing section), confirmed via `command -v fresh` directly rather
+    than assumed.
+  - **Real, for-real verification, not just bats:** ran `./glb export`
+    for real on this VM (safe to do live, unlike `restore` — no sudo,
+    no network, no destructive action, purely reads system state).
+    Produced a real 40-package `packages.txt`, all 7 real tracked
+    dotfiles, a correct `shell.txt` (zsh, starship installed, both
+    curated zsh plugins present), and `metadata.yaml`. **Confirmed with
+    Greg via `AskUserQuestion` and then deleted before committing**
+    (chosen over keeping it) — the real snapshot was a noisy first cut
+    (zypper base-package cruft per the limitation above) and not a
+    great precedent to set as the first real machine-data commit in a
+    repo that may go public later; this session's commit is code +
+    tests only, no real snapshot data.
+  - **Not started:** `glb diff <snapshot> <profile>` (drift detection)
+    and `glb restore --from-snapshot <name>` — the other two-thirds of
+    the design doc's plan. `glb export` was deliberately scoped as the
+    first slice since the other two build directly on its output.
 - **`new-to-linux`'s `firefox:zypper` override verified for real
   (2026-08-07, openSUSE Tumbleweed VM — the same VM from the original
   2026-08-06 zypper cross-distro test).** Closes out the last open piece
@@ -649,8 +747,18 @@ branches on it.
      up, not just implementing.
   4. **Version 0.6 — Configuration Management: installation
      manifests, configuration export/import, repairing existing
-     installations, updating installed components.** Not started, not
-     yet scoped in detail. See `docs/ROADMAP.md`.
+     installations, updating installed components.** `glb export` (the
+     first slice — capturing current state) is now **done (2026-08-07,
+     openSUSE VM)**, following the scoped plan already written in
+     `docs/design/state-export-import.md`. Still open: `glb diff
+     <snapshot> <profile>` (drift detection) and `glb restore
+     --from-snapshot <name>` — the doc's other two pieces, both meant to
+     build directly on `glb export`'s output. See the Roadmap entry
+     above for the full build, including a real zypper
+     manual-vs-dependency limitation and a real scope gap
+     (extras.txt-installed packages aren't reverse-mapped yet).
+     Repairing existing installations / updating installed components
+     are separate, still-unscoped pieces of this same version.
 - **Session wrap-up brainstorm, agreed as real priorities (2026-08-06),
   not yet built — pick up here next session.** End-of-session
   discussion: what would a user *other than Greg* appreciate, without
@@ -1260,6 +1368,14 @@ branches on it.
 
 ## Testing
 
+- **`bats` is not installed on the openSUSE VM** (2026-08-07), same
+  no-TTY-for-sudo-install limitation as every other machine — ran via
+  the same locally-cloned `bats-core` workaround. 137/141 tests pass
+  (up from 121 after this session's new `tests/export.bats`); the 4
+  failures are the same pre-existing, already-documented
+  `fresh`-genuinely-on-PATH gap this VM now has from its own real
+  `new-to-linux` restore earlier this session (see Roadmap entry
+  above), confirmed via `command -v fresh` directly.
 - `tests/` has a bats suite (`tests/detect.bats`, `package.bats`,
   `profile.bats`, `dispatcher.bats`) covering package manager detection,
   packages.txt parsing, dotfiles symlink/backup, per-distro package
@@ -1304,6 +1420,21 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the openSUSE VM session (2026-08-07, continued):**
+  same session as the `firefox:zypper` verification below also built
+  `glb export` — item 4's first slice (Version 0.6 Configuration
+  Management), following the already-scoped plan in
+  `docs/design/state-export-import.md`. See the Roadmap entry above for
+  the full build: new `lib/export.sh` + `export` command, two new
+  `lib/package.sh` functions, a real zypper manual-vs-dependency
+  limitation worked around via `/var/lib/zypp/AutoInstalled`, a real
+  scope gap (extras.txt packages like Fresh aren't reverse-mapped yet),
+  16 new bats tests, and a real `./glb export` run on this VM (verified
+  then deleted before committing, per Greg's choice via
+  `AskUserQuestion`). `glb diff`/`glb restore --from-snapshot` (the rest
+  of the design doc) not started. This commit does change code (unlike
+  the verification-only one below) — confirm it's actually pushed
+  before assuming another machine has it.
 - **Handoff from the openSUSE VM session (2026-08-07):** verified
   `new-to-linux`'s `firefox:zypper` override for real on this VM (the
   same one from the original 2026-08-06 zypper cross-distro test) — see

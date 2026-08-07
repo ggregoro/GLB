@@ -254,3 +254,25 @@ teardown() {
     [[ "$output" == *"apt update"* ]]
     [[ "$output" == *"apt upgrade -y"* ]]
 }
+
+@test "glb export captures the real default profile's tracked dotfiles and packages into a snapshot" {
+    stub_command apt-mark 'printf "git\nfd-find\n"'
+    stub_command hostname 'echo test-host'
+    stub_command date 'if [ "$1" = "+%Y-%m-%d" ]; then echo 2026-08-07; else /usr/bin/date "$@"; fi'
+
+    mkdir -p "$GLB_ROOT/profiles"
+    cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
+    printf 'my real bashrc\n' > "$HOME/.bashrc"
+
+    run "$GLB_ROOT/glb" export
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Exported snapshot: snapshots/test-host-2026-08-07"* ]]
+
+    run cat "$GLB_ROOT/snapshots/test-host-2026-08-07/packages.txt"
+    [[ "$output" == *$'\n'"git"$'\n'* ]] || [[ "$output" == *$'\n'"git" ]]
+    [[ "$output" == *$'\n'"fd"$'\n'* ]] || [[ "$output" == *$'\n'"fd" ]]
+    [[ "$output" != *"fd-find"* ]]
+
+    [ "$(cat "$GLB_ROOT/snapshots/test-host-2026-08-07/dotfiles/.bashrc")" = "my real bashrc" ]
+    [ ! -e "$GLB_ROOT/snapshots/test-host-2026-08-07/dotfiles/.zshrc" ]
+}
