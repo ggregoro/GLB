@@ -181,6 +181,49 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real bug found and fixed (2026-08-07, Pop!_OS test VM): a second
+  profile restore silently overwrote the `.glb-backup` from the first
+  one, permanently destroying the true pre-GLB original config.**
+  Surfaced while testing whether `glb restore --undo` could take this VM
+  fully back to its state from before GLB ever ran — Greg's actual ask
+  after restoring `developer` today. It couldn't: this VM's `default`
+  restore (2026-08-06) correctly backed up the real stock Pop!_OS
+  dotfiles to `*.glb-backup`. Restoring `developer` today (switching
+  profiles for the first time ever tested back-to-back on one real
+  machine) found those dotfiles already existing as `default`'s
+  symlinks, and backed *them* up too — via a plain `mv "$dest"
+  "$dest.glb-backup"` in `glb_apply_profile_dotfiles`
+  (`lib/profile.sh`) with no check for whether `.glb-backup` already
+  existed. `mv` to an existing target overwrites silently, so the
+  Aug 6 backup (the real original) was destroyed and replaced with the
+  Aug 7 intermediate (`default`'s symlink). Ran `glb restore --undo`
+  afterward to confirm the actual, now-diminished behavior: it
+  correctly swapped back to `default` (mechanically working as
+  designed for one level of history) but **not** to true pre-GLB
+  defaults, since that data no longer existed anywhere to restore from.
+  - **Fix:** `glb_apply_profile_dotfiles` now checks for an existing
+    `~/$rel.glb-backup` before touching `$dest`. If one already exists
+    and `$dest` is a symlink (the normal case — just switching
+    profiles, nothing new to preserve), it replaces the link directly
+    and leaves the existing backup untouched. If one already exists and
+    `$dest` is *not* a symlink (an unexpected/anomalous state — real
+    data sitting where a backup already exists), it refuses and fails
+    that file rather than silently destroying the backup, same
+    fail-safe philosophy as `glb_undo_restore`'s existing "skip a
+    hand-modified destination" case. Dry-run output updated to
+    distinguish "would replace the link, backup untouched" from "would
+    back up, then link" from the new refusal case.
+  - 3 new bats tests in `tests/profile.bats`: switching profiles twice
+    preserves the original backup unchanged, a real (non-symlink) file
+    colliding with an existing backup is refused rather than
+    overwritten, and the dry-run variant reports the right message.
+    120/124 bats tests pass overall (the same 4 pre-existing,
+    already-documented `fresh-editor`-on-PATH failures on this VM, see
+    Testing section — confirmed unrelated to this fix).
+  - **This VM's own pre-GLB baseline is unrecoverable** — the fix
+    prevents this from happening to anyone else, but doesn't restore
+    what's already lost here. Left this VM on `default` post-undo (Greg's
+    call, since it's a test machine and the loss doesn't matter here).
 - **`profiles/developer` verified with a real restore (2026-08-07, Pop!_OS
   test VM).** First genuinely real (non-sandboxed) `glb restore developer`
   anywhere — everything built the day before on the Dell laptop was only
@@ -1143,8 +1186,20 @@ branches on it.
   methods both confirmed working for real too. One real (non-GLB) gap
   noted: this VM already had a Nerd Font installed by hand before this
   session, so it's no longer a clean "fresh install" test bed for that
-  specific gap. **Pull first** (`git fetch && git log main..origin/main`)
-  before assuming any other machine is caught up.
+  specific gap.
+  Same session also tested `glb restore --undo` for real here (Greg's
+  ask: confirm a user can get fully back to pre-GLB state before trying
+  a new profile) — found and fixed a real bug where restoring a second
+  profile silently overwrote the first restore's `.glb-backup`,
+  destroying this VM's true original dotfiles permanently (see Roadmap
+  entry above for the full root cause and fix). `--undo` itself works
+  correctly as one level of history (confirmed: landed back on
+  `default`, not stock defaults, exactly as the now-understood bug
+  predicts) — left this VM on `default` afterward, Greg's call. The fix
+  prevents this for every future multi-profile switch, but this VM's
+  own pre-GLB baseline is gone for good.
+  **Pull first** (`git fetch && git log main..origin/main`) before
+  assuming any other machine is caught up.
 - **Handoff from the Dell laptop session (2026-08-07):** built
   `profiles/developer` and `profiles/server` (see Roadmap above) —
   item 2 of the agreed next-steps order, resolved the "who is each

@@ -364,6 +364,57 @@ teardown() {
     [ -L "$HOME/.zshrc.glb-backup" ]
 }
 
+@test "switching profiles a second time does not overwrite an existing backup" {
+    local pdir_a="$TEST_TMP/profile_a"
+    local pdir_b="$TEST_TMP/profile_b"
+    mkdir -p "$pdir_a/dotfiles" "$pdir_b/dotfiles"
+    echo 'original pre-glb content' > "$HOME/.bashrc"
+    echo 'profile a content' > "$pdir_a/dotfiles/.bashrc"
+    echo 'profile b content' > "$pdir_b/dotfiles/.bashrc"
+
+    glb_apply_profile_dotfiles "$pdir_a"
+    [ -L "$HOME/.bashrc" ]
+    [ "$(readlink -f "$HOME/.bashrc")" = "$(readlink -f "$pdir_a/dotfiles/.bashrc")" ]
+    [ "$(cat "$HOME/.bashrc.glb-backup")" = "original pre-glb content" ]
+
+    glb_apply_profile_dotfiles "$pdir_b"
+    [ -L "$HOME/.bashrc" ]
+    [ "$(readlink -f "$HOME/.bashrc")" = "$(readlink -f "$pdir_b/dotfiles/.bashrc")" ]
+    # The original backup must survive the second switch untouched.
+    [ "$(cat "$HOME/.bashrc.glb-backup")" = "original pre-glb content" ]
+}
+
+@test "refuses to link when a real (non-symlink) file exists at the destination and a backup already exists" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'new content' > "$pdir/dotfiles/.bashrc"
+    echo 'stray existing backup' > "$HOME/.bashrc.glb-backup"
+    echo 'unrelated real file' > "$HOME/.bashrc"
+
+    run glb_apply_profile_dotfiles "$pdir"
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"already exists and ~/.bashrc is not a symlink"* ]]
+    [ ! -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "unrelated real file" ]
+    [ "$(cat "$HOME/.bashrc.glb-backup")" = "stray existing backup" ]
+}
+
+@test "dry-run: reports it would replace the link, not re-back-up, when a backup already exists" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'new content' > "$pdir/dotfiles/.bashrc"
+    echo 'original content' > "$HOME/.bashrc.glb-backup"
+    ln -s "/some/other/profile/.bashrc" "$HOME/.bashrc"
+
+    run glb_apply_profile_dotfiles "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would replace ~/.bashrc's link (existing ~/.bashrc.glb-backup kept as-is)"* ]]
+    [ "$(readlink "$HOME/.bashrc")" = "/some/other/profile/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc.glb-backup")" = "original content" ]
+}
+
 # --- glb_undo_restore -------------------------------------------------------
 
 @test "undo restores a flat backed-up file and removes the symlink" {

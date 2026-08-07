@@ -97,7 +97,13 @@ glb_apply_profile_dotfiles() {
         fi
 
         if [[ "$dry_run" == "--dry-run" ]]; then
-            if [[ -e "$dest" || -L "$dest" ]]; then
+            if [[ -e "$dest.glb-backup" || -L "$dest.glb-backup" ]]; then
+                if [[ -L "$dest" ]]; then
+                    glb_log_info "Would replace ~/$rel's link (existing ~/$rel.glb-backup kept as-is)"
+                else
+                    glb_log_info "Would refuse to link ~/$rel: ~/$rel.glb-backup already exists"
+                fi
+            elif [[ -e "$dest" || -L "$dest" ]]; then
                 glb_log_info "Would back up ~/$rel -> ~/$rel.glb-backup, then link"
             else
                 glb_log_info "Would link ~/$rel"
@@ -111,7 +117,25 @@ glb_apply_profile_dotfiles() {
             continue
         fi
 
-        if [[ -e "$dest" || -L "$dest" ]]; then
+        if [[ -e "$dest.glb-backup" || -L "$dest.glb-backup" ]]; then
+            # A backup from an earlier restore already exists and holds the
+            # original pre-GLB data. If $dest is just this profile's previous
+            # symlink (the normal case when switching profiles), replace it
+            # without touching that backup — overwriting it here would
+            # silently destroy the original data it's protecting.
+            if [[ -L "$dest" ]]; then
+                glb_log_info "~/$rel.glb-backup already exists, keeping it; replacing ~/$rel's previous link"
+                if ! rm "$dest"; then
+                    glb_log_error "Failed to remove existing ~/$rel"
+                    failed+=("$rel")
+                    continue
+                fi
+            else
+                glb_log_error "~/$rel.glb-backup already exists and ~/$rel is not a symlink; refusing to overwrite the existing backup. Resolve manually."
+                failed+=("$rel")
+                continue
+            fi
+        elif [[ -e "$dest" || -L "$dest" ]]; then
             glb_log_warn "Backing up existing ~/$rel -> ~/$rel.glb-backup"
             if ! mv "$dest" "$dest.glb-backup"; then
                 glb_log_error "Failed to back up ~/$rel"
