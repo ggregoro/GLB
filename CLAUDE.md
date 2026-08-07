@@ -1154,3 +1154,4 @@ branches on it.
   machine is caught up. Multi-profile support (the agreed next
   priority, noted just above) was not touched this session — this was
   purely a real-restore-and-fix session, not a feature session.
+- State export/import (see docs/design/state-export-import.md)
