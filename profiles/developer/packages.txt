@@ -1,0 +1,53 @@
+# GLB profile: developer
+#
+# Aimed at someone newer to development work who wants a solid, complete
+# kit without researching every tool choice themselves — same "here's
+# what's good" value prop as new-to-linux, applied to dev tooling
+# instead of desktop apps. Not aimed at someone who already knows
+# exactly what they want (they'd install it themselves anyway). See
+# CLAUDE.md (2026-08-07) for the audience decision and the forks below.
+#
+# Package names are resolved per-distro before being passed to your
+# package manager (apt/dnf/pacman/zypper). See _GLB_PACKAGE_OVERRIDES
+# in lib/package.sh for the few that aren't the same everywhere.
+
+# Shell/prompt foundation — same unified bash/zsh/fish + Starship setup
+# as the default/new-to-linux profiles (see dotfiles/).
+git
+curl
+zsh
+fish
+fzf
+eza
+bat
+zoxide
+htop
+bash-completion    # loads glb's completion file - see lib/completions.sh
+unzip              # needed for the font extras.txt entry
+
+# Containers — Podman chosen over Docker: daemonless/rootless fits a
+# newcomer better as a safe default (no root daemon running out of the
+# box), and fits GLB's philosophy over Docker's more familiar name.
+podman
+
+# C/C++ build toolchain. Deliberately just gcc+make rather than chasing
+# a single meta-package name across distros (apt's build-essential,
+# dnf's "Development Tools" group, pacman's base-devel group, zypper's
+# devel_basis pattern) — none of those resolve as a single `<mgr>
+# install -y <name>` the way glb_install_package works, so a real
+# meta-package equivalent would need a new install mechanism, not just
+# a packages.txt entry. Revisit if that's ever built.
+gcc
+make
+
+jq
+
+# GitHub CLI — package name is "gh" on apt (Debian 12+/recent Ubuntu)/
+# dnf/zypper, but "github-cli" on pacman (see _GLB_PACKAGE_OVERRIDES).
+# Not empirically verified on every distro yet (same caveat as the
+# firefox/libreoffice overrides in new-to-linux) — flag for real-machine
+# testing.
+gh
+
+# Fresh (code editor) and mise (language version manager) have no
+# native package on any of these managers — installed via extras.txt.

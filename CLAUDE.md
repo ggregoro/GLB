@@ -181,6 +181,94 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`profiles/developer` and `profiles/server` built (2026-08-07, Dell
+  laptop).** Next items in the agreed pick-up-here order after the
+  Linux Mint session (see prior entry). Before picking packages,
+  resolved the open design question flagged on 2026-08-06 (via
+  `AskUserQuestion`): both profiles are for someone **newer to that
+  role** who wants a complete kit without researching it themselves —
+  same value prop as `new-to-linux`, not a rigid list for someone who
+  already knows what they want. Three further forks confirmed the same
+  way before building:
+  - **Podman over Docker** (Developer) — daemonless/rootless is a safer
+    default for a newcomer and fits GLB's philosophy better than
+    Docker's more familiar name.
+  - **mise over per-language version managers** (Developer) — one
+    universal tool/mental model beats juggling nvm/pyenv/rustup
+    separately for someone new to managing multiple runtimes. Installed
+    via `extras.txt` (`curl`, official `https://mise.run` installer,
+    matches the curl-pipe-sh pattern exactly) since no distro packages
+    it. Needs shell activation to be useful, so — unlike `default`/
+    `new-to-linux`, whose dotfiles are kept byte-identical on purpose —
+    `profiles/developer`'s `.bashrc`/`.zshrc`/`config.fish` each got a
+    small guarded `mise activate` block appended (same
+    `if -x ~/.local/bin/mise` guard style as the existing Homebrew/
+    zoxide blocks), a deliberate, targeted divergence rather than a
+    wholesale prompt redesign.
+  - **ufw over firewalld** (Server) — simpler allow/deny syntax reads
+    more like English than firewalld's zone model, easier for a
+    newcomer to reason about.
+  - **restic over borgbackup** (Server, paired with `rsync`) — simpler
+    single-binary CLI and repo model, easier starting point for someone
+    new to backup strategy.
+  - `profiles/developer/packages.txt`: git, curl, zsh, fish, fzf, eza,
+    bat, zoxide, htop, bash-completion, unzip (shared shell foundation,
+    same as `new-to-linux`) + podman, gcc, make, jq, gh.
+    `extras.txt`: fresh (curl, same editor as `default`/`new-to-linux`),
+    mise (curl), the Nerd Font (same `font` extra as every other
+    profile, needed for `eza --icons`).
+  - **Deliberately did not chase a `build-essential`-equivalent
+    meta-package** across dnf's `Development Tools` group / pacman's
+    `base-devel` group / zypper's `devel_basis` pattern — none of those
+    resolve as a single `<mgr> install -y <name>`, which is all
+    `glb_install_package` supports (no group-install syntax). Used
+    plain `gcc`+`make` instead, which do resolve as ordinary packages
+    everywhere. Revisit only if a real group-install mechanism gets
+    built for some other reason.
+  - `profiles/server/packages.txt`: git, curl, zsh, fish, fzf, eza, bat,
+    zoxide, bash-completion, unzip (same shared foundation) + htop, ufw,
+    rsync, restic, fail2ban. `extras.txt`: just the Nerd Font (no code
+    editor — nano/vi are typically already on a server, wasn't
+    brainstormed as a Server candidate either).
+  - **Unattended security updates deliberately left out of v1** (was a
+    brainstormed Server candidate) — apt's `unattended-upgrades` and
+    dnf's `dnf-automatic` are real single packages, but pacman has no
+    standard package at all (Arch's rolling-release model leans on
+    manual/scripted updates instead) and zypper's story is a
+    cron+script pattern, not a plain package. Doesn't fit the existing
+    `<generic-name>:<package-manager>` override table since two of the
+    four managers have nothing to map to — would need either a real
+    per-distro opt-out mechanism or an extras.txt-style script install,
+    neither of which exists yet. Flagged in both
+    `profiles/server/packages.txt` and `docs/ROADMAP.md` rather than
+    silently dropped.
+  - **New override:** `gh:pacman` → `github-cli` in
+    `_GLB_PACKAGE_OVERRIDES` (`lib/package.sh`) — Arch's official repo
+    package for GitHub CLI is named differently from the `gh` binary.
+    Like the `firefox:zypper`/`libreoffice:pacman` overrides added for
+    `new-to-linux`, this is **not yet empirically verified** on real
+    pacman hardware — same "confirm next time a pacman machine is
+    tested" caveat. `gh` itself (apt/dnf/zypper, no override needed) is
+    flagged in `packages.txt` as unverified too, since GitHub CLI only
+    landed in Debian/Ubuntu's default repos fairly recently.
+  - 2 new end-to-end bats tests in `tests/dispatcher.bats` (real
+    restore of both actual profile directories, stubbed
+    sudo/apt/starship/git/curl/sh/unzip/fc-cache, same pattern as the
+    existing `default`/`new-to-linux` tests) — confirms packages
+    resolve, extras install, dotfiles symlink correctly, and
+    `.gitconfig`/ranger stay absent. All 121 bats tests pass (up from
+    119 after the Mint session).
+  - **Not done, deliberately, same boundary as Fresh/WezTerm/mise
+    earlier:** no live `glb restore developer`/`glb restore server` was
+    run for real on this laptop — verified entirely through the
+    stubbed bats sandbox, never touching the real network or actually
+    installing podman/gh/mise/ufw/restic/fail2ban. A real restore is
+    something Greg would run himself in a real terminal.
+  - Per the agreed next-steps order, item 1 (verifying `new-to-linux`'s
+    `firefox:zypper`/`libreoffice:pacman` overrides on real hardware)
+    was skipped for now since it needs a real zypper or Arch-family
+    machine, not something buildable from the Dell laptop (apt). Still
+    open — needs Greg to run it on the right hardware.
 - **Real gaps found and fixed on the new Linux Mint test machine
   (2026-08-07).** First real `glb restore default` here surfaced a
   genuine, previously-masked gap: every machine tested before this one
@@ -323,15 +411,14 @@ branches on it.
   - `bats` itself isn't installed on this VM and couldn't be via
     `sudo apt install` from the sandboxed shell (no TTY) — ran the
     suite via a locally cloned `bats-core` (no install needed) instead.
-- **Next session: pick up here, in this order (agreed 2026-08-06).**
-  All four items from the prior session-wrap-up brainstorm just below
-  (rollback/undo, dry-run, interactive profile picker, shell
-  completions) are done, plus a follow-up resyncing `new-to-linux`'s
-  prompt dotfiles to match `default`. Greg then asked for a
-  recommendation on what's next and confirmed taking the list "in
-  order" — nothing on this list is built yet:
+- **Next session: pick up here, in this order (agreed 2026-08-06,
+  updated 2026-08-07).** All four items from the prior session-wrap-up
+  brainstorm just below (rollback/undo, dry-run, interactive profile
+  picker, shell completions) are done, plus a follow-up resyncing
+  `new-to-linux`'s prompt dotfiles to match `default`, plus (as of
+  2026-08-07) item 2 below — Developer/Server profiles:
   1. **Verify `new-to-linux`'s per-distro package overrides on real
-     hardware.** `firefox:zypper` → `MozillaFirefox` and
+     hardware — still open.** `firefox:zypper` → `MozillaFirefox` and
      `libreoffice:pacman` → `libreoffice-fresh`
      (`_GLB_PACKAGE_OVERRIDES`, `lib/package.sh`) were added when
      `new-to-linux` was built (2026-08-06) but never empirically
@@ -341,20 +428,16 @@ branches on it.
      on a real or VM zypper machine and a real or VM Arch-family
      machine — not something a sandboxed session can verify on its
      own; Greg will need to run it and report back, same pattern as
-     the original cross-distro testing.
-  2. **Developer/Server profiles.** Candidates already brainstormed
-     and recorded further down this file (Docker vs Podman, a
-     build-toolchain per-distro override, a language version-manager
-     story, `gh`/`lazygit`/`jq` for Developer; `htop`/a firewall
-     tool/unattended security updates/`rsync`+backup/`fail2ban` for
-     Server) but nothing built. The open design question flagged at
-     the time, still unresolved: who is each profile actually *for* —
-     someone who already knows what they want (a rigid curated list
-     adds little value there), or someone newer to that role who wants
-     a complete kit without researching it themselves (closer to
-     `new-to-linux`'s "here's what's good" value prop than `default`'s
-     "restore my exact setup")? Resolve that before picking packages,
-     not after.
+     the original cross-distro testing. Also now applies to the new
+     `gh:pacman` → `github-cli` override added with the Developer
+     profile (2026-08-07, see below) — same "confirm on real pacman
+     hardware" caveat.
+  2. **Developer/Server profiles — done (2026-08-07, Dell laptop).**
+     See the Roadmap entry below for the full build (packages picked,
+     forks resolved via `AskUserQuestion`, dotfiles, extras, new
+     `gh:pacman` override, bats coverage). Design question resolved:
+     both are for someone newer to that role, not someone who already
+     knows what they want.
   3. **Original Version 0.5 items never promoted to "agreed
      priority": express installation, guided configuration wizard,
      configuration summary, progress reporting.** None of these are
@@ -1019,6 +1102,17 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the Dell laptop session (2026-08-07):** built
+  `profiles/developer` and `profiles/server` (see Roadmap above) —
+  item 2 of the agreed next-steps order, resolved the "who is each
+  profile for" design question via `AskUserQuestion` (newcomer to the
+  role, for both), plus three tool forks (Podman, mise, ufw, restic).
+  All 121 bats tests pass. Not pushed as of this note — confirm with
+  Greg before pushing. Item 1 (verifying `new-to-linux`'s zypper/pacman
+  overrides, now also covering the new `gh:pacman` override) is still
+  open and needs real hardware. **Pull first**
+  (`git fetch && git log main..origin/main`) before assuming any other
+  machine is caught up.
 - Greg develops across multiple machines (Dell E7450 laptop, a VirtualBox
   VM — Zorin OS as of 2026-08-05) with Claude Code sessions running
   independently on each, not always in sync in real time. **Before

@@ -102,6 +102,53 @@ teardown() {
     [ -L "$HOME/.config/wezterm/wezterm.lua" ]
 }
 
+@test "glb restore applies the real developer profile end to end" {
+    cp -r "$GLB_REPO_ROOT/profiles/developer" "$GLB_ROOT/profiles/developer"
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 0'
+    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'exit 0'
+
+    run "$GLB_ROOT/glb" restore developer <<< ''
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Profile applied: developer"* ]]
+    [[ "$output" == *"Installing fresh via curl-install script"* ]]
+    [[ "$output" == *"Installing mise via curl-install script"* ]]
+    [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [ -L "$HOME/.bashrc" ]
+    [ -L "$HOME/.zshrc" ]
+    [ -L "$HOME/.config/fish/config.fish" ]
+    [ -L "$HOME/.config/starship.toml" ]
+    [ ! -e "$HOME/.gitconfig" ]
+    [ ! -e "$HOME/.config/ranger" ]
+    grep -q "mise (language version manager" "$HOME/.bashrc"
+}
+
+@test "glb restore applies the real server profile end to end" {
+    cp -r "$GLB_REPO_ROOT/profiles/server" "$GLB_ROOT/profiles/server"
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    stub_command fc-cache 'exit 0'
+
+    run "$GLB_ROOT/glb" restore server <<< ''
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Profile applied: server"* ]]
+    [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [[ "$output" == *"apt install -y ufw"* ]]
+    [[ "$output" == *"apt install -y restic"* ]]
+    [[ "$output" == *"apt install -y fail2ban"* ]]
+    [ -L "$HOME/.bashrc" ]
+    [ -L "$HOME/.zshrc" ]
+    [ -L "$HOME/.config/fish/config.fish" ]
+    [ -L "$HOME/.config/starship.toml" ]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
 @test "glb restore fails cleanly for an unknown profile" {
     run "$GLB_ROOT/glb" restore no-such-profile
     [ "$status" -eq 1 ]

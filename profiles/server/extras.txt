@@ -1,0 +1,16 @@
+# GLB profile: server — extras (installs outside apt/dnf/pacman/zypper)
+#
+# Format: <method> <name> <spec>
+#   font <name> <zip-url> - downloads a Nerd Fonts release zip,
+#                            extracts it into
+#                            ~/.local/share/fonts/<name>, then runs
+#                            `fc-cache -f`. <name> becomes the install
+#                            directory, so no spaces. Requires unzip
+#                            (see packages.txt).
+#
+# Blank lines and lines starting with '#' are ignored, same as
+# packages.txt.
+
+# Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
+# aliases). See default/extras.txt for the fuller rationale.
+font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip

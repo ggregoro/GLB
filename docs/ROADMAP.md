@@ -70,11 +70,24 @@ Introduce workstation profiles.
   bits (`.gitconfig`, ranger, WezTerm) that don't fit this profile's
   scope.
 - Minimal
-- Developer — candidate tools and an open question on who this profile
-  is really for (see CLAUDE.md, 2026-08-06 brainstorm) brainstormed but
-  not built
-- Server — same, candidate tools brainstormed but not built (see
-  CLAUDE.md)
+- **Developer ✅ (2026-08-07)** — the "who is this for" question from
+  the 2026-08-06 brainstorm resolved as someone newer to development
+  who wants a complete kit without researching every tool choice
+  (same value prop as New to Linux), built as `profiles/developer`:
+  Podman (containers, chosen over Docker), gcc+make (build toolchain),
+  jq, GitHub CLI (`gh`), htop, mise (language version manager, chosen
+  over per-language tools like nvm/pyenv/rustup), Fresh (code editor)
+  — plus the same unified bash/zsh/fish + Starship shell setup as the
+  other profiles, with a guarded `mise activate` block added to each
+  shell's dotfile. See CLAUDE.md for the full reasoning and forks.
+- **Server ✅ (2026-08-07)** — same audience resolution as Developer
+  (someone newer to server admin), built as `profiles/server`: ufw
+  (firewall, chosen over firewalld), rsync + restic (backup, restic
+  chosen over borgbackup), fail2ban, htop — plus the same shell setup.
+  Unattended security updates deliberately **not** included — no
+  single package name resolves across all four package managers (see
+  CLAUDE.md and the comment in `profiles/server/packages.txt`);
+  needs a new mechanism before it can be added.
 - Custom
 
 Profiles will define complete workstation experiences rather than individual package selections.
