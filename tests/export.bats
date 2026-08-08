@@ -81,11 +81,17 @@ teardown() {
 @test "export_packages writes canonical names, reversing overrides" {
     stub_command apt-mark 'printf "git\nfd-find\n"'
 
+    # glb_detect_package_manager is overridden directly (not via PATH
+    # tricks) so this test is deterministic regardless of which real
+    # package manager the host actually has (e.g. pacman, as on this VM)
+    # - PATH-restricting instead would also hide coreutils glb_export_packages
+    # itself needs (mkdir, hostname, date, sort, ...).
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         source '$GLB_ROOT/lib/export.sh'
+        glb_detect_package_manager() { printf 'apt\n'; }
         mkdir -p '$TEST_TMP/snap'
         glb_export_packages '$TEST_TMP/snap'
     "
@@ -100,11 +106,15 @@ teardown() {
 @test "export_packages adds the zypper base-package caveat only on zypper" {
     stub_command rpm 'printf "git\n"'
 
+    # Same glb_detect_package_manager override as the apt test above -
+    # deterministic regardless of the host's real package manager,
+    # without hiding coreutils via a PATH restriction.
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         source '$GLB_ROOT/lib/export.sh'
+        glb_detect_package_manager() { printf 'zypper\n'; }
         mkdir -p '$TEST_TMP/snap' /var/lib/zypp 2>/dev/null
         glb_export_packages '$TEST_TMP/snap'
     " || true
@@ -114,6 +124,7 @@ teardown() {
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         source '$GLB_ROOT/lib/export.sh'
+        glb_detect_package_manager() { printf 'zypper\n'; }
         mkdir -p '$TEST_TMP/snap2'
         glb_export_packages '$TEST_TMP/snap2'
     "
