@@ -53,6 +53,17 @@ reasonably clean and documented, not just "works on my machine."
   specifically to verify the `firefox:zypper` override on `new-to-linux`
   (see Roadmap) — the last piece of item 1's per-distro override
   verification.
+- **New (2026-08-08): a dedicated EndeavourOS test VM** — hostname
+  `grego-Endeavour`, another genuinely fresh test box, distinct from
+  the CachyOS VM (both pacman/Arch-based, but separate machines). Came
+  with `git`/`curl`/`ripgrep`/`fzf`/`unzip`/`bash-completion`/`yay`
+  already present, not a fully bare install. First real `glb restore
+  default` here found zero pacman override gaps and, more
+  significantly, root-caused the `pam_faillock` lockout mechanism only
+  suspected-not-confirmed on the CachyOS VM (see Roadmap) — GLB's own
+  no-TTY sudo attempts during a sandboxed restore count as failed auth
+  attempts against `pam_faillock`'s `deny=3` default, and can lock a
+  real user out of their own terminal as a side effect.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -199,6 +210,203 @@ branches on it.
   open, not a full change log.
 
 ## Roadmap / in progress
+
+- **`glb restore default` verified end-to-end (2026-08-08, new
+  EndeavourOS test VM), and a real root cause found for the
+  `pam_faillock` lockout previously only guessed at on the CachyOS VM
+  (2026-08-07 entry below).** Session paused mid-testing for a
+  lockout-clearing logout/login, then resumed and finished in a second
+  sitting the same day.
+  - `glb info` detected `pacman`/`endeavouros` correctly. This VM
+    already has `git`/`curl`/`ripgrep`/`fzf`/`unzip`/`bash-completion`
+    and `yay` (AUR helper) present going in — not a fully bare install.
+  - First `./glb restore default` (sandboxed, no TTY): zsh plugins,
+    self-symlink, all 4 completions, the Nerd Font extra (confirmed via
+    `fc-list`), and all dotfiles linked correctly (`.bashrc` correctly
+    backed up to `.bashrc.glb-backup` first since it pre-existed). As
+    expected, every sudo-gated step failed cleanly (no TTY) and paused/
+    skipped per the existing manual-step mechanism: `zsh fish tmux
+    neovim eza bat zoxide ranger htop flatpak fastfetch` all need a
+    manual `sudo pacman -S`. **Zero pacman `_GLB_PACKAGE_OVERRIDES` gaps
+    found** — every name resolves as a real package. `fresh` extra hit
+    the exact same Arch-specific behavior already documented for
+    CachyOS (installer builds `fresh-editor-bin` via `yay`/`makepkg`,
+    ends with its own separate `sudo pacman -U` — built and cached
+    successfully, just needs that final sudo step). `wezterm` extra
+    failed only because `flatpak` itself wasn't installed yet (cascading
+    from the packages.txt failure, not a new bug). `starship`'s
+    installer also needs its own sudo for `/usr/local/bin`, same as
+    every prior machine.
+  - **Real root cause found for the `pam_faillock` lockout — and this
+    is the second confirmed occurrence of GLB itself causing this, not
+    a one-off.** The CachyOS VM hit the identical symptom on 2026-08-07
+    (see that entry further down, now corrected as of 2026-08-08 to
+    match: Greg originally assumed he'd mistyped his password three
+    times in a row, and originally noted the lockout cleared just by
+    waiting out the 10-minute window — **both wrong**. Both times, the
+    password was entered correctly with no typos (same password is
+    used for both the user account and sudo on these VMs), and both
+    times a log out/log back in was required to regain sudo access,
+    not just waiting. This time, `faillock --user grego` and
+    `journalctl _COMM=sudo` were checked immediately, before the state
+    changed, which is what nailed the actual mechanism down:
+    - Every one of GLB's own automatic sudo attempts during the restore
+      above (one per sudo-gated package/extra) logged `pam_unix(sudo:
+      auth): conversation failed` / `auth could not identify password`
+      — expected, since there's no TTY/askpass for sudo to prompt
+      through. But `pam_unix` still counts each of these as a failed
+      auth attempt against `pam_faillock`'s `deny=3` default. By the
+      3rd sudo-gated package in the manifest (`tmux`, 17:24:44),
+      `pam_faillock(sudo:auth): Consecutive login failures for user
+      grego account temporarily locked` fired — **triggered entirely by
+      GLB's own no-TTY attempts, not by anyone mistyping a password.**
+    - Greg then hit the *same* lockout window when he tried the real
+      bundled `sudo pacman -S ...` command himself in a real terminal a
+      few minutes later (17:28:31, real TTY, `journalctl` shows "2
+      incorrect password attempts") — the lockout rejecting an
+      actually-correct, correctly-typed password, exactly the same
+      failure mode the CachyOS entry hit and (per the correction above)
+      also needed a log out/log back in to clear.
+    - **Observed pattern (Greg, 2026-08-08): appears specific to
+      Arch-based distros.** Both confirmed occurrences are on pacman
+      machines — CachyOS (2026-08-07) and this EndeavourOS VM
+      (2026-08-08) — despite `glb restore` hitting just as many
+      sudo-gated packages/extras, just as many designed-to-fail-cleanly
+      no-TTY attempts, on every apt (Pop!_OS/Mint/Debian/Dell laptop),
+      dnf (Fedora), and zypper (openSUSE) machine tested throughout this
+      whole project, with zero lockouts reported on any of them. Not
+      independently root-caused yet (could be `pam_faillock` enabled by
+      default on Arch's stock PAM config where it isn't on the others,
+      or some other Arch-specific PAM default) — flagged as a real lead
+      for whoever picks up the actual fix, not confirmed as the
+      complete explanation.
+    - **Real GLB gap, confirmed twice now, not fixed this session:**
+      every sudo-gated call site (`lib/package.sh` install/remove/
+      update, `lib/prompt.sh`'s Starship install) uses plain
+      `sudo <cmd>`, which lets `pam_unix` attempt a real (failed) auth
+      conversation. Using `sudo -n <cmd>` (non-interactive) instead
+      would fail immediately on "no password available" without that
+      conversation — worth checking whether that avoids counting
+      against `pam_faillock` at all, since right now a fresh
+      multi-package restore on a `faillock`-enabled distro can lock a
+      real user out of their own terminal (requiring a log out/log back
+      in, not just waiting) as a direct side effect of GLB's own
+      designed-to-fail-cleanly sandboxed attempts. Given this has now
+      happened on two separate real machines — both Arch-based — this
+      should be treated as a real, reproducible bug to prioritize
+      fixing, not just a flagged-for-later note — not scoped or built
+      yet.
+  - **Session paused here** — Greg is logging out/back in to clear the
+    lockout. Not yet done: the 4 manual commands (bundled pacman
+    install, fresh, wezterm, starship), a second `glb restore default`
+    to confirm clean/idempotent, the bats suite, and the full
+    Test-environments/Testing-section CLAUDE.md writeup once verified.
+  - **Resumed same day after the logout/login cleared the lockout**
+    (`faillock --user grego` came back with a clean history). Greg ran
+    the 4 manual commands himself in a real terminal:
+    `sudo pacman -S zsh fish tmux neovim eza bat zoxide ranger htop
+    flatpak fastfetch`, `sudo pacman -U` the cached
+    `fresh-editor-bin-0.4.6-1` package, `sudo flatpak install -y
+    flathub org.wezfurlong.wezterm`, and the Starship curl installer.
+    All four confirmed genuinely installed afterward: 11 packages via
+    `pacman -Qi`, `fresh 0.4.6`, WezTerm `20240203-110809-5046fc22` via
+    `flatpak list`, `starship 1.26.0`.
+  - **WezTerm installed correctly but doesn't visibly launch on this
+    VM — root-caused, and it's a VM/host graphics config issue, not a
+    GLB bug.** Greg reported WezTerm as the one thing that "didn't
+    install" even though every GLB-side check said otherwise: `flatpak
+    list --app` shows it present (`20240203-110809-5046fc22`), its
+    `.desktop` file is correctly exported
+    (`/var/lib/flatpak/exports/share/applications/
+    org.wezfurlong.wezterm.desktop`), and `~/.config/wezterm/
+    wezterm.lua` is correctly symlinked — GLB's own job (install +
+    config) is fully done. Launching it directly
+    (`flatpak run org.wezfurlong.wezterm`) confirmed the real problem:
+    the `wezterm-gui` process starts and stays alive (not a crash), but
+    never produces a visible window, and its stderr shows why:
+    ```
+    VMware: No 3D enabled (0, Success).
+    libEGL warning: egl: failed to create dri2 screen
+    MESA: error: ZINK: failed to choose pdev
+    ```
+    This VM's virtual GPU (`VMware SVGA II Adapter`, VirtualBox's
+    VMSVGA emulation) has 3D acceleration unavailable to the guest, so
+    WezTerm's `wgpu`-based renderer can't get a hardware EGL context,
+    and its Zink software-Vulkan-over-GL fallback also can't find a
+    usable device — it just hangs with no window, which reads as "did
+    nothing" from the outside. **Confirmed as the actual cause, not
+    just a guess:** relaunching with `LIBGL_ALWAYS_SOFTWARE=1` (forces
+    Mesa's `llvmpipe` software rasterizer, skipping the GPU/Zink path
+    entirely) produces the exact same alive-process, no-crash behavior
+    but with **none of those GPU errors in the log** — the failure
+    disappears entirely once the GPU path is bypassed.
+    - **Not a GLB bug, no code change needed** — this is a
+      VirtualBox/guest-graphics configuration gap, the same category
+      as the gnome-terminal font-cache issue documented for the Linux
+      Mint machine elsewhere in this file. Two real fixes for Greg to
+      choose from, neither of which GLB should attempt automatically:
+      1. Enable **3D acceleration** for this VM in VirtualBox's own
+         settings (Display tab, "Enable 3D Acceleration") and confirm
+         Guest Additions are installed with 3D/OpenGL passthrough,
+         then restart the VM — the real fix, gets GPU-accelerated
+         rendering working as intended.
+      2. As an immediate workaround without touching VM settings,
+         launch WezTerm with software rendering forced:
+         `LIBGL_ALWAYS_SOFTWARE=1 flatpak run org.wezfurlong.wezterm`
+         (or set that env var globally for the flatpak app via
+         `flatpak override --env=LIBGL_ALWAYS_SOFTWARE=1
+         org.wezfurlong.wezterm` so it applies on every launch,
+         including from the desktop app menu) — slower, but should
+         render a working window on this VM as-is.
+  - **Second `./glb restore default` confirmed fully clean/idempotent**
+    — every package/extra/dotfile line "already installed"/"already
+    linked", exit 0. `default` is now empirically confirmed working
+    end-to-end on this machine, not just the sandboxed first pass.
+  - **Full bats suite run** (via a scratchpad-cloned `bats-core`,
+    `bats` itself still not installed on this VM, same workaround as
+    every other machine without it): 195/202 on the first pass. 5 of
+    the 7 failures were the same already-documented `fresh`-on-real-
+    PATH class (`tests/dispatcher.bats`'s three real-profile end-to-end
+    tests, `tests/extras.bats`'s curl dry-run test and its "skips an
+    extra that isn't currently installed" update test) — expected,
+    since this VM's own restore installed `fresh` for real this
+    session, same pattern seen on every prior VM's first real `fresh`
+    install.
+  - **Real, newly-discovered test-isolation bug, found and fixed this
+    session (`tests/export.bats`):** two tests — "export_packages
+    writes canonical names, reversing overrides" and "export_packages
+    adds the zypper base-package caveat only on zypper" — stub
+    `apt-mark`/`rpm` to force apt/zypper-flavored behavior, but
+    `glb_export_packages` (`lib/export.sh`) detects the package
+    manager via the real `glb_detect_package_manager`
+    (`command -v apt/dnf/pacman/zypper` against the real host, not
+    stubs). On a real apt or zypper host these tests happened to pass
+    by accident; this is the first time `tests/export.bats` has run
+    against a real pacman machine, and detection correctly returned
+    `pacman`, so neither the apt-specific `fd-find`→`fd` reversal nor
+    the zypper caveat branch ever ran — a genuine bug that would fail
+    identically on any dnf host too, not something specific to this
+    VM. **Fixed** by overriding the `glb_detect_package_manager`
+    function directly inside each test's subshell (`glb_detect_package_
+    manager() { printf 'apt\n'; }` / `'zypper\n'`) rather than PATH-
+    restricting to `STUB_BIN` (tried first, but that also hides the
+    coreutils `glb_export_packages` itself needs — `mkdir`, `hostname`,
+    `date`, `sort` — since the real pacman binary lives alongside them
+    in the same system directories and can't be selectively hidden via
+    PATH ordering). Confirmed the fix is deterministic regardless of
+    host package manager, not just "happens to work on pacman" — both
+    tests now force their target manager explicitly. 197/202 pass
+    after the fix; the remaining 5 are the pre-existing `fresh`-on-PATH
+    class described above, confirmed via `git diff --stat` that no
+    other files changed this session besides this test fix and this
+    CLAUDE.md note.
+  - **`default` is now confirmed on real pacman/EndeavourOS hardware,
+    end-to-end** — zero `_GLB_PACKAGE_OVERRIDES` gaps, all four extras
+    methods (curl/flatpak/font/starship-installer) working, a clean
+    idempotent second restore, and a genuine (if narrow) test-suite bug
+    fixed as a direct result of testing on a package manager
+    (`tests/export.bats` had never run against) this project's CI-less,
+    single-machine-at-a-time testing style hadn't exercised before.
 
 - **"Updating installed components" built (2026-08-07, Dell laptop) —
   last item in Version 0.6, closing it out entirely.** Picked up
@@ -697,26 +905,33 @@ branches on it.
     lockout below cleared; confirmed installed (`fresh-editor-bin
     0.4.6-1`, `/usr/bin/fresh` on PATH) and a second restore reports
     `already installed: fresh` correctly.
-  - **Real (non-GLB) detour mid-session: a `pam_faillock` lockout, not a
-    GLB or sudo config bug.** Three sudo attempts failed in a row
-    (`journalctl _COMM=sudo` showed genuine `pam_unix(sudo:auth):
-    auth could not identify password` failures), which tripped the
-    default `pam_faillock` policy (`deny=3`, all settings in
-    `/etc/security/faillock.conf` are commented/default, so
-    `unlock_time=600`s applies) — `pam_faillock(sudo:auth): Consecutive
-    login failures for user grego account temporarily locked`. Every
-    retry during that 10-minute window failed too, including
-    (apparently) the correct password, which is expected `pam_faillock`
-    behavior, not a sign of a wrong password. Confirmed the account's
-    actual password was fine via a successful lock-screen unlock once
-    the window had mostly elapsed; the next real `sudo` attempt after
-    waiting out the full window succeeded on the first try. Root cause
-    of the original 3 failures themselves was never conclusively
-    identified (Greg was confident he entered the same password
-    correctly each time) — flagged here only as a "if sudo mysteriously
-    rejects a correct password on this VM again, check `faillock
-    --user grego` and `journalctl _COMM=sudo` before assuming the
-    password is wrong" note, not something to chase further right now.
+  - **Real `pam_faillock` lockout mid-session — corrected 2026-08-08,
+    now understood to be GLB-caused, not a config fluke or user error.**
+    Three sudo attempts failed in a row (`journalctl _COMM=sudo` showed
+    genuine `pam_unix(sudo:auth): auth could not identify password`
+    failures), which tripped the default `pam_faillock` policy
+    (`deny=3`, all settings in `/etc/security/faillock.conf` are
+    commented/default, so `unlock_time=600`s applies) —
+    `pam_faillock(sudo:auth): Consecutive login failures for user grego
+    account temporarily locked`. **Correction (2026-08-08, per Greg):**
+    this originally read as if waiting out the 10-minute window cleared
+    it — that's wrong. A log out/log back in was actually required to
+    regain sudo access, same as the EndeavourOS VM's incident below.
+    Greg also originally assumed he'd mistyped the same password three
+    times in a row (hence "root cause never conclusively identified"
+    below) — also wrong. **Root cause is now confirmed** (see the
+    EndeavourOS VM entry further up this file, 2026-08-08): GLB's own
+    automatic sudo attempts during a sandboxed/no-TTY restore each
+    trigger a real `pam_unix` auth-failure conversation, and by the 3rd
+    one `pam_faillock`'s `deny=3` fires — entirely GLB's own doing, not
+    a mistyped password. **This is the second confirmed occurrence of
+    GLB's no-TTY sudo attempts locking Greg out of his own terminal**
+    (first here on CachyOS 2026-08-07, second on the EndeavourOS VM
+    2026-08-08) — no longer a one-off curiosity, a real recurring
+    product gap. See the EndeavourOS entry for the concrete fix
+    proposal (`sudo -n` instead of plain `sudo` at every sudo-gated call
+    site, so a no-TTY attempt fails immediately instead of triggering a
+    real failed-auth conversation that counts against `pam_faillock`).
   - Full bats suite (via a scratchpad-cloned `bats-core`, `bats` itself
     still not installed on this VM): 120/124 pass. The 4 failures are
     the exact same pre-existing, already-documented
@@ -1711,6 +1926,13 @@ branches on it.
 
 ## Testing
 
+- **`bats` is not installed on the EndeavourOS VM** (2026-08-08), same
+  no-TTY-for-sudo-install limitation as every other machine — ran via
+  the same locally-cloned `bats-core` workaround. 197/202 tests pass
+  after this session's `tests/export.bats` fix (see Roadmap entry
+  above for the fix itself); the 5 remaining failures are the same
+  pre-existing `fresh`-genuinely-on-PATH gap this VM now has from its
+  own real `default` restore earlier this session.
 - **`bats` is not installed on the openSUSE VM** (2026-08-07), same
   no-TTY-for-sudo-install limitation as every other machine — ran via
   the same locally-cloned `bats-core` workaround. 182/186 tests pass
@@ -1766,6 +1988,20 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-08, EndeavourOS VM) — real `default`
+  restore verified end-to-end, plus a real test-suite bug found and
+  fixed.** See the Roadmap entry above for the full writeup: zero
+  pacman override gaps, all four extras methods confirmed installed
+  for real, a clean idempotent second restore, the `pam_faillock`
+  root-cause finding, and a genuine `tests/export.bats` isolation bug
+  (two tests assumed apt/zypper detection that only ever worked by
+  accident on non-pacman hosts) found and fixed via a
+  `glb_detect_package_manager` function override rather than a PATH
+  restriction. 197/202 bats pass; the rest are the same pre-existing
+  `fresh`-on-PATH class documented everywhere else in this file. Not
+  yet committed/pushed as of this note — confirm with Greg first.
+  **Pull first** (`git fetch && git log main..origin/main`) before
+  assuming any other machine is caught up.
 - **Session wrap-up (2026-08-07, Dell laptop) — pausing here by Greg's
   choice.** Everything below is pushed to `origin/main`, `55abb65` is
   the latest commit as of this note (fast-forwarded cleanly, no other
