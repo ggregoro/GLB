@@ -1766,6 +1766,36 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-07, Dell laptop) — pausing here by Greg's
+  choice.** Everything below is pushed to `origin/main`, `55abb65` is
+  the latest commit as of this note (fast-forwarded cleanly, no other
+  machine had pushed ahead of it).
+  - Built, tested, and shipped `glb update`'s component-update
+    extension (Starship, zsh plugins, per-profile `extras.txt`) — see
+    the Roadmap entry above and the handoff right below this one for
+    the full build.
+  - **Verified for real on this laptop, not just bats:** ran `./glb
+    update` live — `starship` updated to `1.26.0`, both zsh plugins
+    pulled cleanly (`zsh-syntax-highlighting` fast-forwarded a real
+    upstream commit). The two sudo-gated steps (`apt upgrade`, the
+    Starship reinstall itself) were run by Greg in a real terminal
+    after this session's sandboxed attempt failed cleanly on the
+    no-TTY limitation, same pattern as every other sudo-gated step in
+    this project.
+  - **Next session: pick up with installation manifests** — the last
+    item in Version 0.6 (Configuration Management) and the only
+    genuinely unscoped one left anywhere in the roadmap (no
+    `docs/design/*.md` written for it yet, unlike
+    update-components/repair/the guided wizard, which were each
+    scoped via `AskUserQuestion` before being built same-day). Start
+    by reviewing what "installation manifest" should actually mean in
+    GLB's context — likely something like a lockfile capturing exact
+    installed versions (distinct from `glb export`'s already-built
+    snapshot mechanism, which captures package *names* for
+    reproducing a similar setup, not exact pinned versions) — same
+    "check what already exists first" discipline used for every prior
+    Version 0.5/0.6 item.
+  - Nothing else outstanding needs this specific machine.
 - **Handoff from the Dell laptop session (2026-08-07): built "updating
   installed components," closing out Version 0.6 entirely.** Picked
   up exactly where the openSUSE VM session's wrap-up note (right below
