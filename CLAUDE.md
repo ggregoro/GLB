@@ -2011,6 +2011,16 @@ branches on it.
 - Since this may be shared publicly later, avoid hardcoding anything
   specific to Greg's personal setup unless it's clearly marked as an
   example/default that others would edit
+- **End-of-session standing instruction (added 2026-08-08, per Greg):**
+  whenever a session and Greg agree the session is ending, commit and push
+  *all* outstanding project files — code, docs, and this file — before
+  wrapping up. That specifically includes writing a session wrap-up/handoff
+  note (this file's Working notes / Roadmap sections) documenting what
+  changed and what's still open, since Greg works across multiple
+  machines/VMs and each one's next session depends on `git pull`ing a
+  fully caught-up `main` to have real continuity. Don't leave a session's
+  real work uncommitted or unpushed, and don't end a session with a stale
+  CLAUDE.md that doesn't reflect what actually happened.
 
 ## Working notes
 
