@@ -74,9 +74,9 @@ Examples include:
 
 - `default` (Greg's own, real setup) ✅
 - New to Linux ✅
+- Developer ✅
+- Server ✅
 - Minimal
-- Developer
-- Server
 - Custom
 
 Profiles define complete workstation environments that are reproducible and easy to maintain.

@@ -1,6 +1,12 @@
 # GLB Documentation Changelog
 
-This changelog records significant milestones, improvements, and lessons learned while developing the Greg's Linux Bootstrap (GLB) project.
+This changelog records significant milestones, improvements, and lessons
+learned while developing the Greg's Linux Bootstrap (GLB) *project itself*
+(docs restructuring, dev-environment setup, networking/SSH groundwork) —
+distinct from the root [`CHANGELOG.md`](../CHANGELOG.md), which tracks
+`glb`'s actual feature/code changes. This file has been quiet since the
+early docs restructuring (2026-08-02); day-to-day feature work is
+recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ## [Unreleased]
 

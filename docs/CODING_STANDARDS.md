@@ -32,13 +32,14 @@ When in doubt:
 
 ```
 GLB/
-├── assets/
-├── configs/
-├── docs/
-├── lib/
-├── logs/
-├── tests/
-├── themes/
+├── completions/     # bash/zsh/fish completion scripts for `glb` itself
+├── docs/            # documentation, including docs/design/ for feature
+│                     #   design docs and docs/reference/ for cheat sheets
+├── lib/              # library modules, sourced by the `glb` dispatcher
+├── profiles/         # named profiles (default, developer, new-to-linux,
+│                     #   server), each with packages.txt/extras.txt/dotfiles
+├── snapshots/         # glb export output (machine state snapshots), when present
+├── tests/             # bats test suite
 ├── glb
 ├── README.md
 ├── CHANGELOG.md

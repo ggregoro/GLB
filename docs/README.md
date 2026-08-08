@@ -6,6 +6,18 @@ This documentation records the configuration, tools, workflows, and lessons lear
 
 ---
 
+# Project Documentation
+
+- [`PROJECT.md`](PROJECT.md) — mission, principles, target audience, goals
+- [`PHILOSOPHY.md`](PHILOSOPHY.md) — the guiding design philosophy
+- [`ARCHITECTURE.md`](ARCHITECTURE.md) — module breakdown and how a profile is applied
+- [`ROADMAP.md`](ROADMAP.md) — current progress and planned work, by version
+- [`CODING_STANDARDS.md`](CODING_STANDARDS.md) — naming/style conventions for `lib/` modules
+- [`design/`](design/) — design docs for individual features (guided wizard, state export/import, repair, update-components)
+- [`DOCS_CHANGELOG.md`](DOCS_CHANGELOG.md) — documentation/dev-environment milestones (see the root [`CHANGELOG.md`](../CHANGELOG.md) for `glb`'s actual feature changes)
+
+---
+
 # Tutorials
 
 Step-by-step guides.

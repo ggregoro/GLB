@@ -38,6 +38,22 @@ Develop the core installation framework.
 - Module execution framework
 - Installation verification
 - Error recovery
+- **Known issue, not yet fixed (confirmed 2026-08-07/2026-08-08):**
+  every sudo-gated call site (`lib/package.sh`'s install/remove/update,
+  `lib/prompt.sh`'s Starship install) uses plain `sudo <cmd>`. On a
+  sandboxed/no-TTY restore, each failed attempt still counts as a real
+  `pam_unix` auth failure — on Arch-based distros with `pam_faillock`
+  enabled (`deny=3` by default), a restore with 3+ sudo-gated
+  packages/extras can lock the real user out of their own terminal
+  (requiring a log out/log back in, not just waiting) purely as a side
+  effect of GLB's own designed-to-fail-cleanly attempts. Confirmed
+  twice on real hardware: CachyOS (2026-08-07) and a separate
+  EndeavourOS VM (2026-08-08) — not observed on any apt/dnf/zypper
+  machine tested. Proposed fix: `sudo -n <cmd>` (non-interactive)
+  instead of plain `sudo`, so a no-TTY attempt fails immediately
+  without triggering the auth conversation `pam_faillock` counts. Not
+  scoped or built yet — see CLAUDE.md's EndeavourOS VM Roadmap entry
+  for the full root-cause writeup.
 - ~~Pause/resume for sudo-gated steps~~ **Done (2026-08-06)** —
   `glb_install_package` now pauses on a failed install, prints the exact
   command to run manually, and waits for confirmation (or a skip)
@@ -308,7 +324,12 @@ Expand platform support.
 - **Arch Linux ✅** — pacman confirmed via a real `glb restore default`
   plus `new-to-linux`'s pacman-specific overrides (`libreoffice` →
   `libreoffice-fresh`, `gh` → `github-cli`) on a CachyOS (Arch-based)
-  test VM (2026-08-05, 2026-08-07).
+  test VM (2026-08-05, 2026-08-07). Independently reconfirmed on a
+  second, separate Arch-based machine — an EndeavourOS test VM
+  (2026-08-08): zero `_GLB_PACKAGE_OVERRIDES` gaps, all four extras
+  methods (curl/flatpak/font/starship-installer) working, and a clean
+  idempotent second restore. Also where the `pam_faillock` lockout
+  issue above was root-caused — see the Version 0.2 known-issue entry.
 - **Manjaro** — not tested. Arch-family, so the underlying package
   manager (pacman) is already confirmed via CachyOS, but Manjaro itself
   has never actually been run.
