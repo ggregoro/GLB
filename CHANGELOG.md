@@ -90,6 +90,10 @@ This project follows a simple versioning approach:
   (`curl` re-runs the install script, `flatpak` runs the native
   `update` verb, `font` re-downloads and re-extracts). No confirmation
   prompt, matching `glb update`'s existing unprompted style.
+- Added a gradient background, 90% window opacity, and a tmux-style
+  `Ctrl+a` leader keybinding set (tabs, splits, vim-style pane
+  navigation, zoom, a resize key-table, copy mode) to `default`'s
+  `.config/wezterm/wezterm.lua`.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.
@@ -111,6 +115,11 @@ This project follows a simple versioning approach:
   manifest* instead of waiting on the real terminal, and anything
   listed after a failed package/extra vanished without being
   processed. Fixed by reading each manifest on fd 3 instead of stdin.
+- Fixed two `tests/export.bats` tests silently relying on the real
+  host's package manager instead of their stubs, which only passed by
+  accident on non-pacman/non-dnf hosts; they now override
+  `glb_detect_package_manager` directly so the apt/zypper-specific
+  branches they exercise actually run regardless of the real host.
 
 ### Planned
 
