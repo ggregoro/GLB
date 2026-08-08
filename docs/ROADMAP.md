@@ -235,17 +235,52 @@ Improve reproducibility.
   `glb_install_zsh_plugins` only checks that a directory exists, not
   that the clone inside it is complete) — worth doing once real
   corruption cases actually show up, not pre-emptively.
-- **Update installed components — scoped (2026-08-07), not yet
-  built.** See `docs/design/update-components.md`. `glb update` already
-  covers system packages; the real gap is everything GLB installs
-  outside the package manager (Starship, vendored zsh plugins,
-  `extras.txt` entries), which currently has no update path at all.
-  Extends the existing `glb update` command rather than adding a new
-  one, gains an optional profile argument (needed only to reach
-  per-profile `extras.txt` entries — Starship/zsh plugins are global
-  and update regardless), and stays unprompted, matching `glb
-  update`'s existing no-confirmation style. GLB updating its own code
-  is explicitly out of scope, deferred as a separate future item.
+- **Update installed components — done (2026-08-07, Dell laptop).**
+  See `docs/design/update-components.md`. `glb update` already covered
+  system packages; now also updates everything else GLB installs
+  outside the package manager: Starship (`glb_update_starship`,
+  `lib/prompt.sh` — re-runs the installer if already present, no-op
+  otherwise) and vendored zsh plugins (`glb_update_zsh_plugins`,
+  `lib/plugins.sh` — `git pull` on any plugin already cloned). `glb
+  update` gained an optional profile argument (`glb update [profile]`)
+  — with a profile given, also re-runs that profile's already-installed
+  `extras.txt` entries via new `glb_update_profile_extras`/
+  `_glb_update_extra` (`lib/extras.sh`): `curl` re-runs the install
+  script, `flatpak` uses the native `update` verb (not `install`),
+  `font` re-downloads and re-extracts. No confirmation prompt anywhere,
+  matching `glb update`'s existing unprompted style — a deliberate
+  difference from the guided wizard/`glb repair`'s confirm-first
+  pattern, since this extends an existing command's established
+  convention rather than inventing a new one. GLB updating its own code
+  stayed explicitly out of scope, as planned.
+  - Dispatcher validates an explicitly-given profile name exists
+    (`Profile not found: <name>`, same wording as every other
+    profile-taking command) before doing anything.
+  - 17 new bats tests across `tests/prompt.bats`, `tests/plugins.bats`,
+    `tests/extras.bats`, and `tests/dispatcher.bats`. **Real gotcha
+    caught by the dispatcher-level tests, not the unit tests:** this
+    laptop has a genuine `starship` binary on `PATH` outside the test
+    sandbox (`STUB_BIN` is prepended to, not a replacement for, the
+    real `PATH`) — the pre-existing "glb update runs the package
+    manager's update commands" test started failing because
+    `glb_update_starship` found that real binary and attempted a real
+    network install via unstubbed `curl`/`sh`. Fixed by stubbing
+    `curl`/`sh` to safe no-ops in `tests/dispatcher.bats`'s shared
+    `setup()`, the same PATH-bleed class of issue already documented
+    elsewhere in this file for `fresh`/`starship`. 201/202 bats tests
+    pass overall — the one failure is a pre-existing, unrelated zypper
+    test that also fails on unmodified `main` on this apt machine.
+  - **Real, for-real verification on this laptop (2026-08-07), Greg's
+    actual daily driver:** bare `./glb update` run for real —
+    `sudo apt upgrade`/Starship's reinstall both failed cleanly with
+    zero side effects (no TTY for sudo), zsh plugins updated
+    unprompted (`zsh-syntax-highlighting` fast-forwarded a real
+    upstream commit). Greg then ran the two printed sudo-gated
+    commands himself; confirmed afterward via `starship --version`
+    (`1.26.0`, `/usr/local/bin/starship`) that the update genuinely
+    took. `glb update`'s system/starship/plugins path is now confirmed
+    on real hardware. Still only bats-verified: `glb update <profile>`'s
+    `extras.txt` re-run path.
 
 ---
 

@@ -82,6 +82,14 @@ This project follows a simple versioning approach:
   `default`'s WezTerm config) — previously `glb restore` assumed the font
   was already present, which every prior test machine happened to have
   pre-installed by hand.
+- Extended `glb update` to also cover what it previously missed:
+  Starship (re-runs its installer if already present) and vendored zsh
+  plugins (`git pull` on any plugin already cloned). `glb update
+  [profile]` now takes an optional profile argument to also re-run
+  that profile's `extras.txt` entries that are currently installed
+  (`curl` re-runs the install script, `flatpak` runs the native
+  `update` verb, `font` re-downloads and re-extracts). No confirmation
+  prompt, matching `glb update`'s existing unprompted style.
 
 ### Fixed
 - Fixed zypper not being detected as an available package manager.

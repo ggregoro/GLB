@@ -11,6 +11,13 @@ setup() {
     stub_command sudo 'exec "$@"'
     stub_command apt 'echo "apt $*"; exit 0'
     stub_command dpkg 'exit 1'
+    # glb update unconditionally exercises glb_update_starship, which
+    # checks for a real starship binary via PATH (not just STUB_BIN) -
+    # this machine may genuinely have one installed. Default curl/sh to
+    # safe no-ops so that path never makes a real network call; tests
+    # that care about the exact command re-stub these themselves.
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 0'
 }
 
 teardown() {
@@ -337,6 +344,38 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"apt update"* ]]
     [[ "$output" == *"apt upgrade -y"* ]]
+}
+
+@test "glb update with no profile also updates starship/zsh plugins but not any extras" {
+    stub_command starship 'exit 0'
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
+    stub_command sh 'echo "sh ran" >> "$TEST_TMP/calls"; exit 0'
+    stub_command git 'echo "git $*" >> "$TEST_TMP/calls"; exit 0'
+    mkdir -p "$HOME/.local/share/glb/plugins/zsh-autosuggestions"
+
+    run "$GLB_ROOT/glb" update
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updated starship"* ]]
+    [[ "$output" == *"Updated zsh plugin: zsh-autosuggestions"* ]]
+    grep -q "curl -sS https://starship.rs/install.sh" "$TEST_TMP/calls"
+}
+
+@test "glb update <profile> also re-runs that profile's already-installed extras" {
+    mkdir -p "$GLB_ROOT/profiles/default"
+    printf 'flatpak wezterm org.wezfurlong.wezterm\n' > "$GLB_ROOT/profiles/default/extras.txt"
+    stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; case "$1" in info) exit 0 ;; esac'
+
+    run "$GLB_ROOT/glb" update default
+
+    [ "$status" -eq 0 ]
+    grep -q "update -y org.wezfurlong.wezterm" "$TEST_TMP/calls"
+}
+
+@test "glb update rejects an unknown profile" {
+    run "$GLB_ROOT/glb" update bogus-profile
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Profile not found: bogus-profile"* ]]
 }
 
 @test "glb export captures the real default profile's tracked dotfiles and packages into a snapshot" {

@@ -65,3 +65,37 @@ glb_install_zsh_plugins() {
         return 1
     fi
 }
+
+# ------------------------------------------------------------
+# git pull every curated plugin whose directory already exists,
+# to pick up upstream changes. Plugins never cloned are skipped -
+# only touches what's actually here.
+# ------------------------------------------------------------
+
+glb_update_zsh_plugins() {
+    local plugins_dir="$HOME/.local/share/glb/plugins"
+    local name dest
+    local failed=()
+
+    for name in "${!_GLB_ZSH_PLUGINS[@]}"; do
+        dest="$plugins_dir/$name"
+
+        if [[ ! -d "$dest" ]]; then
+            continue
+        fi
+
+        glb_log_info "Updating zsh plugin: $name"
+
+        if git -C "$dest" pull; then
+            glb_log_success "Updated zsh plugin: $name"
+        else
+            glb_log_error "Failed to update zsh plugin: $name"
+            failed+=("$name")
+        fi
+    done
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        glb_log_error "Failed to update ${#failed[@]} plugin(s): ${failed[*]}"
+        return 1
+    fi
+}

@@ -60,3 +60,39 @@ teardown() {
     [[ "$output" == *"Already installed: starship"* ]]
     [[ "$output" != *"Would install"* ]]
 }
+
+# --- glb_update_starship ---------------------------------------------------
+
+@test "update: no-op when starship isn't on PATH" {
+    glb_command_exists() { [[ "$1" != "starship" ]]; }
+    stub_command curl 'echo "curl called" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_starship
+
+    [ "$status" -eq 0 ]
+    [ ! -f "$TEST_TMP/calls" ]
+}
+
+@test "update: re-runs the install script when starship is already installed" {
+    stub_command starship 'exit 0'
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
+    stub_command sh 'echo "sh ran" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_starship
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updated starship"* ]]
+    grep -q "curl -sS https://starship.rs/install.sh" "$TEST_TMP/calls"
+    grep -q "sh ran" "$TEST_TMP/calls"
+}
+
+@test "update: reports failure when the installer fails" {
+    stub_command starship 'exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 1'
+
+    run glb_update_starship
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to update starship"* ]]
+}

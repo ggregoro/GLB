@@ -125,6 +125,96 @@ glb_install_extra() {
 }
 
 # ------------------------------------------------------------
+# Re-run a single already-installed extra's install step, to pick
+# up whatever's current. Distinct per method from glb_install_extra:
+# flatpak uses the native "update" verb rather than "install", and
+# neither curl nor font need the not-yet-installed framing (no
+# manual-step pause on failure - matches glb update's existing
+# unprompted style, this isn't the first install attempt).
+# ------------------------------------------------------------
+
+_glb_update_extra() {
+    local method="$1"
+    local name="$2"
+    local spec="$3"
+    local pipe_status
+
+    case "$method" in
+        curl)
+            glb_log_info "Updating $name via curl-install script"
+            curl -fsSL "$spec" | sh
+            # See glb_install_extra's curl case for why PIPESTATUS is
+            # captured as a whole array rather than read index by index.
+            pipe_status=("${PIPESTATUS[@]}")
+            [[ "${pipe_status[0]}" -eq 0 && "${pipe_status[1]}" -eq 0 ]]
+            ;;
+        flatpak)
+            glb_log_info "Updating $name via Flatpak ($spec)"
+            flatpak update -y "$spec"
+            ;;
+        font)
+            glb_log_info "Updating font: $name"
+            local font_dir="$HOME/.local/share/fonts/$name"
+            local tmp_zip
+            tmp_zip="$(mktemp --suffix=.zip)"
+
+            if curl -fsSL "$spec" -o "$tmp_zip" && unzip -o -q "$tmp_zip" -d "$font_dir"; then
+                rm -f "$tmp_zip"
+                glb_command_exists fc-cache && fc-cache -f "$font_dir" >/dev/null 2>&1
+                return 0
+            fi
+
+            rm -f "$tmp_zip"
+            return 1
+            ;;
+        *)
+            glb_log_error "Unknown extras method: $method"
+            return 1
+            ;;
+    esac
+}
+
+# ------------------------------------------------------------
+# Re-run every currently-installed extra in a profile's extras.txt,
+# to pick up updates. Extras that were never installed in the first
+# place are silently skipped - nothing to key an update against.
+# ------------------------------------------------------------
+
+glb_update_profile_extras() {
+    local profile_dir="$1"
+    local extras_file="$profile_dir/extras.txt"
+    local line method name spec
+    local failed=()
+
+    if [[ ! -f "$extras_file" ]]; then
+        return 0
+    fi
+
+    while IFS= read -r line <&3 || [[ -n "$line" ]]; do
+        line="${line%%#*}"
+        line="$(echo "$line" | xargs)"
+
+        [[ -z "$line" ]] && continue
+
+        read -r method name spec <<< "$line"
+
+        if ! glb_extra_installed "$method" "$name" "$spec"; then
+            continue
+        fi
+
+        if ! _glb_update_extra "$method" "$name" "$spec"; then
+            glb_log_error "Failed to update: $name"
+            failed+=("$name")
+        fi
+    done 3< "$extras_file"
+
+    if [[ ${#failed[@]} -gt 0 ]]; then
+        glb_log_error "Failed to update ${#failed[@]} extra(s): ${failed[*]}"
+        return 1
+    fi
+}
+
+# ------------------------------------------------------------
 # Install every extra listed in a profile's extras.txt
 # ------------------------------------------------------------
 

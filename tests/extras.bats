@@ -352,3 +352,92 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"Skipped: install jetbrains-mono-nerd-font"* ]]
 }
+
+# --- glb_update_profile_extras / _glb_update_extra --------------------------
+#
+# Re-running an already-installed extra to pick up updates. Deliberately
+# no pause/manual-step here (unlike glb_install_extra) - matches glb
+# update's existing unprompted style, see docs/design/update-components.md.
+
+@test "update: missing extras.txt is a silent no-op" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [ "$output" = "" ]
+}
+
+@test "update: skips an extra that isn't currently installed" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
+    stub_command curl 'echo "curl called" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [ ! -f "$TEST_TMP/calls" ]
+}
+
+@test "update: curl - re-runs the install script for an already-installed extra" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
+    stub_command fresh 'exit 0'
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
+    stub_command sh 'echo "sh ran" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updating fresh via curl-install script"* ]]
+    grep -q "curl -fsSL https://example.test/install.sh" "$TEST_TMP/calls"
+    grep -q "sh ran" "$TEST_TMP/calls"
+}
+
+@test "update: flatpak - runs flatpak update, not install, for an already-installed extra" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'flatpak wezterm org.wezfurlong.wezterm\n' > "$pdir/extras.txt"
+    stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; case "$1" in info) exit 0 ;; esac'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    grep -q "update -y org.wezfurlong.wezterm" "$TEST_TMP/calls"
+    ! grep -q "flatpak install" "$TEST_TMP/calls"
+}
+
+@test "update: font - re-downloads and unzips, refreshing the font cache" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'font jetbrains-mono-nerd-font https://example.test/Font.zip\n' > "$pdir/extras.txt"
+    mkdir -p "$HOME/.local/share/fonts/jetbrains-mono-nerd-font"
+    touch "$HOME/.local/share/fonts/jetbrains-mono-nerd-font/Old-Regular.ttf"
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; touch "${@: -1}"; exit 0'
+    stub_command unzip 'echo "unzip $*" >> "$TEST_TMP/calls"; mkdir -p "${@: -1}"; touch "${@: -1}/New-Regular.ttf"; exit 0'
+    stub_command fc-cache 'echo "fc-cache $*" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [ -f "$HOME/.local/share/fonts/jetbrains-mono-nerd-font/New-Regular.ttf" ]
+    grep -q "fc-cache -f $HOME/.local/share/fonts/jetbrains-mono-nerd-font" "$TEST_TMP/calls"
+}
+
+@test "update: a failed update is logged and aggregated, no manual-step pause" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
+    stub_command fresh 'exit 0'
+    stub_command curl 'exit 0'
+    stub_command sh 'exit 1'
+
+    run glb_update_profile_extras "$pdir" </dev/null
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to update: fresh"* ]]
+    [[ "$output" != *"Run this yourself"* ]]
+}

@@ -42,7 +42,8 @@ glb_show_help() {
     printf "  info       Show system information\n"
     printf "  install    Install a package\n"
     printf "  remove     Remove a package\n"
-    printf "  update     Update all system packages\n"
+    printf "  update     Update system packages, starship, and zsh plugins\n"
+    printf "  update <profile>   Also re-run that profile's extras.txt entries\n"
     printf "  restore    Apply a profile (packages + dotfiles)\n"
     printf "  restore              With no profile name, choose one interactively\n"
     printf "  restore --undo       Undo the last restore's dotfile changes\n"
@@ -108,7 +109,26 @@ case "${1:-}" in
         ;;
 
     update)
-        glb_update_packages
+        update_status=0
+        update_profile="${2:-}"
+
+        if [[ -n "$update_profile" ]]; then
+            update_profile_dir="$(_glb_profile_dir "$update_profile")"
+            if [[ ! -d "$update_profile_dir" ]]; then
+                glb_log_error "Profile not found: $update_profile"
+                exit 1
+            fi
+        fi
+
+        glb_update_packages || update_status=1
+        glb_update_starship || update_status=1
+        glb_update_zsh_plugins || update_status=1
+
+        if [[ -n "$update_profile" ]]; then
+            glb_update_profile_extras "$update_profile_dir" || update_status=1
+        fi
+
+        exit "$update_status"
         ;;
 
     restore)

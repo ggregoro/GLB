@@ -57,3 +57,50 @@ teardown() {
     [[ "$output" == *"Already installed: zsh-autosuggestions"* ]]
     [[ "$output" == *"Would install zsh plugin: zsh-syntax-highlighting"* ]]
 }
+
+# --- glb_update_zsh_plugins -------------------------------------------------
+
+@test "update: skips a plugin that was never cloned" {
+    mkdir -p "$HOME/.local/share/glb/plugins/zsh-autosuggestions"
+    stub_command git 'echo "git $*" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_zsh_plugins
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updating zsh plugin: zsh-autosuggestions"* ]]
+    [[ "$output" != *"zsh-syntax-highlighting"* ]]
+    grep -q -- "-C .*zsh-autosuggestions pull" "$TEST_TMP/calls"
+}
+
+@test "update: git pulls every plugin directory that already exists" {
+    mkdir -p "$HOME/.local/share/glb/plugins/zsh-autosuggestions"
+    mkdir -p "$HOME/.local/share/glb/plugins/zsh-syntax-highlighting"
+    stub_command git 'echo "git $*" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_zsh_plugins
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updated zsh plugin: zsh-autosuggestions"* ]]
+    [[ "$output" == *"Updated zsh plugin: zsh-syntax-highlighting"* ]]
+    grep -q -- "-C .*zsh-autosuggestions pull" "$TEST_TMP/calls"
+    grep -q -- "-C .*zsh-syntax-highlighting pull" "$TEST_TMP/calls"
+}
+
+@test "update: no-op when no plugins have ever been installed" {
+    stub_command git 'echo "git called" >> "$TEST_TMP/calls"; exit 0'
+
+    run glb_update_zsh_plugins
+
+    [ "$status" -eq 0 ]
+    [ ! -f "$TEST_TMP/calls" ]
+}
+
+@test "update: reports failure when a git pull fails" {
+    mkdir -p "$HOME/.local/share/glb/plugins/zsh-autosuggestions"
+    stub_command git 'exit 1'
+
+    run glb_update_zsh_plugins
+
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Failed to update zsh plugin: zsh-autosuggestions"* ]]
+}

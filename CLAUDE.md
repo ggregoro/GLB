@@ -61,11 +61,14 @@ branches on it.
 ## Current state (as of 2026-08-07)
 
 - Commands: `help`, `version`, `info`, `install <pkg>`, `remove <pkg>`,
-  `update`, `restore [profile] [--undo|--dry-run|--from-snapshot
-  <name>]` (no profile name shows a guided picker — descriptions, an
-  automatic `--dry-run` preview, then a confirm prompt before applying;
-  `--dry-run` explicitly passed skips the confirm and just previews),
-  `profiles`, `prompt`, `export`, `diff <a> <b>`, `repair <profile>`.
+  `update [profile]` (system packages, starship, zsh plugins always;
+  with a profile name, also that profile's already-installed
+  `extras.txt` entries), `restore [profile] [--undo|--dry-run|--from-
+  snapshot <name>]` (no profile name shows a guided picker —
+  descriptions, an automatic `--dry-run` preview, then a confirm prompt
+  before applying; `--dry-run` explicitly passed skips the confirm and
+  just previews), `profiles`, `prompt`, `export`, `diff <a> <b>`,
+  `repair <profile>`.
 - Modules: `lib/banner.sh`, `lib/logging.sh`, `lib/utils.sh`,
   `lib/detect.sh`, `lib/package.sh`, `lib/extras.sh`, `lib/profile.sh`,
   `lib/export.sh`, `lib/diff.sh`, `lib/prompt.sh`, `lib/plugins.sh`,
@@ -197,6 +200,81 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **"Updating installed components" built (2026-08-07, Dell laptop) —
+  last item in Version 0.6, closing it out entirely.** Picked up
+  exactly where the openSUSE VM session's scoping (`docs/design/
+  update-components.md`, entry right below this one) left off.
+  - New `glb_update_starship` (`lib/prompt.sh`): if `starship` is
+    already on `PATH`, re-runs the exact same installer command
+    `glb_install_starship` uses; a plain no-op (no curl call at all)
+    if it isn't installed. New `glb_update_zsh_plugins`
+    (`lib/plugins.sh`): for each curated plugin whose directory
+    already exists under `~/.local/share/glb/plugins`, runs `git -C
+    <dest> pull`; plugins never cloned are silently skipped. Both
+    called unconditionally by `glb update`, matching the design doc's
+    "Starship/zsh plugins aren't profile-specific" call.
+  - New `_glb_update_extra`/`glb_update_profile_extras`
+    (`lib/extras.sh`), parallel to the existing `glb_install_extra`/
+    `glb_apply_profile_extras` but update-flavored: only re-runs an
+    entry if `glb_extra_installed` already says yes (nothing to key an
+    update against otherwise). `curl` re-runs the same install script
+    (same `PIPESTATUS`-array-capture care as the install path);
+    `flatpak` runs `flatpak update -y <app-id>` — the correct native
+    verb, deliberately distinct from `install`; `font` re-downloads
+    and re-extracts into the same directory (the URL's already a
+    "latest" redirect, so this naturally picks up the current
+    release). No manual-step pause on any failure here, unlike the
+    install path — matches `glb update`'s existing unprompted
+    convention rather than the first-install pause/retry UX.
+  - Dispatcher (`glb`): `update` case now takes an optional profile
+    argument. Validates an explicitly-given name exists first
+    (`Profile not found: <name>`, same wording/pattern as every other
+    profile-taking command) before doing anything. Always runs
+    packages + starship + zsh plugins; only calls
+    `glb_update_profile_extras` when a profile name was actually
+    given. Failures across all steps are aggregated into one overall
+    exit status via `exit "$update_status"` rather than the plain
+    fall-through every other dispatcher branch uses, since `update`
+    now runs multiple independent steps whose individual failures all
+    need to surface in the final exit code.
+  - 17 new bats tests across `tests/prompt.bats`, `tests/plugins.bats`,
+    `tests/extras.bats`, `tests/dispatcher.bats`. **Real gotcha caught
+    by the dispatcher-level tests, not the smaller unit tests:** this
+    laptop has a genuine `starship` binary on real `PATH` (bats'
+    sandbox prepends `STUB_BIN` to the real `PATH`, it doesn't replace
+    it) — the pre-existing "glb update runs the package manager's
+    update commands" test started failing because
+    `glb_update_starship` found that real binary "installed" and tried
+    a real network install via unstubbed `curl`/`sh`. Same PATH-bleed
+    class of gap already documented elsewhere in this file for `fresh`
+    and `starship` (`glb_export_shell`'s tests). Fixed by stubbing
+    `curl`/`sh` to safe no-ops in `tests/dispatcher.bats`'s shared
+    `setup()`, alongside the existing `sudo`/`apt`/`dpkg` stubs — the
+    same isolation fix pattern, not a new one. 201/202 bats tests
+    pass; the one failure (`export_packages adds the zypper
+    base-package caveat only on zypper`) is pre-existing and unrelated
+    — confirmed via `git stash` to fail identically on unmodified
+    `main` on this apt machine.
+  - **Real, for-real verification, not just bats — run on this
+    Dell laptop (2026-08-07), Greg's actual daily-driver machine, not
+    a throwaway VM.** Ran bare `./glb update` for real: `sudo apt
+    upgrade` and the Starship reinstall both initially failed cleanly
+    with zero side effects (no TTY for the sudo password prompt, same
+    limitation documented everywhere else in this file) — nothing was
+    touched. The zsh plugin `git pull`s ran unprompted and succeeded
+    (`zsh-autosuggestions` already current, `zsh-syntax-highlighting`
+    fast-forwarded one real upstream commit). Greg then ran the two
+    printed sudo-gated commands himself in a real terminal
+    (`sudo apt update && sudo apt upgrade -y`, then
+    `curl -sS https://starship.rs/install.sh | sh -s -- -y`) —
+    confirmed afterward via `starship --version`: `starship 1.26.0`
+    at `/usr/local/bin/starship`, a genuine version bump from
+    whatever was previously installed. `glb update`'s non-profile path
+    (system packages, Starship, zsh plugins) is now confirmed working
+    end-to-end on real hardware, not just through the stubbed bats
+    sandbox. **Not yet exercised for real:** `glb update <profile>`'s
+    `extras.txt` re-run path (`curl`/`flatpak update`/`font`) — still
+    only bats-verified.
 - **"Updating installed components" scoped (2026-08-07, openSUSE VM),
   not yet built — last item in Version 0.6.** Same approach as the
   wizard and repair scoping earlier this session: checked what already
@@ -1688,6 +1766,27 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff from the Dell laptop session (2026-08-07): built "updating
+  installed components," closing out Version 0.6 entirely.** Picked
+  up exactly where the openSUSE VM session's wrap-up note (right below
+  this one) left off — the scoping in `docs/design/
+  update-components.md` was already done, this session just built it.
+  See the Roadmap entry above for the full build: `glb_update_starship`
+  (`lib/prompt.sh`), `glb_update_zsh_plugins` (`lib/plugins.sh`),
+  `glb_update_profile_extras`/`_glb_update_extra` (`lib/extras.sh`),
+  and `glb update [profile]`'s new optional argument in the dispatcher.
+  17 new bats tests, 201/202 passing (one pre-existing, unrelated
+  zypper-detection failure on this apt machine). **Then run for real
+  on this laptop**, Greg's actual daily driver: `./glb update` for
+  real, the two sudo-gated steps run by Greg himself afterward,
+  confirmed via `starship --version` (`1.26.0`) that the update
+  genuinely took — see the Roadmap entry above for the full
+  verification. `glb update <profile>`'s extras-re-run path is still
+  only bats-verified. **Version 0.6 (Configuration Management) is now
+  fully done**: installation manifests is the only genuinely unscoped
+  item left in the whole roadmap. **Pull first** (`git fetch && git
+  log main..origin/main`) before assuming any other machine is caught
+  up.
 - **Session wrap-up (2026-08-07, openSUSE VM) — paused here by Greg's
   choice, VM being shut down, picking back up on the Dell laptop next.**
   Everything below is pushed to `origin/main`

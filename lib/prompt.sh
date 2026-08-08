@@ -41,6 +41,27 @@ glb_install_starship() {
 }
 
 # ------------------------------------------------------------
+# Re-run the starship installer if it's already present, to pick
+# up the latest release. Only touches what's actually here - skips
+# entirely if starship isn't installed at all.
+# ------------------------------------------------------------
+
+glb_update_starship() {
+    if ! glb_command_exists starship; then
+        return 0
+    fi
+
+    glb_log_info "Updating starship..."
+
+    if curl -sS https://starship.rs/install.sh | sh -s -- -y; then
+        glb_log_success "Updated starship"
+    else
+        glb_log_error "Failed to update starship"
+        return 1
+    fi
+}
+
+# ------------------------------------------------------------
 # Back up an existing file to <name>.glb-backup
 # ------------------------------------------------------------
 
