@@ -148,6 +148,35 @@ branches on it.
     it's Lua, not shell. As of 2026-08-06, `glb restore` also installs
     WezTerm itself via the new `extras.txt`/Flatpak mechanism (see
     Roadmap) — previously it only symlinked this config.
+  - **(2026-08-08, EndeavourOS VM) Real Flatpak-sandbox bug found and
+    fixed, unrelated to the config file itself: every WezTerm launch
+    printed `tty: ttyname failed: No such device`.** Root cause: the
+    Flatpak app's default permissions (`devices=dri` only) don't bind
+    `/dev/pts`, so WezTerm's own pty (allocated inside its sandboxed
+    devpts instance) can't be resolved by `ttyname()` when
+    `/etc/profile.d/gpm.sh` calls `tty` during every login shell's
+    `/etc/profile`. **Not a GLB code fix** (Flatpak permissions are
+    per-machine state, not something `glb restore` manages) — fixed by
+    running `flatpak override --user org.wezfurlong.wezterm
+    --device=all` once on this VM, then a full kill
+    (`pkill -f wezterm-gui`)/relaunch (the already-running GUI instance
+    keeps its old sandbox permissions until restarted). Worth knowing
+    if this surfaces on another machine's WezTerm-via-Flatpak install.
+  - **(2026-08-08, EndeavourOS VM) Wallpaper/opacity/keybindings added
+    to `default`'s WezTerm config, Greg's explicit ask.** Used
+    `window_background_gradient` (`#1a1b26` → `#0f0f17`, matching Tokyo
+    Night) instead of an image file — deliberately, since the Flatpak
+    sandbox's `filesystems=home:ro;xdg-config/wezterm` permission set
+    makes an arbitrary wallpaper path unreliable to serve. Added
+    `window_background_opacity = 0.9` (confirmed rendering correctly on
+    this VM's KWin/Wayland session, which composites natively — no
+    separate compositor needed). Added a tmux-style leader
+    (`Ctrl+a`, 1s timeout): `c`/`x` new/close, `n`/`p`/`1`-`9` tab
+    nav, `-`/`Shift+|` splits, vim-style `hjkl` pane nav, `z` zoom,
+    `r` a resize key-table, `[` copy mode, double-leader to send a
+    literal `Ctrl+a` through. Validated via `wezterm show-keys`
+    against the real config file, same discipline as the original
+    2026-08-05 build.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
@@ -1988,6 +2017,38 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-08, EndeavourOS VM, second session same
+  day) — WezTerm made actually usable: a real Flatpak-sandbox bug
+  fixed, plus wallpaper/opacity/keybindings added on request.** Picked
+  up right after the earlier same-day restore-verification session
+  (entry right below this one) closed out, in a fresh Claude Code
+  conversation continuing the WezTerm-install thread from even earlier
+  that day. See the Roadmap's WezTerm bullet (under "Current state")
+  for the full writeup:
+  - Root-caused and fixed `tty: ttyname failed: No such device`
+    printing on every WezTerm launch — the Flatpak sandbox's default
+    `devices=dri`-only permissions don't bind `/dev/pts`, so
+    `/etc/profile.d/gpm.sh`'s `tty` call can't resolve WezTerm's own
+    pty. Fixed with `flatpak override --user org.wezfurlong.wezterm
+    --device=all` plus a full kill/relaunch (a running GUI instance
+    keeps its old sandbox permissions otherwise). **Per-machine
+    Flatpak state, not a GLB code change** — nothing in `lib/` or
+    `extras.txt` needed to change, but worth knowing if another
+    machine's WezTerm-via-Flatpak install hits the same symptom.
+  - Added gradient background + `window_background_opacity = 0.9` +
+    a full tmux-style `Ctrl+a` leader keybinding set to `default`'s
+    `wezterm.lua`, per Greg's direct ask. Validated via
+    `wezterm show-keys` and confirmed rendering live (KWin/Wayland
+    composites the opacity natively on this VM). This **is** a real
+    `default`-profile dotfile change — will apply to every machine
+    that restores `default` and re-syncs this repo, not just this VM.
+  - Committed as three separate commits (`0859fda` test-isolation fix,
+    `fd570f2` this session's own wrap-up note, `e6cbf6d` the wezterm.lua
+    change, plus this note) and pushed to `origin/main` — confirm with
+    `git log` on the laptop that all four landed before assuming this
+    machine's work is fully synced.
+  - **Pull first** (`git fetch && git log main..origin/main`) before
+    assuming any other machine is caught up.
 - **Session wrap-up (2026-08-08, EndeavourOS VM) — real `default`
   restore verified end-to-end, plus a real test-suite bug found and
   fixed.** See the Roadmap entry above for the full writeup: zero
@@ -1998,10 +2059,10 @@ branches on it.
   accident on non-pacman hosts) found and fixed via a
   `glb_detect_package_manager` function override rather than a PATH
   restriction. 197/202 bats pass; the rest are the same pre-existing
-  `fresh`-on-PATH class documented everywhere else in this file. Not
-  yet committed/pushed as of this note — confirm with Greg first.
-  **Pull first** (`git fetch && git log main..origin/main`) before
-  assuming any other machine is caught up.
+  `fresh`-on-PATH class documented everywhere else in this file.
+  Committed as `0859fda` (the test fix) and `fd570f2` (this note),
+  and pushed to `origin/main` along with the WezTerm work in the
+  session note directly above this one.
 - **Session wrap-up (2026-08-07, Dell laptop) — pausing here by Greg's
   choice.** Everything below is pushed to `origin/main`, `55abb65` is
   the latest commit as of this note (fast-forwarded cleanly, no other
