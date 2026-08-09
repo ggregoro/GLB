@@ -2,11 +2,18 @@
 
 ## Purpose
 
-Greg's Linux Bootstrap (GLB) exists to create a complete, modern Linux workstation experience rather than simply install software.
+Greg's Linux Bootstrap (GLB) exists to make the terminal the easiest,
+most approachable part of using Linux — not the intimidating black
+window it is for most people arriving from Windows or macOS, where "the
+terminal" is one of the biggest barriers to switching at all.
 
-GLB is built on the belief that users should be able to transform a fresh Linux installation into a polished, productive, and consistent workstation with minimal effort.
+GLB is built on the belief that a good shell, a good prompt, and a
+handful of well-chosen CLI tools can turn that intimidating window into
+something people actually want to use — and that getting there should
+take one command, not hours of manually piecing together dotfiles.
 
-The project focuses on delivering an exceptional user experience while embracing the strength of the open-source ecosystem.
+The project focuses on delivering an exceptional terminal experience
+while embracing the strength of the open-source ecosystem.
 
 ---
 

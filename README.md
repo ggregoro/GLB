@@ -1,18 +1,27 @@
 # Greg's Linux Bootstrap (GLB)
 
-Build a modern Linux workstation with curated shell environments, tools, and
-profiles — in one pass, instead of reconfiguring everything by hand every
-time a distro gets reinstalled.
+Make the terminal the easiest part of using Linux, not the scariest.
+GLB configures a curated shell, prompt, and set of CLI tools inside
+whatever terminal your distro already has — in one command, instead of
+piecing it together by hand every time a distro gets reinstalled.
 
 ## Why GLB?
 
-Reinstalling or distro-hopping usually means redoing the same setup from
-memory: reinstalling the same packages, rewriting the same dotfiles,
-reinstalling the same shell prompt, and hoping you remembered everything.
-GLB turns that into a single command by capturing "what a good setup looks
-like" as a reusable **profile** — a package list plus dotfiles plus any
-extra install steps — that can be applied to any fresh install of a
-supported distro.
+The terminal is one of the biggest barriers for anyone coming from
+Windows or macOS — a blank prompt with no hints, no colors, no context.
+GLB closes that gap: a good prompt (branch info, clear directory context),
+modern replacements for basic commands (`eza`, `bat`, `zoxide`, `fzf`),
+and a shell that's actually pleasant to live in, all applied in one pass
+as a reusable **profile** — a package list, dotfiles, and any extra
+install steps — to any fresh install of a supported distro.
+
+Reinstalling or distro-hopping is the other half of the problem GLB
+solves: redoing the same terminal setup from memory every time, hoping
+you remembered everything. A profile captures it once and reapplies it
+identically anywhere.
+
+GLB enhances the terminal you already have — it doesn't install or
+replace it. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for why.
 
 ## Features
 

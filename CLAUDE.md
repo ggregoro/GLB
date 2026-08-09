@@ -2,9 +2,14 @@
 
 ## What this project is
 
-GLB is a Bash CLI tool that bootstraps and customizes fresh Linux installs —
-installing software and applying shell configs in one pass instead of doing
-it manually item by item every time a distro gets reinstalled.
+GLB is a Bash CLI tool that makes the terminal the easiest, most
+approachable part of using Linux — a curated shell, prompt, and set of
+CLI tools, configured in one pass inside whatever terminal a distro
+already ships, instead of piecing it together by hand every time a
+distro gets reinstalled. **GLB does not install GUI applications of any
+kind, terminal emulators included** (see the "Removed entirely
+(2026-08-09)" Roadmap entry below for why) — the focus is entirely the
+terminal itself.
 
 - Repo: https://github.com/ggregoro/GLB (private)
 - License: MIT
@@ -13,9 +18,16 @@ it manually item by item every time a distro gets reinstalled.
 ## Why it exists
 
 Greg distro-hops a lot and got tired of manually reconfiguring each fresh
-install by hand. GLB automates that setup. It's built with the idea that it
-might eventually be shared publicly if there's interest — so keep code
-reasonably clean and documented, not just "works on my machine."
+install by hand. GLB automates that setup. Separately, the terminal is one
+of the biggest barriers for anyone switching from Windows/macOS — an
+unfamiliar, unstyled prompt with none of the conveniences a good shell
+setup provides — and GLB's `new-to-linux` profile exists specifically to
+smooth that transition (2026-08-09, per Greg: "One of the biggest issues
+that people [moving] over from Windows is terminal. The project should
+make it easier for new users to work their way around the terminal.").
+It's built with the idea that it might eventually be shared publicly if
+there's interest — so keep code reasonably clean and documented, not just
+"works on my machine."
 
 ## Test environments
 

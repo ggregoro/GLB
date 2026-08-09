@@ -2,16 +2,20 @@
 
 ## Project Vision
 
-Turn a fresh Linux install into a polished, productive workstation with a
-single command — instead of manually reinstalling the same packages,
-rewriting the same dotfiles, and reconfiguring the same shell prompt every
-time a distro gets reinstalled or a new machine gets set up.
+Make the terminal the easiest, most approachable part of using Linux —
+not the intimidating black window it is for most people arriving from
+Windows or macOS. GLB gets there by configuring a curated shell, prompt,
+and set of CLI tools with a single command, instead of manually
+reinstalling the same packages, rewriting the same dotfiles, and
+reconfiguring the same shell prompt every time a distro gets reinstalled
+or a new machine gets set up.
 
 ## Mission
 
-Build the Linux workstation setup we'd want to install ourselves, and make
-it reproducible enough to run again on any supported distro with confidence
-that it will produce the same result.
+Build the terminal experience we'd want for anyone — someone who's never
+opened a shell before, and someone who's done it a thousand times — and
+make it reproducible enough to run again on any supported distro with
+confidence that it will produce the same result.
 
 ## Core Principles
 
@@ -43,7 +47,10 @@ these principles.
   reinstalling meant manually reconfiguring the same setup over and over.
 - **People newer to Linux, development, or server administration** who want
   a solid, curated starting point without researching every tool choice
-  themselves (`new-to-linux`, `developer`, `server` profiles).
+  themselves (`new-to-linux`, `developer`, `server` profiles) — `new-to-
+  linux` specifically targets the terminal itself as the barrier: someone
+  switching from Windows/macOS whose biggest hurdle isn't picking
+  software, it's that the command line is unfamiliar territory.
 - Potentially a **wider public audience** later, if there's interest —
   GLB is built with reasonably clean, documented code in mind for that
   possibility, not just "works on my machine."

@@ -370,9 +370,15 @@ Deliver the first stable version of GLB.
 
 # Long-Term Vision
 
-GLB will evolve into a complete Linux workstation builder that delivers a polished, reproducible, and customizable user experience by integrating the best existing open-source software.
+GLB will evolve into the easiest way to make a Linux terminal feel like
+home — a polished, reproducible, and customizable shell/prompt/CLI-tool
+experience, built by integrating the best existing open-source software
+rather than reinventing it.
 
-Rather than replacing mature open-source projects, GLB focuses on providing a consistent installation and configuration experience across supported Linux distributions.
+Rather than replacing mature open-source projects (or the terminal
+emulator someone already has), GLB focuses on providing a consistent
+configuration experience *inside the terminal* across supported Linux
+distributions.
 
 ---
 
