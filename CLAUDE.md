@@ -514,13 +514,15 @@ branches on it.
     checked out, no `glb restore` re-run is needed on any machine to
     pick up the fix — just `git pull` inside that machine's GLB
     checkout.
-  - **Not yet verified for real** — fixed and bats-tested from the
-    repo alone this session; the next real machine to `git pull` this
-    (or a fresh `glb restore default`) should visually confirm the OS
-    icon, git-branch symbol, language icons, and powerline arrows all
-    render correctly now, ideally on a terminal already confirmed to
-    render Nerd Font glyphs correctly (Konsole, gnome-terminal) so a
-    font gap doesn't get confused with this bug being back.
+  - **Verified for real (2026-08-10, Greg, Dell laptop)** — a plain
+    `git pull` in the laptop's GLB checkout was all it took, exactly as
+    predicted (`~/.config/starship.toml` is a live symlink, no
+    `glb restore` re-run needed). Greg's own words: "the profile and
+    config should now be complete." Screenshot confirms the Tokyo
+    Night zsh prompt rendering its icons correctly on this daily-driver
+    machine, plus `eza`'s folder icons in a directory listing in the
+    same window — the font itself was never the problem, exactly as
+    diagnosed.
 - **Fresh openSUSE Tumbleweed VM verified end-to-end (2026-08-10, Greg,
   real hardware) — `install.sh`'s curl-install path now confirmed on
   all four supported package managers (apt, dnf, pacman, zypper).**
