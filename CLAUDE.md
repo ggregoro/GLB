@@ -177,6 +177,35 @@ branches on it.
     literal `Ctrl+a` through. Validated via `wezterm show-keys`
     against the real config file, same discipline as the original
     2026-08-05 build.
+  - **Superseded (2026-08-09, Dell laptop): the gradient/opacity/
+    keybindings config above is no longer what `default` ships.**
+    While auditing `$HOME` clutter on the Dell laptop, found a
+    long-standing, un-tracked `~/.wezterm.lua` (a plain file, not a
+    GLB symlink, dated 2026-08-07 — predates the EndeavourOS session
+    above) that WezTerm was silently preferring over the real
+    GLB-managed `~/.config/wezterm/wezterm.lua`, since WezTerm checks
+    `~/.wezterm.lua` first. That stray file had a simpler config
+    (`font_size = 12.0`, `enable_tab_bar = false`,
+    `window_decorations = "RESIZE"`, `color_scheme = 'Tokyo Night'`,
+    `window_background_opacity = 0.92`, no gradient, no keybindings) —
+    meaning the EndeavourOS additions above were never actually
+    visible on Greg's real daily driver at all. Confirmed via
+    `AskUserQuestion`: Greg chose to promote *this* laptop config into
+    the repo (discarding the gradient/keybindings/explicit-Nerd-Font
+    lines) rather than keep the EndeavourOS version, since this is
+    what he's actually been using day to day. `profiles/default/
+    dotfiles/.config/wezterm/wezterm.lua` now matches the old
+    `~/.wezterm.lua` content exactly. The stray file itself was moved
+    to `~/archived-configs/` on the laptop (not deleted), alongside
+    other unrelated `$HOME` cleanup from the same session (old
+    Oh-My-Zsh-migration leftovers: `.p10k.zsh`, `.shell.pre-oh-my-zsh`,
+    `.zshrc.pre-oh-my-zsh`, `.zshrc.pre-oh-my-zsh-2026-08-02_22-24-02`,
+    `.bashrc.original`) so WezTerm now falls through to the real
+    GLB-managed symlink. **Not yet verified for real** — this was
+    changed from the repo alone (cloud session); Greg still needs to
+    `git pull`, move `~/.wezterm.lua` into the archive folder, and
+    relaunch WezTerm to confirm it picks up the (now-matching)
+    `~/.config/wezterm/wezterm.lua`.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup

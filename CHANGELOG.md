@@ -95,6 +95,14 @@ This project follows a simple versioning approach:
   navigation, zoom, a resize key-table, copy mode) to `default`'s
   `.config/wezterm/wezterm.lua`.
 
+### Changed
+- Replaced `default`'s `.config/wezterm/wezterm.lua` (the gradient/
+  opacity/keybindings version above) with the simpler config that was
+  actually already running on Greg's Dell laptop via an untracked
+  `~/.wezterm.lua` - discovered during a `$HOME` cleanup that WezTerm
+  had been silently preferring that stray file over the real
+  GLB-managed one the whole time. See CLAUDE.md for the full writeup.
+
 ### Fixed
 - Fixed the `ls`/`ll`/`la`/`l` eza aliases (all profiles, all three
   shells) never showing per-file git status indicators in file
