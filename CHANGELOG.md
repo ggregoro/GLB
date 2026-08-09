@@ -116,8 +116,14 @@ This project follows a simple versioning approach:
   VLC) from `new-to-linux`. Same reasoning as WezTerm's removal, one
   level up: these are easy for anyone to install themselves, and
   GLB choosing them on someone's behalf is a bigger commitment than a
-  shell-bootstrapping tool should make. `new-to-linux` is now just the
-  shared shell/prompt setup plus Fresh (a terminal-based editor).
+  shell-bootstrapping tool should make.
+- Removed the `new-to-linux` profile entirely. Without its desktop-app
+  picks it had shrunk to a near-duplicate of `default`'s shared shell
+  setup, so rather than maintain two profiles this similar, it was
+  retired the same day its distinguishing content was removed. The
+  terminal-onboarding mission it served isn't profile-specific - it's
+  what GLB's shared shell/prompt setup is built to do regardless of
+  which profile someone picks.
 - New project-wide principle (see `docs/PHILOSOPHY.md`, "Enhance the
   Terminal You Have, Don't Replace It" and `docs/PROJECT.md`'s
   Non-Goals): GLB does not install GUI applications of any kind -

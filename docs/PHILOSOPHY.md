@@ -87,6 +87,12 @@ This was learned the hard way, twice, in the same session (2026-08-09):
   install themselves via their distro's own software center once
   they've found their way around a real terminal, and GLB picking them
   is scope creep beyond what a shell-bootstrapping tool should own.
+  Without the desktop-app picks, `new-to-linux` had shrunk to a near-
+  duplicate of `default`'s shared shell setup — retired as a separate
+  profile entirely (2026-08-09), rather than keep two profiles this
+  similar. The terminal-onboarding mission it served isn't a
+  profile-specific job; it's what GLB's shared shell/prompt setup is
+  built to do regardless of which profile someone picks.
 
 Someone who wants WezTerm, Ghostty, Firefox, LibreOffice, or anything
 else with a window is free to install and configure it themselves — GLB
@@ -116,7 +122,6 @@ Users should choose experiences rather than individual packages.
 Examples include:
 
 - `default` (Greg's own, real setup) ✅
-- New to Linux ✅
 - Developer ✅
 - Server ✅
 - Minimal

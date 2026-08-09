@@ -63,29 +63,6 @@ teardown() {
     [ -L "$HOME/.gitconfig" ]
 }
 
-@test "glb restore applies the real new-to-linux profile end to end" {
-    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
-    stub_command starship 'exit 0'
-    stub_command git 'mkdir -p "$5"; exit 0'
-    stub_command curl 'exit 0'
-    stub_command sh 'exit 0'
-    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
-    stub_command fc-cache 'exit 0'
-
-    run "$GLB_ROOT/glb" restore new-to-linux <<< ''
-
-    [ "$status" -eq 0 ]
-    [[ "$output" == *"Profile applied: new-to-linux"* ]]
-    [[ "$output" == *"Installing fresh via curl-install script"* ]]
-    [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
-    [ -L "$HOME/.bashrc" ]
-    [ -L "$HOME/.zshrc" ]
-    [ -L "$HOME/.config/fish/config.fish" ]
-    [ -L "$HOME/.config/starship.toml" ]
-    [ ! -e "$HOME/.gitconfig" ]
-    [ ! -e "$HOME/.config/ranger" ]
-}
-
 @test "glb restore applies the real default profile end to end" {
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
     stub_command starship 'exit 0'
@@ -305,12 +282,12 @@ teardown() {
 @test "glb restore with no profile name shows real profile descriptions" {
     mkdir -p "$GLB_ROOT/profiles"
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
-    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
+    cp -r "$GLB_REPO_ROOT/profiles/developer" "$GLB_ROOT/profiles/developer"
 
     run "$GLB_ROOT/glb" restore <<< $'1\nn'
 
     [[ "$output" == *"default - Greg's own daily-driver setup"* ]]
-    [[ "$output" == *"new-to-linux - A gentle on-ramp for someone switching"* ]]
+    [[ "$output" == *"developer - A complete dev toolkit"* ]]
 }
 
 @test "glb restore with no profile name and --dry-run picks interactively then previews" {
@@ -397,15 +374,15 @@ teardown() {
     [ ! -e "$GLB_ROOT/snapshots/test-host-2026-08-07/dotfiles/.zshrc" ]
 }
 
-@test "glb diff reports real drift between the default and new-to-linux profiles" {
+@test "glb diff reports real drift between the default and developer profiles" {
     mkdir -p "$GLB_ROOT/profiles"
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
-    cp -r "$GLB_REPO_ROOT/profiles/new-to-linux" "$GLB_ROOT/profiles/new-to-linux"
+    cp -r "$GLB_REPO_ROOT/profiles/developer" "$GLB_ROOT/profiles/developer"
 
-    run "$GLB_ROOT/glb" diff default new-to-linux
+    run "$GLB_ROOT/glb" diff default developer
     [ "$status" -eq 1 ]
-    [[ "$output" == *"Diff: default vs new-to-linux"* ]]
-    # default has .gitconfig, new-to-linux deliberately doesn't
+    [[ "$output" == *"Diff: default vs developer"* ]]
+    # default has .gitconfig, developer deliberately doesn't
     [[ "$output" == *"+ only in default: ~/.gitconfig"* ]]
 }
 

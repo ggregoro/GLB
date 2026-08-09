@@ -21,13 +21,19 @@ Greg distro-hops a lot and got tired of manually reconfiguring each fresh
 install by hand. GLB automates that setup. Separately, the terminal is one
 of the biggest barriers for anyone switching from Windows/macOS — an
 unfamiliar, unstyled prompt with none of the conveniences a good shell
-setup provides — and GLB's `new-to-linux` profile exists specifically to
-smooth that transition (2026-08-09, per Greg: "One of the biggest issues
-that people [moving] over from Windows is terminal. The project should
-make it easier for new users to work their way around the terminal.").
-It's built with the idea that it might eventually be shared publicly if
-there's interest — so keep code reasonably clean and documented, not just
-"works on my machine."
+setup provides — which is why GLB's whole focus narrowed to the terminal
+itself (2026-08-09, per Greg: "One of the biggest issues that people
+[moving] over from Windows is terminal. The project should make it
+easier for new users to work their way around the terminal."). This used
+to be framed as one profile's job (`new-to-linux`); once that profile's
+distinguishing content (curated desktop apps) was removed as scope creep
+the same day, it became clear the terminal-onboarding mission was never
+really profile-specific — it's what GLB's shared shell/prompt setup is
+built to do for *any* profile, so `new-to-linux` was retired rather than
+kept as a near-duplicate of `default` (see the Roadmap section's
+"Retired entirely" entry). It's built with the idea that it might
+eventually be shared publicly if there's interest — so keep code
+reasonably clean and documented, not just "works on my machine."
 
 ## Test environments
 
@@ -260,19 +266,46 @@ branches on it.
     LibreOffice, GIMP, VLC) — Greg's words: "It is also right to remove
     Firefox LibreOffice etc. Also easy for end users to install. ...
     Let's apply the KISS approach to this project. We have scope creep
-    adding these programs." `new-to-linux` is now just the shared
-    shell/prompt setup plus Fresh (a terminal-based editor) — see its
-    own Roadmap entry for the full detail. All the WezTerm history
+    adding these programs." `new-to-linux` was, at this point, just the
+    shared shell/prompt setup plus Fresh (a terminal-based editor) — see
+    its own Roadmap entry for the full detail. All the WezTerm history
     above (2026-08-05 through 2026-08-09) stays in this file as a
     record of what was tried and why it didn't work out, not as a
     description of anything GLB currently does. Updated `docs/`
     (PHILOSOPHY.md, PROJECT.md, ROADMAP.md, README.md,
     CODING_STANDARDS.md, DOCS_CHANGELOG.md, two design docs) and the
-    bats suite (`tests/dispatcher.bats`) to match. **Not yet re-run for
-    real** — this was done from the repo alone (cloud session); a
-    fresh `glb restore default`/`glb restore new-to-linux` on real
-    hardware to confirm the trimmed profiles still apply cleanly is
-    still open.
+    bats suite (`tests/dispatcher.bats`) to match.
+  - **`new-to-linux` retired entirely (2026-08-09, same session,
+    follow-up discussion right after the above).** Talking through next
+    steps after the WezTerm/GUI-apps removal, Greg asked to also sharpen
+    the project's overall messaging around "the terminal is the barrier"
+    (see the "Why it exists" section at the top of this file) and, when
+    asked to flesh out what that meant for `new-to-linux` specifically
+    (now that it had shrunk to shared-shell-setup-plus-Fresh, a near-
+    duplicate of `default` minus `.gitconfig`/ranger): **retire the
+    profile entirely** rather than keep two profiles this similar, or
+    fold it into a still-unbuilt "Minimal" profile concept. Removed
+    `profiles/new-to-linux/` (`packages.txt`, `extras.txt`,
+    `description.txt`, `dotfiles/`) from the repo entirely. Updated the
+    three tests in `tests/dispatcher.bats` that referenced the real
+    `new-to-linux` profile directory (the full end-to-end restore test,
+    the interactive-picker description test, and the `glb diff`
+    real-drift test) to use `developer` instead, which has an
+    equivalent shape (no `.gitconfig`, real package/dotfile
+    differences from `default`). Updated every doc that described
+    `new-to-linux` as a current, live profile (`README.md`,
+    `docs/PROJECT.md`, `docs/PHILOSOPHY.md`, `docs/ROADMAP.md`,
+    `docs/CODING_STANDARDS.md`, `CHANGELOG.md`, plus comment references
+    in `profiles/developer/`'s and `profiles/server/`'s manifests) —
+    left the many historical dated entries throughout *this* file
+    (CLAUDE.md) untouched, since they're an accurate record of what
+    happened at the time, not a description of current state.
+    **Deliberately not re-tested on real hardware** — Greg's call: the
+    old test VMs are being retired once this project reaches a stable
+    point anyway, and real-world verification will happen against
+    fresh VMs later rather than re-validating on machines about to be
+    thrown away. So this (and the WezTerm/GUI-apps removal above) is
+    verified by code/doc review only for now, not a live restore.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
@@ -2171,25 +2204,55 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
-- **Session note (2026-08-09, Dell laptop, cloud session): GLB's scope
-  just got meaningfully narrower.** After a long, disruptive live
-  WezTerm troubleshooting session on Greg's real daily driver (see the
-  "Removed entirely" Roadmap entry further down for the full blow-by-
-  blow), Greg decided GLB should stop managing terminal emulators and
-  GUI applications entirely — not just WezTerm specifically. Two real
-  changes landed: WezTerm removed from `default` (extras.txt, the
-  `flatpak` package dependency, the dotfile), and `new-to-linux`'s
-  curated desktop apps (Firefox/LibreOffice/GIMP/VLC) removed too, same
-  reasoning. New standing principle written up in `docs/PHILOSOPHY.md`
-  and `docs/PROJECT.md`: **GLB only configures things that run inside
-  whatever terminal a distro already ships — no GUI applications, full
-  stop.** If a future session is ever tempted to add a terminal
-  emulator, a browser, an editor-with-a-window, or anything similar to
-  a profile, read that PHILOSOPHY.md section first — this was tried
-  twice in one day and reversed both times. **Not yet verified for
-  real** — done from the repo alone; a real `glb restore default` and
-  `glb restore new-to-linux` on actual hardware to confirm the trimmed
-  profiles still apply cleanly is the natural next step.
+- **Session wrap-up (2026-08-09, Dell laptop, cloud session) — GLB's
+  scope just got meaningfully narrower, and its messaging resharpened
+  to match.** Long session, several distinct threads:
+  - **Real bug found and fixed on the laptop:** `eza --icons` aliases
+    across every profile/shell never passed `--git`, so per-file git
+    status never showed in `ls`/`ll`/`la`/`l` (only in Ranger). Fixed
+    (12 files) and confirmed working for real — see the dedicated
+    Roadmap entry above for the full diagnosis, including the
+    stale-fish-alias/`exec fish` gotcha.
+  - **A long, disruptive live WezTerm troubleshooting detour** on
+    Greg's real daily driver (Flatpak process caching, a stray
+    `~/.wezterm.lua` shadowing the managed config, a COSMIC
+    window-decoration mismatch, a `pkill`-vs-`flatpak kill`-vs-exact-
+    PID saga) — see the "Removed entirely" Roadmap entry for the full
+    blow-by-blow. Ended with Greg calling it: GLB should stop managing
+    terminal emulators and GUI applications entirely, not just
+    WezTerm. WezTerm was fully removed from both the project (repo)
+    and the laptop itself (Flatpak app uninstalled, leftover config
+    archived/removed).
+  - **Scope narrowed project-wide:** GLB only configures things that
+    run inside whatever terminal a distro already ships — no GUI
+    applications, full stop. Two removals followed from this:
+    WezTerm (from `default`) and `new-to-linux`'s curated desktop apps
+    (Firefox/LibreOffice/GIMP/VLC). Written up in `docs/PHILOSOPHY.md`
+    ("Enhance the Terminal You Have, Don't Replace It") and
+    `docs/PROJECT.md`'s Non-Goals. If a future session is ever tempted
+    to add a terminal emulator, a browser, an editor-with-a-window, or
+    anything similar to a profile, read that PHILOSOPHY.md section
+    first — this was tried twice in one day and reversed both times.
+  - **`new-to-linux` retired entirely**, same day, as a direct
+    follow-on: once its desktop-app picks were gone, it had shrunk to
+    a near-duplicate of `default`. See the dedicated Roadmap entry
+    above for the full reasoning and the exact files/tests touched.
+  - **Project messaging resharpened to lead with the terminal itself**
+    — same name (Greg was explicit: no rename), but README.md,
+    docs/PROJECT.md, docs/PHILOSOPHY.md, docs/ROADMAP.md, and this
+    file's own "Why it exists" now consistently frame GLB's purpose as
+    "the terminal is the biggest barrier for anyone switching from
+    Windows/macOS, and GLB makes it approachable" rather than a
+    generic "Linux workstation builder." This is really the same
+    principle as the GUI-apps removal, stated as the project's core
+    purpose rather than just a boundary.
+  - **Deliberately not re-tested on real hardware** — Greg's explicit
+    call: the existing test VMs are being retired once this project
+    reaches a stable point, and real-world verification will happen
+    against fresh VMs later rather than re-validating on machines
+    about to be thrown away. So everything in this session is verified
+    by code/doc review only, not a live restore — that's expected and
+    fine per Greg's plan, not an open gap to chase.
 - **Session wrap-up (2026-08-08, EndeavourOS VM, second session same
   day) — WezTerm made actually usable: a real Flatpak-sandbox bug
   fixed, plus wallpaper/opacity/keybindings added on request.** Picked

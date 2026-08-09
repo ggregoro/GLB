@@ -1,18 +1,18 @@
 # GLB profile: developer
 #
 # Aimed at someone newer to development work who wants a solid, complete
-# kit without researching every tool choice themselves — same "here's
-# what's good" value prop as new-to-linux, applied to dev tooling
-# instead of desktop apps. Not aimed at someone who already knows
-# exactly what they want (they'd install it themselves anyway). See
-# CLAUDE.md (2026-08-07) for the audience decision and the forks below.
+# kit without researching every tool choice themselves — a "here's what's
+# good" value prop applied to dev tooling instead of desktop apps. Not
+# aimed at someone who already knows exactly what they want (they'd
+# install it themselves anyway). See CLAUDE.md (2026-08-07) for the
+# audience decision and the forks below.
 #
 # Package names are resolved per-distro before being passed to your
 # package manager (apt/dnf/pacman/zypper). See _GLB_PACKAGE_OVERRIDES
 # in lib/package.sh for the few that aren't the same everywhere.
 
 # Shell/prompt foundation — same unified bash/zsh/fish + Starship setup
-# as the default/new-to-linux profiles (see dotfiles/).
+# as the default profile (see dotfiles/).
 git
 curl
 zsh
@@ -44,8 +44,7 @@ jq
 
 # GitHub CLI — package name is "gh" on apt (Debian 12+/recent Ubuntu)/
 # dnf/zypper, but "github-cli" on pacman (see _GLB_PACKAGE_OVERRIDES).
-# Not empirically verified on every distro yet (same caveat as the
-# firefox/libreoffice overrides in new-to-linux) — flag for real-machine
+# Not empirically verified on every distro yet — flag for real-machine
 # testing.
 gh
 

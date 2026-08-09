@@ -25,8 +25,8 @@ confidence that it will produce the same result.
   (Starship, eza, bat, zoxide, ranger, Neovim, fzf, Fresh, ...) rather
   than duplicating their functionality.
 - **Profiles over package lists.** Users choose a complete workstation
-  experience (`default`, `new-to-linux`, `developer`, `server`), not an
-  à la carte list of packages.
+  experience (`default`, `developer`, `server`), not an à la carte list
+  of packages.
 - **Modular by design.** Each concern — package installation, dotfile
   management, prompt setup, plugin vendoring, state export/diff/repair —
   lives in its own focused `lib/` module.
@@ -45,12 +45,15 @@ these principles.
 
 - **Greg**, first and foremost — GLB exists because distro-hopping and
   reinstalling meant manually reconfiguring the same setup over and over.
-- **People newer to Linux, development, or server administration** who want
-  a solid, curated starting point without researching every tool choice
-  themselves (`new-to-linux`, `developer`, `server` profiles) — `new-to-
-  linux` specifically targets the terminal itself as the barrier: someone
+- **People newer to development or server administration** who want a
+  solid, curated starting point without researching every tool choice
+  themselves (`developer`, `server` profiles).
+- **Anyone for whom the terminal itself is the barrier** — someone
   switching from Windows/macOS whose biggest hurdle isn't picking
-  software, it's that the command line is unfamiliar territory.
+  software, it's that the command line is unfamiliar territory. This
+  isn't a separate profile's job; it's what the shared shell/prompt
+  setup every profile ships is built to solve, since that's GLB's core
+  purpose (see `PHILOSOPHY.md`).
 - Potentially a **wider public audience** later, if there's interest —
   GLB is built with reasonably clean, documented code in mind for that
   possibility, not just "works on my machine."

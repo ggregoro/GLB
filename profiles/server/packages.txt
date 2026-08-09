@@ -3,7 +3,7 @@
 # Aimed at someone newer to server administration who wants a safe,
 # complete baseline (firewall, backups, intrusion protection) without
 # researching best practices themselves — same "here's what's good"
-# value prop as new-to-linux/developer, applied to server admin. Not
+# value prop as developer, applied to server admin. Not
 # aimed at someone who already has an opinionated stack (they'd set it
 # up themselves anyway). See CLAUDE.md (2026-08-07) for the audience
 # decision and the forks below.

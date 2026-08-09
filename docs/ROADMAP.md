@@ -74,21 +74,27 @@ Introduce workstation profiles.
 
 ### Planned
 
-- Greg's Recommended ⭐
-- **New to Linux ✅ (2026-08-06)** — curated picks for people switching
-  from Windows/macOS who don't yet know the Linux-native equivalents of
-  the software they're used to (one solid choice per category, rather
-  than a wall of options), built as `profiles/new-to-linux`: Firefox
-  (browser), Fresh (code editor, installed via the `extras.txt`
-  mechanism below), LibreOffice (office suite), GIMP (image
-  editing), VLC (media player) — plus the same unified bash/zsh/fish +
-  Starship shell setup as the `default` profile, minus Greg-specific
-  bits (`.gitconfig`, ranger) that don't fit this profile's scope.
-  **Superseded (2026-08-09):** Firefox/LibreOffice/GIMP/VLC removed —
-  see the "Enhance the Terminal You Have, Don't Replace It" principle
-  in `docs/PHILOSOPHY.md`. GLB doesn't install GUI applications at
-  all; `new-to-linux` is now the shared shell/prompt setup plus Fresh
-  (a terminal-based editor), nothing more.
+- **Greg's Recommended ⭐** — fulfilled by `profiles/default`, which
+  has been Greg's real, working daily-driver setup (not a placeholder)
+  since 2026-08-05. No separate "Recommended" profile needed.
+- ~~New to Linux~~ **Retired entirely (2026-08-09).** Originally
+  (2026-08-06) curated picks for people switching from Windows/macOS
+  who don't yet know the Linux-native equivalents of the software
+  they're used to: Firefox, LibreOffice, GIMP, VLC, plus the shared
+  shell setup. Superseded the same day it was built out further
+  (2026-08-09) when Firefox/LibreOffice/GIMP/VLC were removed per the
+  "Enhance the Terminal You Have, Don't Replace It" principle in
+  `docs/PHILOSOPHY.md` — GLB doesn't install GUI applications at all.
+  Without the desktop-app picks, the profile had shrunk to a near-
+  duplicate of `default`'s shared shell setup (same dotfiles minus
+  `.gitconfig`/ranger, plus Fresh — which `default` already has too),
+  so rather than maintain two profiles this similar, it was retired
+  outright the same day. The terminal-onboarding mission it served
+  isn't a profile-specific job — see `docs/PROJECT.md`'s Target
+  Audience section: it's what GLB's shared shell/prompt setup is built
+  to do for *any* profile, which is also why the project's messaging
+  was resharpened around "the terminal is the barrier" the same day
+  (see CLAUDE.md).
 - Minimal
 - **Developer ✅ (2026-08-07)** — the "who is this for" question from
   the 2026-08-06 brainstorm resolved as someone newer to development
@@ -118,12 +124,15 @@ default-on for every future profile — e.g. Minimal or Server may not want a
 TUI file manager. Once per-profile package selection exists, packages like
 this should be opt-in per profile rather than baked into a shared list.
 
-The "New to Linux" profile in particular targets a different value
-proposition from the others: the rest of GLB (and Greg's own "Recommended"
-profile) solve *restoring your own exact setup*, but someone installing
-their first Linux distro doesn't have a setup to restore — their problem is
-not knowing what's good. Curated, opinionated recommendations solve that in
-a way a plain `packages.txt` full of names they don't recognize can't.
+**Historical note (superseded by the retirement above):** the "New to
+Linux" profile was originally framed as targeting a different value
+proposition from the others — the rest of GLB solves *restoring your own
+exact setup*, but someone installing their first Linux distro doesn't
+have a setup to restore, their problem is not knowing what's good.
+That framing is why the profile existed as a distinct thing at all; once
+its distinguishing content (curated desktop apps) was removed, the
+distinction collapsed and the profile was retired rather than kept as a
+near-duplicate of `default`.
 
 ---
 
