@@ -13,10 +13,10 @@ fish_add_path ~/.local/bin
 # eza (modern ls)
 # ------------------------------------------------------------
 if command -q eza
-    alias ls='eza --icons --group-directories-first'
-    alias ll='eza --icons -lah --group-directories-first'
-    alias la='eza --icons -la --group-directories-first'
-    alias l='eza --icons -l --group-directories-first'
+    alias ls='eza --icons --git --group-directories-first'
+    alias ll='eza --icons --git -lah --group-directories-first'
+    alias la='eza --icons --git -la --group-directories-first'
+    alias l='eza --icons --git -l --group-directories-first'
 else
     alias ll='ls -lah'
     alias la='ls -la'

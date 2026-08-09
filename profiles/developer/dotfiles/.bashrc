@@ -54,10 +54,10 @@ export PATH="$HOME/.local/bin:$PATH"
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then
-    alias ls='eza --icons --group-directories-first'
-    alias ll='eza --icons -lah --group-directories-first'
-    alias la='eza --icons -la --group-directories-first'
-    alias l='eza --icons -l --group-directories-first'
+    alias ls='eza --icons --git --group-directories-first'
+    alias ll='eza --icons --git -lah --group-directories-first'
+    alias la='eza --icons --git -la --group-directories-first'
+    alias l='eza --icons --git -l --group-directories-first'
 else
     alias ls='ls --color=auto'
     alias ll='ls -lah'

@@ -96,6 +96,14 @@ This project follows a simple versioning approach:
   `.config/wezterm/wezterm.lua`.
 
 ### Fixed
+- Fixed the `ls`/`ll`/`la`/`l` eza aliases (all profiles, all three
+  shells) never showing per-file git status indicators in file
+  listings, even inside a git repo. The aliases passed `--icons` but
+  never `--git` - eza only queries/displays Git status when explicitly
+  told to. Confirmed via full git history that this flag was never
+  present in any commit, so it wasn't a regression, just never wired
+  up. Ranger showing this correctly the whole time is unrelated - its
+  `rc.conf` enables its own separate `vcs_aware`/`vcs_backend_git`.
 - Fixed zypper not being detected as an available package manager.
 - Fixed `glb restore` silently reporting success when a package failed
   to install or a dotfile couldn't be symlinked/backed up. Failures

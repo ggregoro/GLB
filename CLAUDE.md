@@ -240,6 +240,36 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real bug found and fixed (2026-08-09, Dell laptop): per-file git
+  status indicators never showed up in `ls`/`ll`/`la`/`l` output in
+  any of the three shells, on either Cosmic Terminal or WezTerm — only
+  visible inside Ranger.** Greg noticed this had "worked once before"
+  and asked whether it was a config file issue or something `git`
+  itself adds automatically. Root cause: the `eza --icons ...` aliases
+  in every profile's `.bashrc`/`.zshrc`/`config.fish` never passed
+  eza's `--git` flag, which is required for eza to query and display
+  per-file Git status at all — confirmed via the full git history that
+  this flag was never present in any commit, so it wasn't a
+  regression, it was simply never wired up. It showed up identically
+  missing across bash/zsh/fish because the cause was shared (the eza
+  alias definitions), not shell-specific — a useful diagnostic signal:
+  since bash's prompt has no git info by design (see the prompt
+  differentiation entry further down) but the file-listing gap was
+  present in zsh/fish too (which *do* show git info in their own
+  prompts, confirmed via a WezTerm/fish screenshot showing the branch
+  name `main` in the prompt itself), that ruled out the shell prompts
+  and pointed at the one thing shared verbatim across all three
+  shells' dotfiles. Ranger showing it correctly the whole time was a
+  red herring in the opposite direction — unrelated, its `rc.conf`
+  enables its own separate `vcs_aware`/`vcs_backend_git`. Fixed by
+  adding `--git` to all four aliases across all four profiles' three
+  shells (12 files). **Not yet verified for real** — this was found
+  and fixed from the repo alone (cloud session, no direct access to
+  Greg's laptop); Greg still needs to `git pull` and confirm the
+  indicators actually render, including checking whether his installed
+  `eza` binary was built with git/libgit2 support at all (`eza
+  --version`'s feature line) - if the binary lacks that support,
+  `--git` alone won't be enough.
 - **`glb restore default` verified end-to-end (2026-08-08, new
   EndeavourOS test VM), and a real root cause found for the
   `pam_faillock` lockout previously only guessed at on the CachyOS VM
