@@ -2575,6 +2575,37 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-09, cloud session) — pausing here for the
+  night by Greg's choice; picking back up tomorrow on a fresh CachyOS
+  VM.** Everything is committed and pushed to `main` — `9d77735` is the
+  latest commit as of this note, working tree clean.
+  - Fixed a real bug Greg found by actually running the documented
+    `install.sh` one-liner on his real Pop!_OS machine: `curl | sh`
+    failed with `sh: 14: set: Illegal option -o pipefail`, since
+    `install.sh` uses the bash-only `pipefail` option but every doc
+    told users to pipe through `sh` (`dash` on Debian/Ubuntu/Pop!_OS).
+    Same bug class as the `lazydocker` `sh`-vs-`bash` fix earlier this
+    session — see the two dedicated Roadmap entries above for the full
+    diagnosis and fix (`README.md`, `install.sh`, `docs/ARCHITECTURE.md`
+    changed to `| bash`).
+  - Merged to `main` and pushed. Greg was about to re-run the corrected
+    one-liner on the Pop!_OS machine to confirm it clones cleanly now —
+    **not yet confirmed as of this note**, worth checking next session
+    whether he reported back on that.
+  - **Next session: pick up on a fresh CachyOS VM** (Greg's own words:
+    "I will create a fresh VM for CachyOS... that will have to be
+    tomorrow"). This is real, still-open verification work, not a new
+    feature — CachyOS/pacman is exactly the distro family
+    (Arch-based) where the `glb_sudo`/`pam_faillock` lockout fix
+    (built 2026-08-09, see its own Roadmap entry) has never been
+    tested for real; both prior confirmed lockout occurrences
+    (CachyOS 2026-08-07, EndeavourOS 2026-08-08) were on pacman
+    machines, so this is the fix's first real chance to prove it works
+    against the exact failure mode it was built for. Also worth
+    confirming on this VM once it exists: `install.sh`'s curl one-liner
+    itself has still never been tested against pacman specifically
+    (only Pop!_OS/apt so far). After CachyOS, Greg's plan is openSUSE
+    (zypper) next.
 - **Going-public decision made (2026-08-09):** repo stays private until
   GLB is fully tested and vetted, open timetable, no fixed date. Greg's
   plan: fresh VMs, connected to the GLB GitHub repo, for real-world
