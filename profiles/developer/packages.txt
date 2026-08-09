@@ -54,6 +54,18 @@ ncdu
 # as the rest of this list (fzf/ripgrep/etc.) - package availability
 # across all four managers isn't empirically verified yet, same caveat
 # as gh above. Flag for real-machine testing.
+#
+# lazygit has a confirmed real gap on Fedora/dnf (2026-08-10): it isn't
+# in Fedora's official repos at all, only via a third-party COPR
+# (atim/lazygit) that has had real build failures on recent Fedora
+# releases and signature-verification issues - not a reliable install
+# target. Its own project also has no single-URL curl-installer script
+# (unlike lazydocker), so it doesn't fit GLB's existing `curl` extras
+# method either. Left as a known gap rather than building new
+# tarball-extraction extras infrastructure for one package on one
+# distro - same call as the fastfetch-on-Mint/Pop!_OS gap in
+# default/packages.txt. Fedora users hit this via the normal
+# manual-step pause/skip prompt and can move on.
 lazygit
 glow
 

@@ -410,18 +410,35 @@ branches on it.
   cleaned up" — a real-hardware, fresh-install visual confirmation of
   the glyph-recovery fix from directly above this entry, on a distro
   that had never even been tested since that fix landed.
-  - **Restored `default`, not `developer`** — so the one open item
-    flagged for this VM (confirming `ncdu`/`lazygit`/`glow`/
-    `lazydocker` resolve as real package names on dnf specifically,
-    never verified beyond apt) is **still open**. Worth a quick
-    `glb restore developer` on this same VM before it gets torn down,
-    since it's already up and this is the cheapest remaining chance to
-    close that gap.
   - **`install.sh` is now confirmed end-to-end, via a real restore, on
     all four supported package managers** — apt (Pop!_OS, 2026-08-09),
     pacman (CachyOS, 2026-08-10), zypper (openSUSE, 2026-08-10), and
     now dnf (Fedora, this entry). No package manager has any remaining
     curl-install gap.
+  - **Follow-up on the same VM: `glb restore developer` found a real,
+    confirmed packaging gap — `lazygit` isn't in Fedora's official dnf
+    repos at all.** `sudo dnf install -y lazygit` failed with `No match
+    for argument: lazygit`; `ncdu` and `glow` (added the same day as
+    `lazygit`, same "not empirically verified" caveat in the profile's
+    own comment) both installed fine on dnf, so this is specific to
+    `lazygit`, not a broader dnf gap. Researched properly before
+    deciding anything: lazygit has no official Fedora package, only a
+    third-party COPR (`atim/lazygit`) that has had real build failures
+    on recent Fedora releases and signature-verification issues — not
+    a reliable install target — and lazygit's own project has no
+    single-URL curl-installer script the way `lazydocker` does (only a
+    manual multi-step curl+tar+`install` snippet), so it doesn't fit
+    GLB's existing `curl` extras method either. Confirmed via
+    `AskUserQuestion`: document as a known gap (matching the existing
+    fastfetch-on-Mint/Pop!_OS precedent) rather than build a new
+    tarball-extraction extras mechanism for one package on one distro.
+    Added a comment on `lazygit`'s line in
+    `profiles/developer/packages.txt` explaining the gap; Fedora users
+    hit this via the normal manual-step pause/skip prompt and move on.
+    `ncdu` and `glow` are now confirmed working on dnf specifically
+    (previously only verified via apt, implicitly) — only `gh` and
+    `lazygit` remain flagged as not fully cross-distro-verified in that
+    file's comments.
 - **Real, longstanding bug found and fixed (2026-08-10, cloud session):
   zsh's Tokyo Night `starship.toml` has been missing roughly half its
   glyphs — including the git-branch symbol, all five language-module
