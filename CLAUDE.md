@@ -46,6 +46,13 @@ reasonably clean and documented, not just "works on my machine."
   reaches a stable point. Every entry below this point is history from
   before that decision; new real-hardware verification should happen
   on new VMs set up specifically for this, not by resurrecting these.
+- **New (2026-08-09): a fresh Pop!_OS VM, the first one under the plan
+  above** — not connected to the GitHub repo as a dev checkout,
+  genuinely standing in for an end user's machine. `git clone`d from
+  the now-public repo and restored `default` for real; see the
+  Roadmap entry for the full result (worked essentially perfectly,
+  one already-known `fastfetch` gap). VM software/exact Pop!_OS
+  version not captured this round.
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
@@ -378,6 +385,29 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **First real post-scope-narrowing end-user verification (2026-08-09,
+  fresh Pop!_OS VM) — worked essentially perfectly.** This is the test
+  everything since the "what's left before stable" checkpoint was
+  building toward: a genuinely fresh Pop!_OS VM, not connected to the
+  GitHub repo as a dev checkout. Greg went to the now-public repo's
+  GitHub page, used the README's `git clone` instructions (not the
+  `install.sh` curl one-liner — that path is still unverified for
+  real), and ran `./glb restore` in Cosmic Terminal. Bare `restore`
+  triggered the interactive picker; he chose `default`. Entered his
+  real sudo password at the real interactive prompt when asked —
+  **first live confirmation that the `glb_sudo` TTY-detection fix
+  works correctly in normal interactive use**, not just in the bats
+  sandbox. Every package and dotfile installed/linked correctly except
+  one **already-documented, expected gap**: `fastfetch` isn't in
+  apt's index on Pop!_OS (same issue confirmed on Linux Mint
+  2026-08-07, see `profiles/default/packages.txt`'s own comment on
+  that line) — Greg skipped it via the existing manual-step
+  pause/skip mechanism, exactly as designed. His own words: "Very easy
+  to use even for me." Confirms the WezTerm removal, `new-to-linux`
+  retirement, and `glb_sudo` fix all work correctly on a real machine,
+  not just in review. **Not yet verified**: the `install.sh`
+  curl-install path itself (this test used `git clone` instead) —
+  worth trying next time.
 - **Pre-public-release cleanup (2026-08-09, cloud session), prompted
   by Greg asking what going public would actually involve.** Audited
   the repo for anything that would become permanently, publicly

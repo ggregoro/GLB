@@ -368,9 +368,15 @@ Expand platform support.
   been separately tested, but it's the same package manager, confirmed
   clean across every derivative tried.
 - **Pop!_OS ✅** — the most extensively tested target: a real
-  daily-driver laptop plus a dedicated test VM where all five profiles
-  (`default`, `new-to-linux`, `developer`, `server`) have each been
-  restored for real, including the rollback/undo and dry-run paths.
+  daily-driver laptop plus a dedicated test VM where every profile has
+  been restored for real, including the rollback/undo and dry-run
+  paths. Also the first genuine post-scope-narrowing, real-end-user
+  verification (2026-08-09): a fresh Pop!_OS VM, GLB cloned from the
+  now-public GitHub repo (not a dev-connected checkout), `default`
+  chosen via the interactive picker, real sudo password entry at the
+  prompt. Worked cleanly end-to-end except the already-documented
+  `fastfetch`-not-in-apt's-index gap, which reproduced exactly as
+  expected. See CLAUDE.md for the full writeup.
 - **Fedora ✅** — dnf confirmed via a real `glb restore default` on a
   Fedora 44 Workstation test VM (2026-08-05). Zero package overrides
   needed.
