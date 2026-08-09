@@ -78,7 +78,7 @@ glb repair <profile>                  Check this machine against a profile
 | Profile | For |
 |---|---|
 | `default` | Greg's own daily-driver setup: shell/prompt, editor, personal dotfiles. |
-| `new-to-linux` | Someone switching from Windows/macOS who doesn't know the Linux-native options yet. |
+| `new-to-linux` | A gentle on-ramp for someone switching from Windows/macOS: shell/prompt setup and a terminal-based editor, nothing else installed on your behalf. |
 | `developer` | Someone newer to development who wants solid defaults without researching every tool. |
 | `server` | Someone newer to server administration: firewall, backups, intrusion protection. |
 

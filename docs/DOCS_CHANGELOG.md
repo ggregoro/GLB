@@ -68,7 +68,6 @@ Planned reference pages:
 - Git Cheat Sheet
 - Ranger Cheat Sheet
 - Fish Shell Cheat Sheet
-- Ghostty Cheat Sheet
 - VirtualBox Cheat Sheet
 - COSMIC Desktop Cheat Sheet
 - Samba Cheat Sheet

@@ -83,8 +83,12 @@ Introduce workstation profiles.
   mechanism below), LibreOffice (office suite), GIMP (image
   editing), VLC (media player) — plus the same unified bash/zsh/fish +
   Starship shell setup as the `default` profile, minus Greg-specific
-  bits (`.gitconfig`, ranger, WezTerm) that don't fit this profile's
-  scope.
+  bits (`.gitconfig`, ranger) that don't fit this profile's scope.
+  **Superseded (2026-08-09):** Firefox/LibreOffice/GIMP/VLC removed —
+  see the "Enhance the Terminal You Have, Don't Replace It" principle
+  in `docs/PHILOSOPHY.md`. GLB doesn't install GUI applications at
+  all; `new-to-linux` is now the shared shell/prompt setup plus Fresh
+  (a terminal-based editor), nothing more.
 - Minimal
 - **Developer ✅ (2026-08-07)** — the "who is this for" question from
   the 2026-08-06 brainstorm resolved as someone newer to development

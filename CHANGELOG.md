@@ -103,6 +103,27 @@ This project follows a simple versioning approach:
   had been silently preferring that stray file over the real
   GLB-managed one the whole time. See CLAUDE.md for the full writeup.
 
+### Removed
+- Removed WezTerm entirely from GLB's scope: the `flatpak wezterm
+  org.wezfurlong.wezterm` entry in `default`'s `extras.txt`, the now-
+  unneeded `flatpak` package dependency, and the
+  `.config/wezterm/wezterm.lua` dotfile. Real time spent chasing
+  Flatpak-sandbox and COSMIC-compositor interactions unrelated to
+  GLB's actual job (shell/prompt configuration) made clear that
+  managing a terminal emulator was scope creep. GLB now only
+  configures whatever terminal a distro already ships.
+- Removed the curated desktop-app picks (Firefox, LibreOffice, GIMP,
+  VLC) from `new-to-linux`. Same reasoning as WezTerm's removal, one
+  level up: these are easy for anyone to install themselves, and
+  GLB choosing them on someone's behalf is a bigger commitment than a
+  shell-bootstrapping tool should make. `new-to-linux` is now just the
+  shared shell/prompt setup plus Fresh (a terminal-based editor).
+- New project-wide principle (see `docs/PHILOSOPHY.md`, "Enhance the
+  Terminal You Have, Don't Replace It" and `docs/PROJECT.md`'s
+  Non-Goals): GLB does not install GUI applications of any kind -
+  terminal emulators included. Everything GLB manages must run inside
+  whatever terminal the user already has.
+
 ### Fixed
 - Fixed the `ls`/`ll`/`la`/`l` eza aliases (all profiles, all three
   shells) never showing per-file git status indicators in file

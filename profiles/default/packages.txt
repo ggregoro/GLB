@@ -22,14 +22,13 @@ bat
 zoxide
 ranger
 htop
-flatpak    # needed for the wezterm extras.txt entry below
 unzip      # needed for the font extras.txt entry below
 bash-completion    # loads glb's completion file - see lib/completions.sh
 
 # Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
 # setup, nor on Linux Mint 22.3 - confirmed 2026-08-07) — may need a PPA
 # or manual install. No known curl-install script to move this to
-# extras.txt like fresh/wezterm; it's a repo-availability gap, not a
+# extras.txt like fresh; it's a repo-availability gap, not a
 # wrong-install-method one. Not worth chasing further: Mint already
 # ships `neofetch` preinstalled, which covers the same "system info
 # banner" niche well enough there (even though neofetch itself is

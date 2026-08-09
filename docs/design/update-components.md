@@ -15,10 +15,11 @@ Everything else GLB installs *outside* the package manager has no
 update path at all today:
 
 - **Extras** (`extras.txt`): curl-installed things like Fresh never get
-  re-run once installed; Flatpak apps (WezTerm) are never `flatpak
-  update`d; the Nerd Font's install URL is already a "latest" redirect
-  (so re-running the same download would pick up the current release
-  automatically), it's just never re-run.
+  re-run once installed; Flatpak apps (the `flatpak` extras method is
+  still supported, even though no current profile uses it) are never
+  `flatpak update`d; the Nerd Font's install URL is already a "latest"
+  redirect (so re-running the same download would pick up the current
+  release automatically), it's just never re-run.
 - **Vendored zsh plugins** (`_GLB_ZSH_PLUGINS`, `git clone --depth 1`):
   the install check is presence-only (`[[ -d "$dest" ]]`) — once
   cloned, never `git pull`ed.

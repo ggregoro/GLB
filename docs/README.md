@@ -39,7 +39,6 @@ Quick command references.
 - Git Cheat Sheet
 - Ranger Cheat Sheet
 - Fish Cheat Sheet
-- Ghostty Cheat Sheet
 - VirtualBox Cheat Sheet
 
 ---

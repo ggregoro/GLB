@@ -223,6 +223,44 @@ branches on it.
     it in place for now. Worth investigating on this machine
     specifically next time it comes up — check the Flatpak override
     first.
+  - **Removed entirely (2026-08-09, same session, right after the above)
+    — GLB no longer installs or manages WezTerm at all, and by
+    extension no longer manages any terminal emulator.** After all of
+    the above (Flatpak sandbox pty permissions, the stray
+    `~/.wezterm.lua` shadowing bug, the COSMIC title-bar/tab-bar
+    decoration confusion, the WezTerm-hard-errors-on-missing-config
+    mystery that was never root-caused, and the wasted real time
+    chasing all of it live on Greg's actual daily driver) Greg called
+    it: "We are wasting too much time on WezTerm. Please remove it
+    completely from this laptop and the project." New standing scope
+    rule, written up properly in `docs/PHILOSOPHY.md` ("Enhance the
+    Terminal You Have, Don't Replace It") and `docs/PROJECT.md`'s
+    Non-Goals: **GLB does not install GUI applications of any kind,
+    terminal emulators included** — only things that run inside
+    whatever terminal a distro already ships. Removed the `flatpak
+    wezterm org.wezfurlong.wezterm` extras.txt entry, the `flatpak`
+    package dependency it needed, and `.config/wezterm/wezterm.lua`
+    from `profiles/default`. The generic `flatpak` extras *method*
+    itself stays in `lib/extras.sh` (harmless, reusable infrastructure,
+    not the thing that caused the problem) even though no profile
+    currently uses it. Same session, same reasoning one level up: also
+    stripped `new-to-linux`'s curated desktop-app picks (Firefox,
+    LibreOffice, GIMP, VLC) — Greg's words: "It is also right to remove
+    Firefox LibreOffice etc. Also easy for end users to install. ...
+    Let's apply the KISS approach to this project. We have scope creep
+    adding these programs." `new-to-linux` is now just the shared
+    shell/prompt setup plus Fresh (a terminal-based editor) — see its
+    own Roadmap entry for the full detail. All the WezTerm history
+    above (2026-08-05 through 2026-08-09) stays in this file as a
+    record of what was tried and why it didn't work out, not as a
+    description of anything GLB currently does. Updated `docs/`
+    (PHILOSOPHY.md, PROJECT.md, ROADMAP.md, README.md,
+    CODING_STANDARDS.md, DOCS_CHANGELOG.md, two design docs) and the
+    bats suite (`tests/dispatcher.bats`) to match. **Not yet re-run for
+    real** — this was done from the repo alone (cloud session); a
+    fresh `glb restore default`/`glb restore new-to-linux` on real
+    hardware to confirm the trimmed profiles still apply cleanly is
+    still open.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
@@ -1724,6 +1762,11 @@ branches on it.
     this machine (bash, zsh, fish) — behavior on dnf/pacman/zypper
     machines not yet re-verified live, same "confirm empirically" caveat
     as the new `firefox`/`libreoffice` overrides above.
+  - **Superseded (2026-08-09):** Firefox/LibreOffice/GIMP/VLC were
+    removed from `new-to-linux` entirely — GLB no longer installs GUI
+    applications at all. See the "Removed entirely" Roadmap entry under
+    the WezTerm history further up this file for the full reasoning.
+    `new-to-linux` is now just the shared shell/prompt setup plus Fresh.
 - **New roadmap item (agreed 2026-08-06): pause/resume for sudo-gated
   installs.** Across every distro tested in cross-distro testing, at
   least one package needed a manual `sudo install` because the testing
@@ -2116,6 +2159,25 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session note (2026-08-09, Dell laptop, cloud session): GLB's scope
+  just got meaningfully narrower.** After a long, disruptive live
+  WezTerm troubleshooting session on Greg's real daily driver (see the
+  "Removed entirely" Roadmap entry further down for the full blow-by-
+  blow), Greg decided GLB should stop managing terminal emulators and
+  GUI applications entirely — not just WezTerm specifically. Two real
+  changes landed: WezTerm removed from `default` (extras.txt, the
+  `flatpak` package dependency, the dotfile), and `new-to-linux`'s
+  curated desktop apps (Firefox/LibreOffice/GIMP/VLC) removed too, same
+  reasoning. New standing principle written up in `docs/PHILOSOPHY.md`
+  and `docs/PROJECT.md`: **GLB only configures things that run inside
+  whatever terminal a distro already ships — no GUI applications, full
+  stop.** If a future session is ever tempted to add a terminal
+  emulator, a browser, an editor-with-a-window, or anything similar to
+  a profile, read that PHILOSOPHY.md section first — this was tried
+  twice in one day and reversed both times. **Not yet verified for
+  real** — done from the repo alone; a real `glb restore default` and
+  `glb restore new-to-linux` on actual hardware to confirm the trimmed
+  profiles still apply cleanly is the natural next step.
 - **Session wrap-up (2026-08-08, EndeavourOS VM, second session same
   day) — WezTerm made actually usable: a real Flatpak-sandbox bug
   fixed, plus wallpaper/opacity/keybindings added on request.** Picked

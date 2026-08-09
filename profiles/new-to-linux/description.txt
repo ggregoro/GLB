@@ -1,1 +1,1 @@
-Curated picks for someone switching from Windows/macOS who doesn't know the Linux-native options yet.
+A gentle on-ramp for someone switching from Windows/macOS: a curated shell/prompt setup and a terminal-based editor, nothing else installed on your behalf.

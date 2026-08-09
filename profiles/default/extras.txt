@@ -22,14 +22,8 @@
 # editstarship aliases that look for this on $PATH.
 curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/master/scripts/install.sh
 
-# Terminal - default's dotfiles symlink .config/wezterm/wezterm.lua but
-# never installed the app itself until now. Requires flatpak itself
-# (see packages.txt).
-flatpak wezterm   org.wezfurlong.wezterm
-
 # Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
-# aliases) and, on this profile, WezTerm's font (wezterm.lua). Every
-# machine tested before the Linux Mint test VM already had this font
-# pre-installed by hand, which masked the fact glb restore never
-# actually installed it itself - a real fresh-install gap.
+# aliases). Every machine tested before the Linux Mint test VM already
+# had this font pre-installed by hand, which masked the fact glb
+# restore never actually installed it itself - a real fresh-install gap.
 font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip

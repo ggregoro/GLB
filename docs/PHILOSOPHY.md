@@ -40,7 +40,6 @@ Examples include:
 - fzf
 - ripgrep
 - fastfetch
-- WezTerm
 - Fresh
 - Git
 
@@ -50,6 +49,43 @@ Where a whole framework doesn't fit — e.g. zsh's autosuggestions and syntax-hi
 vendors the individual plugins directly (git-cloned into `~/.local/share/glb/plugins`) rather than
 adopting a plugin manager like Oh My Zsh or Fisher. Same principle at a smaller grain: bring in the
 project that does the job well, without inheriting a framework's extra weight.
+
+---
+
+## Enhance the Terminal You Have, Don't Replace It
+
+**GLB does not install GUI applications, full stop — not a terminal
+emulator, not a browser, not an office suite, not anything with its own
+window.** Everything GLB installs and configures must run *inside*
+whatever terminal a distro already ships (GNOME Terminal, Konsole, Cosmic
+Terminal, etc.): shells, prompts, terminal-based editors, CLI tools, zsh
+plugins. If it needs its own window, it's out of scope.
+
+This was learned the hard way, twice, in the same session (2026-08-09):
+
+- **Terminal emulators.** GLB briefly installed and managed WezTerm as
+  part of the `default` profile (2026-08-05 through 2026-08-09), before
+  being reversed. The install/config path ended up consuming significant
+  real time chasing Flatpak-sandbox and desktop-compositor interactions
+  (COSMIC-specific window-decoration and config-resolution behavior)
+  that had nothing to do with GLB's actual job — shell and prompt
+  configuration. A terminal emulator is a bigger, more opinionated
+  commitment than a CLI tool or a dotfile; picking one for someone is a
+  step beyond "curate a workstation" into "replace a tool the user
+  already has an opinion about."
+- **Desktop applications.** `new-to-linux` originally curated a browser,
+  office suite, image editor, and media player (Firefox, LibreOffice,
+  GIMP, VLC) for people switching from Windows/macOS. Reversed the same
+  day for the same underlying reason: these are easy for anyone to
+  install themselves via their distro's own software center once
+  they've found their way around a real terminal, and GLB picking them
+  is scope creep beyond what a shell-bootstrapping tool should own.
+
+Someone who wants WezTerm, Ghostty, Firefox, LibreOffice, or anything
+else with a window is free to install and configure it themselves — GLB
+just needs whatever they land on to keep working, which "enhance
+whatever terminal is already there" already guarantees, since none of
+GLB's own configuration assumes a specific terminal emulator.
 
 ---
 

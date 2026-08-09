@@ -53,7 +53,7 @@ Compares live state against a named profile and reports differences:
 ```
 + installed but not in profile: neovim, htop
 - in profile but missing: ranger
-~ dotfile changed since last restore: ~/.wezterm.lua
+~ dotfile changed since last restore: ~/.zshrc
 ```
 
 Useful standalone, independent of backup/restore — e.g., catching packages installed ad hoc on a test VM that never made it into the tracked profile.

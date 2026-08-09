@@ -1,9 +1,14 @@
 # GLB profile: new-to-linux
 #
-# Curated picks for someone switching from Windows/macOS who doesn't yet
-# know the Linux-native software they're used to — one solid choice per
-# category, not a menu of options. See docs/ROADMAP.md (Version 0.3)
-# for the reasoning.
+# A gentle on-ramp for someone switching from Windows/macOS: the same
+# curated shell/prompt setup as `default`, with a terminal-based code
+# editor (Fresh, via extras.txt below), and nothing else. GLB doesn't
+# install GUI applications (browsers, office suites, image editors,
+# media players) — those are easy for anyone to install themselves once
+# they've found their way around a real terminal, and picking one on
+# someone's behalf is a bigger, more opinionated commitment than a shell
+# config. See docs/PHILOSOPHY.md ("Enhance the Terminal You Have, Don't
+# Replace It") for the reasoning.
 #
 # Package names are resolved per-distro before being passed to your
 # package manager (apt/dnf/pacman/zypper). See _GLB_PACKAGE_OVERRIDES
@@ -23,12 +28,6 @@ bat
 zoxide
 bash-completion    # loads glb's completion file - see lib/completions.sh
 unzip              # needed for the font extras.txt entry
-
-# Everyday desktop apps — one solid choice per category
-firefox
-gimp
-libreoffice
-vlc
 
 # Code editor (Fresh, getfresh.dev) is installed via extras.txt, not
 # here — it has no native package on any of these managers.

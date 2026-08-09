@@ -207,7 +207,6 @@ git.sh
 ssh.sh
 fish.sh
 zsh.sh
-ghostty.sh
 ranger.sh
 fresh.sh
 ```

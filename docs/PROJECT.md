@@ -18,8 +18,8 @@ that it will produce the same result.
 - **User experience first.** Clear defaults and guided choices beat a wall
   of configuration options.
 - **Curate, don't reinvent.** GLB integrates mature open-source projects
-  (Starship, eza, bat, zoxide, ranger, Neovim, fzf, WezTerm, Fresh, ...)
-  rather than duplicating their functionality.
+  (Starship, eza, bat, zoxide, ranger, Neovim, fzf, Fresh, ...) rather
+  than duplicating their functionality.
 - **Profiles over package lists.** Users choose a complete workstation
   experience (`default`, `new-to-linux`, `developer`, `server`), not an
   à la carte list of packages.
@@ -82,6 +82,14 @@ Ubuntu-family, Pop!_OS, Fedora, Arch-family) and their test history.
 - **Not a fork or replacement of the tools it curates.** GLB brings
   together existing, mature open-source projects rather than
   reimplementing what they already do well.
+- **Not a GUI application installer.** GLB installs and configures
+  things that run inside whatever terminal a distro already ships —
+  shells, prompts, terminal-based editors, CLI tools. It does not
+  install terminal emulators, browsers, office suites, or any other
+  application with its own window. See `PHILOSOPHY.md` ("Enhance the
+  Terminal You Have, Don't Replace It") for why — this was tried twice
+  (a managed WezTerm install, `new-to-linux`'s curated desktop apps)
+  and reversed both times as scope creep.
 
 ## Release Strategy
 
