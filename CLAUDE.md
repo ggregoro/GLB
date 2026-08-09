@@ -384,6 +384,38 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Fresh CachyOS VM verified end-to-end (2026-08-10, Greg, real
+  hardware) — first real confirmation of both `install.sh`'s
+  curl-install path on pacman and the `glb_sudo`/`pam_faillock` fix on
+  the exact distro family that caused it.** Ran the documented one-liner
+  verbatim: `curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/
+  main/install.sh | bash`. Greg's own report: "Program ran successfully
+  from end to end. All apps installed. All customizes were successful."
+  - **`install.sh` curl-install path confirmed working on pacman** —
+    previously only verified on Pop!_OS/apt (2026-08-09). This closes
+    the last "not yet verified" gap flagged in the prior session's
+    wrap-up note.
+  - **`glb_sudo`'s TTY-detection fix (built 2026-08-09, never before
+    tested live) confirmed working correctly on real Arch-based
+    hardware.** Greg hit the real interactive sudo password prompt at
+    least once during the restore, entered it normally, and it worked
+    with **no `pam_faillock` lockout** — confirmed explicitly via
+    follow-up question, not just inferred from "successful." This is
+    the fix's first live test against the exact failure mode it was
+    built for: both prior confirmed lockouts (CachyOS 2026-08-07,
+    EndeavourOS 2026-08-08) were on pacman machines, and this new
+    CachyOS VM is a fresh instance of the same distro family. Real
+    evidence the fix works as designed, not just passing in the bats
+    sandbox.
+  - Not yet confirmed in detail: which profile was restored, whether
+    this is the same CachyOS VM reused from earlier testing or a
+    genuinely fresh one (Greg's own words beforehand were "I will
+    create a fresh VM for CachyOS"), and whether a bats run happened on
+    this machine. Worth asking next time this VM comes up if finer
+    detail is ever needed — not blocking, since the two things that
+    actually mattered (install.sh on pacman, no pam_faillock lockout)
+    are both confirmed.
+  - **Next per Greg's earlier stated plan: openSUSE (zypper) VM next.**
 - **Real bug found by an actual end user running the documented
   `install.sh` one-liner (2026-08-09, Greg, real Pop!_OS machine) — the
   exact same `sh`-vs-`bash` bug class as the `lazydocker` fix just
