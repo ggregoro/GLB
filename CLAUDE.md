@@ -263,13 +263,26 @@ branches on it.
   red herring in the opposite direction — unrelated, its `rc.conf`
   enables its own separate `vcs_aware`/`vcs_backend_git`. Fixed by
   adding `--git` to all four aliases across all four profiles' three
-  shells (12 files). **Not yet verified for real** — this was found
-  and fixed from the repo alone (cloud session, no direct access to
-  Greg's laptop); Greg still needs to `git pull` and confirm the
-  indicators actually render, including checking whether his installed
-  `eza` binary was built with git/libgit2 support at all (`eza
-  --version`'s feature line) - if the binary lacks that support,
-  `--git` alone won't be enough.
+  shells (12 files). **Confirmed working for real (same day, Dell
+  laptop)** — Greg's `eza` (v0.18.2) already had git support built in
+  (`[+git]`), so the fix itself was correct on the first try; the only
+  snag during verification was a genuine, separate gotcha, not a bug:
+  running the raw `eza --icons --git -lah --group-directories-first`
+  directly showed the new "Git" status column immediately, but the
+  `ll` *alias* kept showing no column at all in the same terminal
+  window, because fish only defines `alias`-created functions once at
+  shell startup — pulling new file content into `config.fish` doesn't
+  retroactively update an already-running session's function
+  definitions. Confusingly, the fish *prompt itself* (a different
+  mechanism — it re-runs `git status --porcelain` fresh on every
+  prompt redraw, not just at startup) correctly showed a live `?` for
+  an untracked test file in the same stale session, which briefly
+  looked like partial success/failure rather than a single consistent
+  stale-alias cause. Resolved with `exec fish` (replaces the running
+  shell process, forcing a fresh `config.fish` read) — worth
+  remembering for any future dotfile change that defines an alias or
+  function: a plain `git pull` is not enough to pick it up in an
+  already-open shell, even though the dotfile is a live symlink.
 - **`glb restore default` verified end-to-end (2026-08-08, new
   EndeavourOS test VM), and a real root cause found for the
   `pam_faillock` lockout previously only guessed at on the CachyOS VM
