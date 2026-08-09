@@ -100,6 +100,18 @@ just needs whatever they land on to keep working, which "enhance
 whatever terminal is already there" already guarantees, since none of
 GLB's own configuration assumes a specific terminal emulator.
 
+**The line is GUI vs. terminal, not "simple" vs. "complex."** A
+full-screen TUI application that takes over the whole terminal window —
+Ranger, Midnight Commander, htop, btop, even something as involved as
+the Claude Code CLI — is still fully in scope, because it never opens a
+window of its own; it runs entirely inside whatever terminal is already
+there, same as `bat` or `fzf`. Ranger and htop are already curated in
+`default` for exactly this reason. The disqualifying question is never
+"how much does this app do," it's "does launching it ever produce a
+window separate from the terminal it was launched in." A yes to that
+question is what put WezTerm and the `new-to-linux` desktop apps out of
+scope — it isn't a complexity or feature-set judgment.
+
 ---
 
 ## Opinionated but Customizable
