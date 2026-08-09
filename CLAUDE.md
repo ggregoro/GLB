@@ -369,6 +369,35 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Full bats suite actually run for real (2026-08-09, cloud session)
+  — first time this session's own test edits were executed, not just
+  syntax-checked.** This cloud sandbox has no `bats` installed and no
+  sudo access to install it, so used the same no-install workaround
+  documented elsewhere in this file for VMs without `bats`: cloned
+  `bats-core` directly into the scratchpad and ran it from source, no
+  install needed. **207/211 pass.** The 4 failures are a single root
+  cause, not a regression: this sandbox runs as `root`
+  (`whoami`/`id` confirmed), and all 4 failing tests simulate a
+  permission-denied scenario via `chmod 555` on a directory before
+  attempting to write into it — a real, unprivileged user gets blocked
+  by that, root doesn't (root bypasses filesystem permission checks
+  entirely). Confirmed by reading each failing test
+  (`tests/profile.bats`: "reports failure when a destination directory
+  cannot be created" / "...backing up an existing file is not
+  permitted" / "...creating a new symlink is not permitted";
+  `tests/completions.bats`: "reports failure and continues when a
+  directory can't be created") — all four follow the identical
+  `chmod 555` pattern. This would fail identically on unmodified `main`
+  from before any of today's changes; it's a property of running the
+  suite as root, not something today's edits caused. **The signal that
+  matters: every test touched by today's changes passed** — the eza
+  `--git` fix, WezTerm removal, `new-to-linux` retirement, the
+  `pam_faillock`/`glb_sudo` fix (including the sudo-stub `-n`-handling
+  and `utils.sh`-sourcing fixes it required), and the 7 new
+  `--from-manifest` tests. Confirms the whole session's work is
+  internally consistent. The 4 permission-check tests still need a
+  real non-root run (any actual machine) for genuine signal on that
+  narrow slice — a pre-existing test-environment gap, not new.
 - **Installation manifests built (2026-08-09, cloud session) — closes
   out Version 0.6 entirely.** The one Version 0.6 item with no design
   doc at all, unlike export/import/repair/update-components which

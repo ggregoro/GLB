@@ -143,15 +143,34 @@ near-duplicate of `default`.
 
 Expand shell support.
 
-### Planned
+### Completed
 
-- Bash enhancements
-- Fish configuration
-- Zsh configuration
-- Oh My Zsh integration
-- Fisher integration
-- Bash-it evaluation
-- Prompt selection and configuration
+- **Bash enhancements** — `default`'s `.bashrc` (aliases for
+  `eza`/`bat`/`zoxide`, apt/dnf/pacman/zypper-aware package shortcuts,
+  a plain Linux Mint/Debian-style prompt by deliberate design choice,
+  see Version 0.5's prompt-differentiation history in CLAUDE.md).
+- **Fish configuration** — `config.fish`, including a hand-rolled
+  Pure-style prompt (`fish_prompt`/`fish_right_prompt`, no plugin
+  manager) and the same shared alias set as bash/zsh.
+- **Zsh configuration** — `.zshrc`, Starship with the Tokyo Night
+  preset, plus framework-free vendored plugins (`zsh-autosuggestions`,
+  `zsh-syntax-highlighting` via `lib/plugins.sh`).
+- **Prompt selection and configuration** — `glb prompt` (Starship
+  install + preset picker, `lib/prompt.sh`) for zsh, plus the
+  per-shell distinct prompts each profile ships by default.
+
+### Not pursued (contradicts a later design decision)
+
+- ~~Oh My Zsh integration~~ / ~~Fisher integration~~ / ~~Bash-it
+  evaluation~~ — GLB's actual direction went the opposite way:
+  `default`'s own setup *removed* Oh My Zsh in favor of vendoring
+  `zsh-autosuggestions`/`zsh-syntax-highlighting` directly (no
+  framework dependency), and fish's prompt is hand-rolled rather than
+  Fisher-managed. See `docs/PHILOSOPHY.md`'s "Curate, Don't Reinvent"
+  section for why: bringing in a framework's extra weight for what a
+  few vendored plugins already solve isn't worth it. These three
+  bullets are left here, struck through, as a record that they were
+  considered and explicitly not chosen — not an oversight.
 
 ---
 
