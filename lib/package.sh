@@ -176,16 +176,16 @@ glb_install_package() {
 
     case "$pkg_mgr" in
         apt)
-            cmd=(sudo apt install -y "$resolved")
+            cmd=(apt install -y "$resolved")
             ;;
         dnf)
-            cmd=(sudo dnf install -y "$resolved")
+            cmd=(dnf install -y "$resolved")
             ;;
         pacman)
-            cmd=(sudo pacman -S --noconfirm "$resolved")
+            cmd=(pacman -S --noconfirm "$resolved")
             ;;
         zypper)
-            cmd=(sudo zypper install -y "$resolved")
+            cmd=(zypper install -y "$resolved")
             ;;
         *)
             glb_log_error "Unsupported package manager: $pkg_mgr"
@@ -193,11 +193,11 @@ glb_install_package() {
             ;;
     esac
 
-    if "${cmd[@]}"; then
+    if glb_sudo "${cmd[@]}"; then
         return 0
     fi
 
-    if ! glb_prompt_manual_step "${cmd[*]}" "install $package"; then
+    if ! glb_prompt_manual_step "sudo ${cmd[*]}" "install $package"; then
         return 1
     fi
 
@@ -239,16 +239,16 @@ glb_remove_package() {
 
     case "$pkg_mgr" in
         apt)
-            sudo apt remove -y "$resolved"
+            glb_sudo apt remove -y "$resolved"
             ;;
         dnf)
-            sudo dnf remove -y "$resolved"
+            glb_sudo dnf remove -y "$resolved"
             ;;
         pacman)
-            sudo pacman -R --noconfirm "$resolved"
+            glb_sudo pacman -R --noconfirm "$resolved"
             ;;
         zypper)
-            sudo zypper remove -y "$resolved"
+            glb_sudo zypper remove -y "$resolved"
             ;;
         *)
             glb_log_error "Unsupported package manager: $pkg_mgr"
@@ -273,16 +273,16 @@ glb_update_packages() {
 
     case "$pkg_mgr" in
         apt)
-            sudo apt update && sudo apt upgrade -y
+            glb_sudo apt update && glb_sudo apt upgrade -y
             ;;
         dnf)
-            sudo dnf upgrade -y
+            glb_sudo dnf upgrade -y
             ;;
         pacman)
-            sudo pacman -Syu --noconfirm
+            glb_sudo pacman -Syu --noconfirm
             ;;
         zypper)
-            sudo zypper refresh && sudo zypper update -y
+            glb_sudo zypper refresh && glb_sudo zypper update -y
             ;;
         *)
             glb_log_error "Unsupported package manager: $pkg_mgr"

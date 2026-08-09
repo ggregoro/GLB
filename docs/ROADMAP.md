@@ -38,22 +38,25 @@ Develop the core installation framework.
 - Module execution framework
 - Installation verification
 - Error recovery
-- **Known issue, not yet fixed (confirmed 2026-08-07/2026-08-08):**
-  every sudo-gated call site (`lib/package.sh`'s install/remove/update,
-  `lib/prompt.sh`'s Starship install) uses plain `sudo <cmd>`. On a
-  sandboxed/no-TTY restore, each failed attempt still counts as a real
-  `pam_unix` auth failure — on Arch-based distros with `pam_faillock`
-  enabled (`deny=3` by default), a restore with 3+ sudo-gated
-  packages/extras can lock the real user out of their own terminal
-  (requiring a log out/log back in, not just waiting) purely as a side
-  effect of GLB's own designed-to-fail-cleanly attempts. Confirmed
-  twice on real hardware: CachyOS (2026-08-07) and a separate
-  EndeavourOS VM (2026-08-08) — not observed on any apt/dnf/zypper
-  machine tested. Proposed fix: `sudo -n <cmd>` (non-interactive)
-  instead of plain `sudo`, so a no-TTY attempt fails immediately
-  without triggering the auth conversation `pam_faillock` counts. Not
-  scoped or built yet — see CLAUDE.md's EndeavourOS VM Roadmap entry
-  for the full root-cause writeup.
+- ~~**Known issue: `pam_faillock` sudo lockout**~~ **Fixed (2026-08-09).**
+  Every sudo-gated call site in `lib/package.sh` (install/remove/update)
+  used plain `sudo <cmd>`, which on a sandboxed/no-TTY restore still
+  counts as a real `pam_unix` auth failure — on Arch-based distros with
+  `pam_faillock` enabled (`deny=3` by default), a restore with 3+
+  sudo-gated packages/extras could lock the real user out of their own
+  terminal, confirmed twice on real hardware (CachyOS, EndeavourOS VM).
+  Fixed with a new `glb_sudo` helper (`lib/utils.sh`): uses plain
+  `sudo` when a real TTY is available on stdin (`[[ -t 0 ]]`), so
+  someone running `glb` directly in their own terminal still gets the
+  normal interactive password prompt exactly as before — only falls
+  back to `sudo -n` (non-interactive, fails immediately without a real
+  auth attempt) when there's no TTY to prompt through, which is
+  exactly the no-TTY/automated case that was tripping `pam_faillock`.
+  The command shown in the manual-step fallback message is always the
+  plain interactive `sudo ...` form (never `-n`), since a human
+  copy-pasting it needs the real prompt. `lib/prompt.sh`'s Starship
+  install doesn't call `sudo` directly (its own curl-installer script
+  does, outside GLB's control), so it wasn't part of this fix.
 - ~~Pause/resume for sudo-gated steps~~ **Done (2026-08-06)** —
   `glb_install_package` now pauses on a failed install, prints the exact
   command to run manually, and waits for confirmation (or a skip)

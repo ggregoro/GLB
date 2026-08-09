@@ -22,7 +22,7 @@ setup() {
     source "$GLB_ROOT/lib/repair.sh"
 
     stub_command apt 'echo "apt $*" >> "$TEST_TMP/calls"; exit 0'
-    stub_command sudo 'exec "$@"'
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
     stub_command dpkg 'exit 1'
     stub_command apt-mark 'printf ""'
 

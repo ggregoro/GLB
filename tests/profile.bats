@@ -181,6 +181,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         source '$GLB_ROOT/lib/profile.sh'

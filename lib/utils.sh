@@ -58,3 +58,26 @@ glb_create_directory() {
 glb_is_root() {
     [[ "$EUID" -eq 0 ]]
 }
+
+# ------------------------------------------------------------
+# Run a command with sudo, using -n (non-interactive) whenever
+# there's no real TTY to prompt through. A plain `sudo` call with
+# no TTY still triggers a real pam_unix auth-failure attempt on
+# every invocation, which counts against pam_faillock's deny
+# counter on distros that enable it - confirmed to lock a user out
+# after 3 sudo-gated steps on Arch-based systems (CachyOS,
+# EndeavourOS - see CLAUDE.md), purely as a side effect of GLB's
+# own designed-to-fail-cleanly sudo attempts. `-n` fails
+# immediately instead, without that auth conversation. When a real
+# TTY *is* available (someone running glb directly in their own
+# terminal), use plain sudo so the normal interactive password
+# prompt keeps working exactly as before.
+# ------------------------------------------------------------
+
+glb_sudo() {
+    if [[ -t 0 ]]; then
+        sudo "$@"
+    else
+        sudo -n "$@"
+    fi
+}

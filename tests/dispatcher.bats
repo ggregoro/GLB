@@ -8,7 +8,7 @@ load 'test_helper'
 
 setup() {
     glb_setup_sandbox
-    stub_command sudo 'exec "$@"'
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
     stub_command apt 'echo "apt $*"; exit 0'
     stub_command dpkg 'exit 1'
     # glb update unconditionally exercises glb_update_starship, which

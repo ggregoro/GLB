@@ -131,6 +131,17 @@ This project follows a simple versioning approach:
   whatever terminal the user already has.
 
 ### Fixed
+- Fixed a real `pam_faillock` lockout bug: sudo-gated package
+  install/remove/update calls used plain `sudo`, which on a no-TTY
+  invocation still triggers a real `pam_unix` auth-failure attempt -
+  on Arch-based distros with `pam_faillock` enabled, this could lock a
+  user out of their own terminal after a few sudo-gated steps. New
+  `glb_sudo` helper (`lib/utils.sh`) uses plain `sudo` when a real TTY
+  is available (normal interactive password prompt still works
+  exactly as before) and only falls back to non-interactive `sudo -n`
+  when there isn't one, avoiding the auth attempt `pam_faillock`
+  counts. The manual-step fallback message always shows the plain
+  interactive `sudo ...` form for copy-pasting.
 - Fixed the `ls`/`ll`/`la`/`l` eza aliases (all profiles, all three
   shells) never showing per-file git status indicators in file
   listings, even inside a git repo. The aliases passed `--icons` but

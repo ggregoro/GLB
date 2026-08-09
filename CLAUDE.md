@@ -369,6 +369,66 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`pam_faillock` sudo-lockout bug fixed (2026-08-09, cloud session).**
+  Picked up the known issue confirmed twice on real hardware (CachyOS
+  2026-08-07, EndeavourOS VM 2026-08-08): every sudo-gated call in
+  `lib/package.sh` used plain `sudo`, and a no-TTY invocation (e.g.
+  GLB run from an automated/sandboxed context) still triggers a real
+  `pam_unix` auth-failure attempt even though it was always going to
+  fail — enough of those in a row trips `pam_faillock`'s `deny=3` and
+  locks the real user out of their own terminal, entirely as a side
+  effect of GLB's own designed-to-fail-cleanly attempts.
+  - **Real design question worked through before fixing:** a naive
+    global swap to `sudo -n` would have fixed the lockout but broken
+    something more important — a user running `glb restore` or `glb
+    install` directly in their own real terminal currently gets a
+    normal interactive sudo password prompt (when a TTY is available),
+    and `-n` unconditionally refuses to ever prompt, regardless of
+    whether a TTY exists. Blindly switching would have made every
+    sudo-gated step immediately fall through to the manual-step
+    fallback on every real run, even for someone sitting right there
+    ready to type their password — a real regression traded for fixing
+    a real bug, not a clean win.
+  - **Fix:** new `glb_sudo` helper (`lib/utils.sh`) checks `[[ -t 0 ]]`
+    (is stdin a real terminal) and picks plain `sudo` when true, `sudo
+    -n` when false. `lib/package.sh`'s install/remove/update now call
+    `glb_sudo` instead of `sudo` directly. The manual-step fallback
+    message (`glb_prompt_manual_step`) always displays the plain
+    interactive `sudo ...` form, never `-n` — a human copy-pasting the
+    printed command needs the real password prompt, even on a run
+    where GLB's own automatic attempt used `-n`. Required restructuring
+    `glb_install_package` slightly: the per-package-manager `cmd` array
+    no longer includes the `sudo` prefix itself, so it can be reused
+    for both the real `glb_sudo "${cmd[@]}"` call and the
+    manually-displayed `"sudo ${cmd[*]}"` string.
+  - `lib/prompt.sh`'s Starship install was flagged in the original bug
+    report too, but doesn't actually call `sudo` directly — the
+    third-party `curl | sh` installer script handles its own sudo
+    internally, outside GLB's code, so there was nothing to change
+    there.
+  - **Real test-suite gap this surfaced:** several bats files source
+    `lib/package.sh` directly (bypassing the real `glb` dispatcher,
+    which sources every `lib/` module in the right order) without also
+    sourcing `lib/utils.sh` first — `glb_sudo` would have been
+    undefined in those isolated subshells. Fixed by adding `source
+    lib/utils.sh` to every test block in `tests/package.bats` (9
+    occurrences) and one in `tests/profile.bats` that actually
+    exercises the real install path. Separately, two bats files
+    (`tests/dispatcher.bats`, `tests/repair.bats`) stub `sudo` as
+    `'exec "$@"'` to simulate it stepping out of the way — that stub
+    would have tried to `exec` a program literally named `-n` if
+    `glb_sudo` ever passed the flag through (which it does by default
+    in the bats sandbox, since `run`'s subshells don't have a TTY on
+    stdin). Fixed both stubs to strip a leading `-n` before exec'ing.
+    Confirmed via `grep -q` (substring, not exact-match) that every
+    other test asserting on captured `sudo`/package-manager call text
+    tolerates the `-n` prefix appearing or not without needing changes.
+  - **Not yet verified for real** — done from the repo alone (cloud
+    session, no direct hardware access); the next real restore on an
+    Arch-based machine (once fresh test VMs exist, per Greg's plan)
+    should confirm no lockout occurs, and a real interactive `glb
+    install <pkg>` run in an actual terminal should confirm the normal
+    password prompt still works exactly as before.
 - **Real bug found and fixed (2026-08-09, Dell laptop): per-file git
   status indicators never showed up in `ls`/`ll`/`la`/`l` output in
   any of the three shells, on either Cosmic Terminal or WezTerm — only

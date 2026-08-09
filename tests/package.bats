@@ -50,6 +50,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package fd
@@ -65,6 +66,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_remove_package fd
@@ -79,6 +81,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_package_installed fd
@@ -93,6 +96,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package ripgrep
@@ -104,6 +108,7 @@ teardown() {
 @test "install_package still errors with no package specified" {
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package
@@ -120,6 +125,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package fd <<< ''
@@ -136,6 +142,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package ripgrep <<< 's'
@@ -150,6 +157,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package ripgrep </dev/null
@@ -165,6 +173,7 @@ teardown() {
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
         source '$GLB_ROOT/lib/detect.sh'
         source '$GLB_ROOT/lib/package.sh'
         glb_install_package ripgrep <<< ''
