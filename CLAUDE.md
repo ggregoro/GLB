@@ -46,13 +46,12 @@ reasonably clean and documented, not just "works on my machine."
   reaches a stable point. Every entry below this point is history from
   before that decision; new real-hardware verification should happen
   on new VMs set up specifically for this, not by resurrecting these.
-- **New (2026-08-09): a fresh Pop!_OS VM, the first one under the plan
-  above** — not connected to the GitHub repo as a dev checkout,
-  genuinely standing in for an end user's machine. `git clone`d from
-  the now-public repo and restored `default` for real; see the
-  Roadmap entry for the full result (worked essentially perfectly,
-  one already-known `fastfetch` gap). VM software/exact Pop!_OS
-  version not captured this round.
+- **New (2026-08-09): a fresh Pop!_OS VM running on VirtualBox 7.8.2,
+  the first one under the plan above** — not connected to the GitHub
+  repo as a dev checkout, genuinely standing in for an end user's
+  machine. `git clone`d from the now-public repo and restored
+  `default` for real; see the Roadmap entry for the full result
+  (worked essentially perfectly, one already-known `fastfetch` gap).
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
