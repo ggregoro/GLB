@@ -2336,6 +2336,60 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-09, cloud session, continued after the
+  entry directly below this one) — the "what's left before stable"
+  punch list is now fully closed except one decision that's Greg's to
+  make, not work to do.** Picking up right after the scope-narrowing/
+  messaging session documented in the next entry down:
+  - **GUI-vs-terminal scope line made explicit with concrete
+    examples** in `docs/PHILOSOPHY.md`: full-screen TUI apps (Ranger,
+    Midnight Commander, htop, btop, even the Claude Code CLI) are
+    unambiguously in scope no matter how complex, since the test is
+    "does it ever open a window separate from the terminal," not
+    "how much does it do." Prompted by Greg naming those exact
+    examples and asking for the point to be nailed down for future
+    sessions.
+  - **`pam_faillock` sudo-lockout bug fixed** — the one confirmed,
+    reproducible bug on the "what's left" list. New `glb_sudo` helper
+    (`lib/utils.sh`) picks plain `sudo` when a real TTY is on stdin,
+    `sudo -n` otherwise — fixes the lockout without breaking normal
+    interactive use. See its own dedicated Roadmap entry above for
+    the full design reasoning (a naive global `sudo -n` swap would
+    have broken real terminal use, which is why this needed a TTY
+    check rather than a blind find-and-replace) and the test-isolation
+    fixes it required.
+  - **Installation manifests built** — `glb restore --from-manifest
+    <path>`, closing out Version 0.6 entirely. Confirmed via
+    `AskUserQuestion` which of three candidate meanings Greg actually
+    wanted (bring-your-own external manifest, won over a per-run audit
+    trail or a version-pinned lockfile) before building, same
+    scope-first discipline as every other Version 0.6 item.
+  - **Full bats suite run for real** for the first time this session
+    — 207/211 pass, the 4 failures fully explained by this sandbox
+    running as root (permission-check tests that `chmod 555` a
+    directory don't work when root bypasses permission bits). Confirms
+    the whole session's test edits are internally consistent.
+  - **Roadmap bookkeeping caught up to match reality**: Version 0.4
+    was stale and self-contradictory (unmarked despite most of it
+    shipping elsewhere, two bullets contradicting the later
+    framework-free-plugins decision) — fixed. "Minimal" and "Custom"
+    profiles (Version 0.3) were undefined placeholders since first
+    written — dropped per Greg's decision, since `default`/`developer`/
+    `server` cover every real need identified so far and `new-to-linux`
+    was retired rather than becoming "Minimal."
+  - **Where things stand now, for whoever picks this up next:** every
+    item on the "what's left before Version 1.0 (stable)" list is
+    resolved except one — deciding if/when this repo goes public
+    (currently private, no `CONTRIBUTING.md`) — which is explicitly
+    Greg's call, not a task to pick up unprompted. Real-hardware
+    verification of everything built across today's sessions (WezTerm
+    removal, `new-to-linux` retirement, the sudo fix, the manifest
+    feature) is still open but deliberately deferred — Greg's plan is
+    fresh test VMs later rather than re-validating the current ones,
+    which are being retired. No other specific next item is scoped;
+    next session should either wait for Greg's direction or treat this
+    as a natural checkpoint to ask what's next, same as this session
+    did.
 - **Session wrap-up (2026-08-09, Dell laptop, cloud session) — GLB's
   scope just got meaningfully narrower, and its messaging resharpened
   to match.** Long session, several distinct threads:
