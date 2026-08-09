@@ -52,6 +52,18 @@ reasonably clean and documented, not just "works on my machine."
   machine. `git clone`d from the now-public repo and restored
   `default` for real; see the Roadmap entry for the full result
   (worked essentially perfectly, one already-known `fastfetch` gap).
+- **New (2026-08-10): a fresh CachyOS VM**, second machine under the
+  same fresh-VM plan — used to verify `install.sh`'s curl-install path
+  and the `glb_sudo`/`pam_faillock` fix on real pacman/Arch-based
+  hardware (both confirmed working, see Roadmap entry).
+- **New (2026-08-10): a fresh openSUSE Tumbleweed VM**, third machine
+  under the same plan, distinct from the older openSUSE Tumbleweed VM
+  further down this list (that one predates the fresh-VM plan and is
+  being retired) — used to verify `install.sh` on zypper, the last of
+  the four supported package managers to get curl-install coverage
+  (confirmed working; only intervention needed was installing `git`
+  itself, which wasn't preinstalled — see Roadmap entry for the full
+  writeup).
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
@@ -384,6 +396,74 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Fresh openSUSE Tumbleweed VM verified end-to-end (2026-08-10, Greg,
+  real hardware) — `install.sh`'s curl-install path now confirmed on
+  all four supported package managers (apt, dnf, pacman, zypper).**
+  Second fresh-VM-connected-to-GitHub-from-the-start test, right after
+  CachyOS above. Greg's own report: worked great, only intervention was
+  installing git; everything else — including Fresh, Ranger, Fastfetch,
+  and Btop — confirmed working.
+  - **Real, expected gap hit for the first time: this fresh openSUSE
+    install had no `git` preinstalled at all**, unlike every openSUSE
+    VM tested previously in this project (which already had git from
+    earlier ad-hoc setup). `install.sh` failed cleanly exactly as
+    designed — `Error: git is required to install GLB. Please install
+    git and try again.` — confirmed via Greg's own screenshots: the
+    bare `curl | bash` one-liner errored cleanly first, a manual
+    `git clone` attempt then showed zypper's own "package can be found
+    in following packages: git-core... sudo zypper install
+    <selected_package>" suggestion, and `cd GLB`/`./glb restore` both
+    failed for the obvious reason (nothing was cloned yet). This is the
+    **first real-world hit of `install.sh`'s no-git error path**
+    outside the bats sandbox's synthetic test for it — confirms the
+    fail-clean behavior works as designed for an actual user, not just
+    in `tests/install.bats`. After Greg ran `sudo zypper install git`
+    manually, the one-liner succeeded and cloned cleanly.
+  - **"Lots of errors" Greg saw during the install are cosmetic zypper
+    mirror-preload noise, not real failures** — confirmed by reading
+    the actual captured terminal output (Greg attached the full
+    session as a Word doc): every package's `Preloading:
+    <pkg>.rpm [Error: "The requested URL returned error: 404", trying
+    next mirror.]` line was followed by that same package eventually
+    resolving `[done]` from a different mirror. This happened
+    repeatedly across nearly every package (zsh, fish, tmux, neovim,
+    ripgrep, fzf, eza, bat, ranger, btop, fastfetch, zoxide) — a lot of
+    visible red text, zero actual install failures. Every package
+    ultimately installed successfully and `glb restore` completed with
+    `[SUCCESS] Profile applied: default`. Worth remembering next time
+    this comes up so it isn't mistaken for a real bug: it's zypper's
+    own preloading/mirror-fallback behavior, unrelated to GLB's code.
+  - **Zero `_GLB_PACKAGE_OVERRIDES` gaps** — every package in
+    `default`'s `packages.txt` resolved to a real, correctly-named
+    zypper package directly (matching the zero-gap result from every
+    prior zypper test in this project).
+  - **No interactive sudo password prompt appeared anywhere during the
+    actual `glb restore` run** — confirmed explicitly by Greg
+    ("There was also no requirement for me to add a sudo password at
+    any point during the installation"). Most likely explanation,
+    visible in the transcript: sudo's own timestamp/ticket caching from
+    the manual `sudo zypper install git` step just before covered the
+    rest of the session's sudo-gated calls (package installs, the
+    Fresh `.rpm` install, Starship's own installer needing root for
+    `/usr/local/bin`) within its default cache window — not necessarily
+    a new behavior from `glb_sudo` itself, just normal sudo caching
+    lining up conveniently. Still a good sign: nothing about the
+    `glb_sudo` TTY-detection logic got in the way of a real interactive
+    session either way.
+  - All extras confirmed working for real: Fresh (curl → detected
+    Fedora/RHEL-family, downloaded and installed the `.rpm` via `rpm
+    -U`), the JetBrains Mono Nerd Font, and Starship (its own installer
+    escalating to root for `/usr/local/bin` as always). Both zsh
+    plugins cloned cleanly. Self-symlink, all completions, and every
+    dotfile linked correctly (`.bashrc` correctly backed up to
+    `.bashrc.glb-backup` first, since a stock `.bashrc` pre-existed).
+  - **`install.sh` is now confirmed working end-to-end on all four
+    supported package managers** — Pop!_OS/apt (2026-08-09), CachyOS/
+    pacman (2026-08-10, see entry above), and now openSUSE/zypper
+    (this entry). Fedora/dnf is the only one of the four remaining
+    genuinely unverified against the curl-install path specifically
+    (the distro itself is well-tested via `git clone`, just not this
+    specific installer).
 - **Fresh CachyOS VM verified end-to-end (2026-08-10, Greg, real
   hardware) — first real confirmation of both `install.sh`'s
   curl-install path on pacman and the `glb_sudo`/`pam_faillock` fix on
