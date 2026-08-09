@@ -170,6 +170,23 @@ This project follows a simple versioning approach:
   whatever terminal the user already has.
 
 ### Fixed
+- Fixed `default`'s zsh `starship.toml`: roughly half its Nerd Font
+  glyphs (the git-branch symbol, all five language-module icons, half
+  the OS icons, and the powerline separator arrows between prompt
+  segments) were silently empty strings in the tracked file, present
+  since the very first commit that added it. Root cause: every glyph
+  in the Basic Multilingual Plane's Private Use Area (`U+E000`-
+  `U+F8FF`) was missing, while every glyph in the Supplementary
+  Private Use Area-A (`U+F0000`+, which requires UTF-16 surrogate
+  pairs) survived intact - confirmed by diffing codepoint-by-codepoint
+  against a freshly `curl`-fetched copy of the real, current, official
+  Tokyo Night preset. Rebuilt the file from those verified bytes, kept
+  the existing `$cmd_duration` customization, and reused `$time`'s
+  clock icon for `$cmd_duration` (its own icon had been empty since
+  the commit that added it, so there was no correct original to
+  recover). No `glb restore` re-run needed to pick this up on an
+  existing machine - `~/.config/starship.toml` is a live symlink, so a
+  plain `git pull` in the GLB checkout is enough.
 - Fixed `install.sh`'s documented one-liner using `curl | sh` when the
   script itself requires bash (`set -o pipefail`, a bash-only option -
   `sh` is `dash` on Debian/Ubuntu, which rejects it at runtime with

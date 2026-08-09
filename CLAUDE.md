@@ -396,6 +396,88 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real, longstanding bug found and fixed (2026-08-10, cloud session):
+  zsh's Tokyo Night `starship.toml` has been missing roughly half its
+  glyphs — including the git-branch symbol, all five language-module
+  icons, half the OS icons, and the powerline separator arrows between
+  segments — since the very first commit that added it (2026-08-06),
+  on every real machine this project has ever tested.** Surfaced when
+  Greg noticed the OS icon was blank on openSUSE and, on follow-up,
+  confirmed it was blank on every distro he's tested, not just
+  openSUSE. Traced by byte-level inspection (`ord()` on each character
+  in the tracked file), not by eye — reading the file with normal
+  tools (including my own `Read` tool output in this very
+  conversation) *looked* fine, showing what appeared to be icons in
+  place, which is exactly why this went unnoticed for two months
+  across every VM/laptop restore documented in this file.
+  - **Root cause, confirmed precisely:** every glyph in the Unicode
+    Basic Multilingual Plane's Private Use Area (`U+E000`-`U+F8FF` —
+    the codepoint range older Nerd Font icon sets like Font Awesome,
+    Devicons, and Powerline Extra Symbols use) was silently empty in
+    the tracked file. Every glyph in the Supplementary Private Use
+    Area-A (`U+F0000`+, the range newer Material Design Icons use, all
+    of which require UTF-16 surrogate pairs to encode) was intact.
+    Confirmed this exact pattern by diffing codepoint-by-codepoint
+    against a fresh `curl`-fetched copy of the real, current, official
+    Tokyo Night preset from starship's GitHub repo — every single
+    missing glyph in GLB's copy was present and correct upstream,
+    consistent with the BMP-PUA-vs-astral split. This means the
+    corruption happened locally, at some point before or during the
+    original 2026-08-06 commit, not upstream.
+  - **A live demonstration of the exact same bug while fixing it**: my
+    first two attempts to patch the file by typing the missing glyphs
+    directly into a Python heredoc *also* silently dropped them (the
+    `f'[{sep}]...'`-style script failed its own sanity assertion
+    because the character never actually made it into the script's
+    string content) — the same BMP-PUA-loss failure mode, just
+    happening one layer up, in how text reaches this environment
+    rather than in the file on disk. Only worked once every glyph was
+    built from an explicit `chr(0xXXXX)` codepoint integer instead of
+    a literal character typed into a message — worth remembering for
+    any future edit to this file, or any other file carrying BMP
+    private-use-area glyphs: don't hand-type or copy-paste the glyph,
+    construct it from its codepoint.
+  - **Fixed** by rebuilding `profiles/default/dotfiles/.config/
+    starship.toml` from the verified-correct upstream bytes
+    (`curl`-fetched directly, not routed through any AI-mediated
+    fetch/summarization step — an early attempt to verify via the
+    `WebFetch` tool silently exhibited the identical glyph-dropping
+    behavior, since it re-generates its response through a model
+    rather than returning raw bytes) plus reapplying the one real
+    customization, `$cmd_duration`, in the same position/styling as
+    before. Verified byte-for-byte: all 34 non-ASCII glyphs in the
+    official preset are now present and match upstream exactly
+    (confirmed via `tomllib.load` for valid TOML plus a full
+    codepoint-set comparison, not just a visual read). One glyph
+    couldn't be recovered from any authoritative source since it was
+    never part of the official preset to begin with: `$cmd_duration`'s
+    own icon was empty from the very commit that added it
+    (`dc0465a`), so there was no correct original to restore. Chose to
+    reuse `$time`'s clock icon for it, matching the original stated
+    intent ("styled to match the existing $time segment," per that
+    commit's own CLAUDE.md entry) rather than inventing a new one —
+    flagging this one choice explicitly since it's the one part of the
+    fix that isn't a byte-for-byte recovery.
+  - 211/215 bats tests still pass (same 4 pre-existing root-sandbox
+    permission failures, confirmed unrelated — this fix only touches
+    dotfile *content*, not anything bats asserts on).
+  - **Real impact for Greg specifically**: every one of his real
+    machines (Dell laptop, Debian server, every test VM) has been
+    running this degraded prompt in zsh the whole time, without
+    anyone — including several past sessions' worth of `Read` calls on
+    this exact file — visually noticing, since normal file-viewing
+    tools can't render the affected codepoint range either. Since
+    `~/.config/starship.toml` is a live symlink into wherever GLB is
+    checked out, no `glb restore` re-run is needed on any machine to
+    pick up the fix — just `git pull` inside that machine's GLB
+    checkout.
+  - **Not yet verified for real** — fixed and bats-tested from the
+    repo alone this session; the next real machine to `git pull` this
+    (or a fresh `glb restore default`) should visually confirm the OS
+    icon, git-branch symbol, language icons, and powerline arrows all
+    render correctly now, ideally on a terminal already confirmed to
+    render Nerd Font glyphs correctly (Konsole, gnome-terminal) so a
+    font gap doesn't get confused with this bug being back.
 - **Fresh openSUSE Tumbleweed VM verified end-to-end (2026-08-10, Greg,
   real hardware) — `install.sh`'s curl-install path now confirmed on
   all four supported package managers (apt, dnf, pacman, zypper).**
