@@ -2720,6 +2720,29 @@ branches on it.
     correctly on dnf, per the deferred item above. Once dnf is closed
     out, `install.sh` will have real end-to-end verification on all
     four supported package managers.
+  - **Follow-up discussion, same session, no code changed:** Greg
+    asked how an end user who's already restored `default` could still
+    grab a preset from starship.rs and make the prompt their own,
+    rather than being stuck with Greg's Tokyo Night preset. Explained
+    the real mechanics of `~/.config/starship.toml` being a symlink
+    into GLB's own repo checkout: editing it in place technically
+    works but edits land inside GLB's tracked git checkout (git-pull
+    conflict risk down the line); breaking the symlink and dropping in
+    a personal file is cleaner but **will get silently reverted** the
+    next time `glb restore` runs on that profile, since
+    `glb_apply_profile_dotfiles` (`lib/profile.sh`) treats a
+    non-symlink file it finds there as pre-existing data to back up to
+    `.glb-backup` and relink over — verified by reading the actual
+    backup/relink logic, not just recalling it. Pointed to
+    `glb restore --from-manifest <path>` (already built, see the
+    installation-manifests Roadmap entry) as the durable answer: a
+    personal directory shaped like a mini-profile, entirely outside
+    GLB's own repo, immune to this silent-revert behavior. Greg then
+    asked whether he should build a real example of this to confirm it
+    works, and offered to do it either now on an existing machine or
+    folded into the upcoming Fedora VM session — **decided to defer
+    both to after Fedora VM testing wraps up**, picking this back up
+    then rather than context-switching now.
 - **Session wrap-up (2026-08-09, cloud session) — pausing here for the
   night by Greg's choice; picking back up tomorrow on a fresh CachyOS
   VM.** Everything is committed and pushed to `main` — `9d77735` is the
