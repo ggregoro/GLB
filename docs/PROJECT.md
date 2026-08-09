@@ -111,6 +111,15 @@ Development happens directly against `main`, with features tracked as
 is expected once a roadmap milestone's items are all complete and the
 project is ready to tag a real release.
 
+**The repository stays private until GLB is fully tested and vetted**
+(decided 2026-08-09, no fixed date attached — an open timetable, not a
+deferred-indefinitely non-decision). The bar for "going public" is
+real-world confidence, not a version number: genuine end-to-end
+restores on fresh VMs across every supported package manager, not just
+the automated test suite. Going public itself is a separate decision
+GLB's author will make explicitly when that bar is met — not something
+that happens automatically once testing wraps up.
+
 ## Long-Term Vision
 
 GLB aims to become a complete Linux workstation builder: a curated,

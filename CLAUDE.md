@@ -37,6 +37,15 @@ reasonably clean and documented, not just "works on my machine."
 
 ## Test environments
 
+- **Plan going forward (decided 2026-08-09):** the repo stays private
+  until GLB is genuinely tested and vetted on real machines — see
+  `docs/PROJECT.md`'s Release Strategy. Greg's plan is fresh VMs,
+  connected to the GLB GitHub repo from the start (not retrofitted
+  onto old ones), rather than continuing to reuse/patch up the older
+  test VMs listed below — those are being retired once the project
+  reaches a stable point. Every entry below this point is history from
+  before that decision; new real-hardware verification should happen
+  on new VMs set up specifically for this, not by resurrecting these.
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
@@ -2336,6 +2345,15 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Going-public decision made (2026-08-09):** repo stays private until
+  GLB is fully tested and vetted, open timetable, no fixed date. Greg's
+  plan: fresh VMs, connected to the GLB GitHub repo, for real-world
+  testing — not resurrecting the older test VMs listed in "Test
+  environments" above, which are being retired. See `docs/PROJECT.md`'s
+  Release Strategy for the durable record of this decision. This closes
+  the one item left open on the "what's left before stable" list from
+  earlier today — everything now has either a resolution or an explicit
+  owner/plan, nothing left dangling.
 - **Session wrap-up (2026-08-09, cloud session, continued after the
   entry directly below this one) — the "what's left before stable"
   punch list is now fully closed except one decision that's Greg's to
