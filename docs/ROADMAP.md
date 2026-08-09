@@ -98,7 +98,6 @@ Introduce workstation profiles.
   to do for *any* profile, which is also why the project's messaging
   was resharpened around "the terminal is the barrier" the same day
   (see CLAUDE.md).
-- Minimal
 - **Developer ✅ (2026-08-07)** — the "who is this for" question from
   the 2026-08-06 brainstorm resolved as someone newer to development
   who wants a complete kit without researching every tool choice
@@ -117,14 +116,21 @@ Introduce workstation profiles.
   single package name resolves across all four package managers (see
   CLAUDE.md and the comment in `profiles/server/packages.txt`);
   needs a new mechanism before it can be added.
-- Custom
+
+**Dropped (2026-08-09):** "Minimal" and "Custom" were both left as
+bare, undefined placeholders since this version was first written.
+Now that `new-to-linux` was retired (2026-08-09) rather than becoming
+"Minimal," and `default`/`developer`/`server` cover every real use
+case identified so far, both were dropped from the roadmap rather than
+carried indefinitely as open-ended ideas with no real scope behind
+them. Revisit only if a genuine, concrete need for either surfaces.
 
 Profiles will define complete workstation experiences rather than individual package selections.
 
 `ranger` (added to `profiles/default`'s `packages.txt` on 2026-08-05, see
 CLAUDE.md) is default-on for Greg's own profile but shouldn't necessarily be
-default-on for every future profile — e.g. Minimal or Server may not want a
-TUI file manager. Once per-profile package selection exists, packages like
+default-on for every future profile — e.g. `server` may not want a TUI
+file manager. Once per-profile package selection exists, packages like
 this should be opt-in per profile rather than baked into a shared list.
 
 **Historical note (superseded by the retirement above):** the "New to

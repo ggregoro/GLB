@@ -136,8 +136,6 @@ Examples include:
 - `default` (Greg's own, real setup) ✅
 - Developer ✅
 - Server ✅
-- Minimal
-- Custom
 
 Profiles define complete workstation environments that are reproducible and easy to maintain.
 
