@@ -2687,6 +2687,39 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-10, cloud session) — pausing here by
+  Greg's choice; next session picks up on a fresh Fedora 44 GNOME 50
+  dnf VM.** Everything is committed and pushed to `main` — `6a6d61b` is
+  the latest commit as of this note, working tree clean. This session
+  verified `install.sh` end-to-end on both CachyOS/pacman and a fresh
+  openSUSE Tumbleweed/zypper VM (see the two dedicated Roadmap entries
+  above for full writeups) — the `glb_sudo`/`pam_faillock` fix is now
+  confirmed working on real Arch-based hardware, and every one of the
+  four supported package managers except dnf now has real curl-install
+  verification.
+  - Greg is seriously considering switching his own daily driver to
+    openSUSE/KDE Plasma after how well this session's test went — his
+    own life/hardware decision, not a GLB task, but worth knowing if a
+    future "daily driver" reference in this file needs updating.
+  - **Discussed and explicitly deferred, not started:** fleshing out
+    the `developer` profile further. Agreed instead that the higher-
+    leverage next step is closing a known, already-flagged gap: `ncdu`,
+    `lazygit`, `glow`, and `lazydocker` were added to `developer`
+    (2026-08-09) but never confirmed to resolve as real package names
+    on dnf/pacman/zypper specifically (only apt, implicitly) — worth
+    doing once a dnf VM exists, alongside the Fedora `install.sh`
+    verification below, since it's the same VM either way.
+  - **Next session: pick up on a fresh Fedora 44 GNOME 50 dnf VM**
+    (Greg's own words: "I should build a new Fedora 44 Gnome 50 dnf
+    test VM first and close out the testing there... I will do that
+    next"). Two things to verify there: (1) `install.sh`'s curl
+    one-liner on dnf — the last of the four supported package managers
+    without real curl-install coverage (dnf/Fedora itself is
+    well-tested via `git clone`, just not this specific installer
+    path); (2) the `developer` profile's four new TUI tools resolving
+    correctly on dnf, per the deferred item above. Once dnf is closed
+    out, `install.sh` will have real end-to-end verification on all
+    four supported package managers.
 - **Session wrap-up (2026-08-09, cloud session) — pausing here for the
   night by Greg's choice; picking back up tomorrow on a fresh CachyOS
   VM.** Everything is committed and pushed to `main` — `9d77735` is the
