@@ -35,7 +35,6 @@ Step-by-step guides.
 
 Quick command references.
 
-- Debian Server Cheat Sheet
 - Git Cheat Sheet
 - Ranger Cheat Sheet
 - Fish Cheat Sheet

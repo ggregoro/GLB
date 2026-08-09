@@ -1,3 +1,8 @@
-[user]
-	name = Gregory Gregorowicz
-	email = ggregoro@gmail.com
+# Personal identity is intentionally not set here - this file is
+# shared publicly as part of GLB's default profile, and anyone
+# restoring it shouldn't get someone else's name/email on their
+# commits. Create ~/.gitconfig.local with your own [user] section;
+# git includes it automatically if present, and silently skips it
+# if it's missing.
+[include]
+	path = ~/.gitconfig.local

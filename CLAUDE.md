@@ -378,6 +378,59 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Pre-public-release cleanup (2026-08-09, cloud session), prompted
+  by Greg asking what going public would actually involve.** Audited
+  the repo for anything that would become permanently, publicly
+  exposed on making it public — not just current files, the entire
+  git history forever, even if made private again later (anything
+  already cloned/cached/indexed in the meantime doesn't get
+  un-exposed). Findings:
+  - **Every commit is authored `Gregory Gregorowicz
+    <ggregoro@gmail.com>`** — Greg's call: already fine with this
+    being public, no action taken. Flagging this here anyway so a
+    future session doesn't assume it was overlooked.
+  - **`profiles/default/dotfiles/.gitconfig` hardcoded Greg's personal
+    git identity** — a real bug independent of the privacy question,
+    not just a privacy one: anyone restoring `default` (not just
+    Greg) would get *his* name/email on *their* commits. **Fixed**:
+    the tracked file now only has `[include] path =
+    ~/.gitconfig.local`, which git silently skips if that file doesn't
+    exist. **Action needed on Greg's real machines** (Dell laptop,
+    Debian server, any other machine with `default`'s `.gitconfig`
+    symlinked) once this is pulled — his own git identity will stop
+    resolving until he creates the local override:
+    ```
+    cat > ~/.gitconfig.local << 'EOF'
+    [user]
+        name = Gregory Gregorowicz
+        email = ggregoro@gmail.com
+    EOF
+    ```
+    Not yet done on any real machine — this repo-side fix alone
+    doesn't break anything on the Dell laptop until he actually pulls
+    it, but it's a real to-do the moment he does.
+  - **`docs/reference/debian-server-cheat-sheet.md` had Greg's home
+    server's real LAN IP (`192.168.0.235`) and SSH username
+    (`grego`) in plaintext** — prompted directly by Greg saying "I
+    don't want anyone making [their] way into my personal computers
+    somehow." Removed entirely (not just redacted) — it was personal
+    reference material unrelated to GLB itself, not something that
+    belonged in a public tool's docs regardless of the privacy
+    question. `docs/README.md`'s reference-page index updated to
+    match; left the historical mentions in `CHANGELOG.md`/
+    `docs/DOCS_CHANGELOG.md` alone as accurate history.
+  - **Broader scan came back clean**: no private key markers, no
+    passwords/API tokens/secrets, no other IP addresses or
+    `/home/grego`-style paths anywhere outside this file's own working
+    journal (which Greg is fine with, per the name/email point above).
+  - 211/215 bats tests still pass after these changes (same 4
+    pre-existing root-sandbox permission-check failures, unrelated —
+    confirmed no test asserted on the old `.gitconfig` content).
+  - **Answering Greg's other question directly**: once cleanup like
+    this is done, going public genuinely is just flipping a switch —
+    GitHub repo Settings → Danger Zone → Change visibility → Make
+    public, type the repo name to confirm. No other mechanical step
+    needed on GLB's side.
 - **`install.sh` curl-install bootstrap script built (2026-08-09,
   cloud session), prompted by Greg's next testing step.** Greg's plan
   for the first fresh-VM test (Pop!_OS, not directly connected to the

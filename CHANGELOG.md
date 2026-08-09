@@ -106,6 +106,12 @@ This project follows a simple versioning approach:
   source repo to be publicly reachable.
 
 ### Changed
+- Changed `default`'s `.gitconfig` dotfile to stop hardcoding a
+  personal git identity: it now only contains an `[include] path =
+  ~/.gitconfig.local` directive, so anyone restoring `default` gets
+  their own commits attributed correctly instead of someone else's
+  name/email. Was broken for anyone but the original author; also
+  part of getting the repo ready to go public.
 - Replaced `default`'s `.config/wezterm/wezterm.lua` (the gradient/
   opacity/keybindings version above) with the simpler config that was
   actually already running on Greg's Dell laptop via an untracked
@@ -134,6 +140,10 @@ This project follows a simple versioning approach:
   terminal-onboarding mission it served isn't profile-specific - it's
   what GLB's shared shell/prompt setup is built to do regardless of
   which profile someone picks.
+- Removed `docs/reference/debian-server-cheat-sheet.md`: personal
+  SSH/SCP/Samba reference material for the author's own home server,
+  including its real LAN IP and username - unrelated to GLB itself,
+  and not appropriate to carry into a public repo.
 - New project-wide principle (see `docs/PHILOSOPHY.md`, "Enhance the
   Terminal You Have, Don't Replace It" and `docs/PROJECT.md`'s
   Non-Goals): GLB does not install GUI applications of any kind -
