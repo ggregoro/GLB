@@ -40,6 +40,9 @@ replace it. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for why.
 - **State export/import** — `glb export` snapshots a machine's current
   packages and dotfiles; `glb diff` compares two profiles or snapshots for
   drift; `glb restore --from-snapshot` reapplies a captured snapshot.
+- **External manifests** — `glb restore --from-manifest <path>` applies a
+  profile-shaped directory from anywhere on disk, for a one-off custom
+  install without adding a profile to the repo.
 - **`glb repair`** — checks a machine against a profile and offers to fix
   any drift it finds.
 - **`glb update`** — updates system packages, the Starship prompt, vendored
@@ -75,6 +78,7 @@ glb restore [profile]                 Apply a profile (packages + dotfiles)
 glb restore --dry-run                 Preview a restore without changing anything
 glb restore --undo                    Undo the last restore's dotfile changes
 glb restore --from-snapshot <name>    Apply a snapshot captured by `glb export`
+glb restore --from-manifest <path>    Apply a profile-shaped directory from anywhere on disk
 glb profiles                          List available profiles
 glb prompt                            Install/configure the Starship prompt
 glb export                            Snapshot this machine's packages + dotfiles

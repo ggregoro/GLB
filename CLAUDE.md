@@ -369,6 +369,49 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Installation manifests built (2026-08-09, cloud session) — closes
+  out Version 0.6 entirely.** The one Version 0.6 item with no design
+  doc at all, unlike export/import/repair/update-components which
+  each got scoped before being built. Confirmed via `AskUserQuestion`
+  which of three candidate meanings Greg actually wanted (bring-your-
+  own external manifest / a per-run audit trail of what GLB installed
+  / a version-pinned lockfile) — chose the first, directly matching
+  how he described the gap: "provide external options to run from
+  within the program." See `docs/design/installation-manifests.md`
+  for the full scoping writeup.
+  - New `glb_apply_manifest <path> [--dry-run]` (`lib/profile.sh`),
+    wired into the dispatcher as `glb restore --from-manifest <path>`
+    — same two-token-flag parsing as the existing `--from-snapshot
+    <name>`, works before or after `--dry-run` in either order. Unlike
+    every other restore mode (profile name, `--from-snapshot`), this
+    one takes a raw filesystem path, not a name resolved under
+    `profiles/` or `snapshots/` — the whole point is running a
+    profile-shaped directory (`packages.txt` + optional
+    `extras.txt`/`dotfiles/`) that lives *outside* the repo, for a
+    one-off custom install without committing a full profile.
+  - Followed the exact same "duplicate, don't refactor" pattern
+    `glb_apply_snapshot` already established: `glb_apply_manifest`'s
+    body is a near-verbatim copy of `glb_apply_profile`'s six-step
+    sequence (packages → extras → Starship → zsh plugins →
+    self-symlink/completions → dotfiles) rather than a shared helper,
+    since several existing bats tests assert on `glb_apply_profile`'s
+    exact log wording and a refactor risked breaking those for a
+    premature abstraction. Placed in `lib/profile.sh` itself (not
+    `lib/export.sh`, where `glb_apply_snapshot` lives) since there's
+    no "export" counterpart to pair with — profile.sh is the natural
+    home for a third "apply a profile-shaped thing" entry point.
+  - 6 new bats tests in `tests/restore_manifest.bats` (mirroring
+    `tests/restore_snapshot.bats` one-for-one, plus one extra
+    confirming a deeply nested arbitrary path works) and 3 new
+    dispatcher end-to-end tests. Updated `README.md`,
+    `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`, and `CHANGELOG.md` to
+    match. **Version 0.6 (Configuration Management) is now fully
+    complete.**
+  - **Not yet verified for real** — built and tested from the repo
+    alone (cloud session, no direct hardware access). A real `glb
+    restore --from-manifest <path>` against a hand-written directory
+    on an actual machine is still open, same as everything else from
+    today's cloud session.
 - **`pam_faillock` sudo-lockout bug fixed (2026-08-09, cloud session).**
   Picked up the known issue confirmed twice on real hardware (CachyOS
   2026-08-07, EndeavourOS VM 2026-08-08): every sudo-gated call in

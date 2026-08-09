@@ -174,6 +174,46 @@ teardown() {
     [[ "$output" == *"Snapshot not found"* ]]
 }
 
+@test "glb restore --from-manifest applies an external directory end to end" {
+    stub_command starship 'exit 0'
+    stub_command git 'mkdir -p "$5"; exit 0'
+
+    local manifest="$TEST_TMP/my-manifest"
+    mkdir -p "$manifest/dotfiles"
+    printf 'git\n' > "$manifest/packages.txt"
+    echo 'x' > "$manifest/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --from-manifest "$manifest"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"apt install -y git"* ]]
+    [[ "$output" == *"Manifest applied: $manifest"* ]]
+    [ -L "$HOME/.gitconfig" ]
+}
+
+@test "glb restore --from-manifest works with --dry-run in either order" {
+    local manifest="$TEST_TMP/my-manifest"
+    mkdir -p "$manifest/dotfiles"
+    printf 'git\n' > "$manifest/packages.txt"
+    echo 'x' > "$manifest/dotfiles/.gitconfig"
+
+    run "$GLB_ROOT/glb" restore --from-manifest "$manifest" --dry-run
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for manifest: $manifest"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+
+    run "$GLB_ROOT/glb" restore --dry-run --from-manifest "$manifest"
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Dry run for manifest: $manifest"* ]]
+    [ ! -e "$HOME/.gitconfig" ]
+}
+
+@test "glb restore --from-manifest fails cleanly for a nonexistent path" {
+    run "$GLB_ROOT/glb" restore --from-manifest "$TEST_TMP/no-such-manifest"
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Manifest directory not found"* ]]
+}
+
 @test "glb export then glb restore --from-snapshot round-trips a real machine's state" {
     stub_command apt-mark 'printf "git\n"'
     stub_command hostname 'echo test-host'

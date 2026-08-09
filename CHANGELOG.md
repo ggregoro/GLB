@@ -94,6 +94,10 @@ This project follows a simple versioning approach:
   `Ctrl+a` leader keybinding set (tabs, splits, vim-style pane
   navigation, zoom, a resize key-table, copy mode) to `default`'s
   `.config/wezterm/wezterm.lua`.
+- Added `glb restore --from-manifest <path>`: applies a profile-shaped
+  directory (`packages.txt` + optional `extras.txt`/`dotfiles/`) from
+  anywhere on disk, not just `profiles/` or `snapshots/`, for a one-off
+  custom install without adding a profile to the repo.
 
 ### Changed
 - Replaced `default`'s `.config/wezterm/wezterm.lua` (the gradient/

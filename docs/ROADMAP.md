@@ -224,7 +224,19 @@ Improve reproducibility.
 
 ### Planned
 
-- Installation manifests
+- **Installation manifests — done (2026-08-09).** See
+  `docs/design/installation-manifests.md`. Scoped as "bring your own
+  external manifest" (of three candidate meanings considered):
+  `glb restore --from-manifest <path>` applies a profile-shaped
+  directory (`packages.txt` + optional `extras.txt`/`dotfiles/`) from
+  *any* path on disk, not looked up by name under `profiles/` or
+  `snapshots/` like every other restore mode — the point is running a
+  one-off custom install without adding a profile to the repo. Built
+  as `glb_apply_manifest` (`lib/profile.sh`), duplicating
+  `glb_apply_profile`'s body rather than refactoring it, same
+  reasoning `glb_apply_snapshot` already established. **Version 0.6 is
+  now fully complete** — this was the last item with no plan written
+  at all.
 - **Configuration export/import — done (2026-08-07).** All three
   pieces of `docs/design/state-export-import.md`'s plan are now built:
   - `glb export` captures the current machine's explicitly-installed

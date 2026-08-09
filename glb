@@ -49,6 +49,7 @@ glb_show_help() {
     printf "  restore --undo       Undo the last restore's dotfile changes\n"
     printf "  restore --dry-run    Preview what a restore would do, without changing anything\n"
     printf "  restore --from-snapshot <name>   Apply a snapshot captured by 'glb export' instead of a profile\n"
+    printf "  restore --from-manifest <path>   Apply a profile-shaped directory from anywhere on disk\n"
     printf "  profiles   List available profiles\n"
     printf "  prompt     Install and configure the Starship shell prompt\n"
     printf "  export     Capture this machine's packages/dotfiles into snapshots/\n"
@@ -138,6 +139,7 @@ case "${1:-}" in
             restore_profile=""
             restore_dry_run=""
             restore_snapshot=""
+            restore_manifest=""
             restore_args=("${@:2}")
             restore_i=0
             while [[ "$restore_i" -lt "${#restore_args[@]}" ]]; do
@@ -147,12 +149,17 @@ case "${1:-}" in
                 elif [[ "$restore_arg" == "--from-snapshot" ]]; then
                     restore_i=$((restore_i + 1))
                     restore_snapshot="${restore_args[$restore_i]:-}"
+                elif [[ "$restore_arg" == "--from-manifest" ]]; then
+                    restore_i=$((restore_i + 1))
+                    restore_manifest="${restore_args[$restore_i]:-}"
                 else
                     restore_profile="$restore_arg"
                 fi
                 restore_i=$((restore_i + 1))
             done
-            if [[ -n "$restore_snapshot" ]]; then
+            if [[ -n "$restore_manifest" ]]; then
+                glb_apply_manifest "$restore_manifest" "$restore_dry_run"
+            elif [[ -n "$restore_snapshot" ]]; then
                 glb_apply_snapshot "$restore_snapshot" "$restore_dry_run"
             elif [[ -z "$restore_profile" ]]; then
                 glb_restore_interactive "$restore_dry_run"

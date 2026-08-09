@@ -272,6 +272,57 @@ glb_apply_profile() {
 }
 
 # ------------------------------------------------------------
+# Apply an external manifest directory - a profile-shaped directory
+# (packages.txt + optional extras.txt/dotfiles/) living anywhere on
+# disk, not committed to profiles/. Applies the same way
+# glb_apply_profile applies a profile. Used by
+# `glb restore --from-manifest <path>`, for a one-off custom install
+# without creating a full profile in the repo.
+# ------------------------------------------------------------
+
+glb_apply_manifest() {
+    local path="$1"
+    local dry_run="${2:-}"
+    local status=0
+
+    if [[ -z "$path" ]]; then
+        glb_log_error "Usage: glb restore --from-manifest <path>"
+        return 1
+    fi
+
+    if [[ ! -d "$path" ]]; then
+        glb_log_error "Manifest directory not found: $path"
+        return 1
+    fi
+
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        glb_log_info "Dry run for manifest: $path (nothing will be installed or changed)"
+    else
+        glb_log_info "Applying manifest: $path"
+    fi
+
+    glb_apply_profile_packages "$path" "$dry_run" || status=1
+    glb_apply_profile_extras "$path" "$dry_run" || status=1
+    glb_install_starship "$dry_run" || status=1
+    glb_install_zsh_plugins "$dry_run" || status=1
+    glb_install_self_symlink "$dry_run" || status=1
+    glb_install_completions "$dry_run" || status=1
+    glb_apply_profile_dotfiles "$path" "$dry_run" || status=1
+
+    if [[ "$status" -eq 0 ]]; then
+        if [[ "$dry_run" == "--dry-run" ]]; then
+            glb_log_success "Dry run complete: $path"
+        else
+            glb_log_success "Manifest applied: $path"
+        fi
+    else
+        glb_log_error "Manifest applied with errors: $path"
+    fi
+
+    return "$status"
+}
+
+# ------------------------------------------------------------
 # Interactively pick a profile (numbered menu, like
 # glb_configure_starship in lib/prompt.sh) and apply it. Used by the
 # dispatcher when `glb restore` is run with no profile name.

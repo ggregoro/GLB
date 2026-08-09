@@ -29,7 +29,8 @@ reads `VERSION`, sources every `lib/*.sh` module, then dispatches on
 `profiles`, `prompt`, `export`, `diff`, `repair`). Each case is a thin
 wrapper calling into the relevant `lib/` function — the dispatcher itself
 has no business logic beyond argument parsing (e.g. `restore`'s
-`--dry-run`/`--undo`/`--from-snapshot <name>` flags).
+`--dry-run`/`--undo`/`--from-snapshot <name>`/`--from-manifest <path>`
+flags).
 
 ## Library modules (`lib/`)
 
@@ -41,7 +42,7 @@ has no business logic beyond argument parsing (e.g. `restore`'s
 | `detect.sh` | Detects the distro, distro version, package manager (apt/dnf/pacman/zypper), and current shell. |
 | `package.sh` | Package management abstraction: install/remove/list, per-distro name resolution (`_GLB_PACKAGE_OVERRIDES`) and its reverse for `glb export`, and the sudo-gated manual-step pause/resume. |
 | `extras.sh` | Installs software outside the package-manager model — curl-install scripts, Flatpak apps, and Nerd Font archives — driven by a profile's `extras.txt`. |
-| `profile.sh` | Applies a profile: packages, dotfiles (symlink + backup), and the interactive picker (`glb restore` with no profile name) and `--undo` rollback. |
+| `profile.sh` | Applies a profile: packages, dotfiles (symlink + backup), the interactive picker (`glb restore` with no profile name), `--undo` rollback, and `--from-manifest <path>` for applying a profile-shaped directory from anywhere on disk. |
 | `prompt.sh` | Installs and configures the Starship prompt (`glb prompt`), including the update path. |
 | `plugins.sh` | Vendors a curated set of zsh plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`) by git-cloning them directly — framework-free, no Oh My Zsh/Fisher dependency. |
 | `completions.sh` | Symlinks `glb` itself onto `PATH` and installs its bash/zsh/fish completion scripts. |
