@@ -378,6 +378,56 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`install.sh` curl-install bootstrap script built (2026-08-09,
+  cloud session), prompted by Greg's next testing step.** Greg's plan
+  for the first fresh-VM test (Pop!_OS, not directly connected to the
+  GitHub repo) is deliberately more realistic than every prior test:
+  an actual end-user-style install (`sudo apt install glb`-equivalent)
+  rather than `git clone` + `./glb restore`. Confirmed via
+  `AskUserQuestion` which install mechanism to build: a curl-install
+  script (chosen) over a real `.deb`/PPA package (much heavier
+  infrastructure, not a same-session task) or just testing the
+  existing clone method first.
+  - New `install.sh` at the repo root: clones GLB into
+    `~/.local/share/glb` (`git pull --ff-only`s in place if already
+    there; refuses to clobber an unrelated existing directory).
+    Deliberately does **not** run `glb restore` itself — that's a
+    separate, interactive, opinionated step (real package installs,
+    dotfile changes), and auto-running it as a side effect of "get GLB
+    onto my machine" would be a surprise no curl-install script this
+    project curates (Fresh, Starship) actually pulls. Chose
+    `~/.local/share/glb` deliberately — already used by
+    `lib/plugins.sh` for vendored zsh plugins
+    (`~/.local/share/glb/plugins`), confirmed no collision since
+    `plugins/` isn't a git-tracked path at the repo root, so it just
+    sits as an untracked directory inside the cloned working tree.
+  - 4 new bats tests (`tests/install.bats`): no-git error, fresh
+    clone, update-in-place, refuses-to-clobber. One real gotcha hit
+    writing the "no git" test: emptying `PATH` entirely to hide `git`
+    also hides `bash` itself from `run`'s own lookup (bash, git, and
+    every coreutils binary all live in the same `/usr/bin` on this
+    sandbox, so there's no directory-level way to exclude just `git`)
+    — fixed by resolving `bash`'s absolute path *before* emptying
+    `PATH`, then invoking it directly; the failure path only needs
+    bash builtins (`command`, `echo`, `exit`) so an empty `PATH` is
+    otherwise safe. 211/215 bats tests pass overall (same 4
+    pre-existing root-sandbox permission-check failures documented in
+    the entry below, unrelated).
+  - **Real, not-yet-resolved blocker, flagged clearly rather than
+    acted on: this script cannot actually work end-to-end while the
+    repo stays private** — a fresh machine has no GitHub credentials
+    to `git clone` a private repo. Greg said explicitly he's fine
+    going public as part of this specific test if that's what's
+    needed ("If the Project needs to go public to do that then we
+    will do that as part of the test") — but flipping repo visibility
+    is a real, hard-to-reverse action (once cloned/cached/indexed by
+    anyone, "private" again doesn't undo that), so it was deliberately
+    **not done automatically** as part of building this script. Making
+    the repo public is Greg's own action to take when he's ready to
+    actually run this test — not something this session did on his
+    behalf. Docs updated (`README.md`'s Installation section now leads
+    with the curl-install one-liner, `docs/ARCHITECTURE.md`,
+    `docs/CODING_STANDARDS.md`) to match.
 - **Full bats suite actually run for real (2026-08-09, cloud session)
   — first time this session's own test edits were executed, not just
   syntax-checked.** This cloud sandbox has no `bats` installed and no

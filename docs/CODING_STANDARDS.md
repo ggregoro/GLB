@@ -41,6 +41,7 @@ GLB/
 ├── snapshots/         # glb export output (machine state snapshots), when present
 ├── tests/             # bats test suite
 ├── glb
+├── install.sh         # curl-install bootstrap script (clones GLB itself)
 ├── README.md
 ├── CHANGELOG.md
 ├── LICENSE

@@ -98,6 +98,12 @@ This project follows a simple versioning approach:
   directory (`packages.txt` + optional `extras.txt`/`dotfiles/`) from
   anywhere on disk, not just `profiles/` or `snapshots/`, for a one-off
   custom install without adding a profile to the repo.
+- Added `install.sh`, a curl-install bootstrap script
+  (`curl -fsSL <url>/install.sh | sh`) that clones GLB itself into
+  `~/.local/share/glb` (or updates it in place if already there) and
+  prints the next command to run. Doesn't run `glb restore` itself -
+  that's a separate, opinionated, interactive step. Requires the
+  source repo to be publicly reachable.
 
 ### Changed
 - Replaced `default`'s `.config/wezterm/wezterm.lua` (the gradient/

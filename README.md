@@ -52,8 +52,23 @@ replace it. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for why.
 
 ## Installation
 
-Clone the repository and run `glb` directly, or restore a profile to also
-put `glb` itself on your `PATH` with completions:
+The quickest way — a one-line installer that clones GLB into
+`~/.local/share/glb` (or updates it in place if already there):
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/main/install.sh | sh
+```
+
+It only sets up the checkout — it deliberately doesn't run `glb restore`
+itself, since that's an opinionated, interactive step (package installs,
+dotfile changes) that shouldn't happen as a side effect of "get GLB onto
+my machine." Once it's done, run:
+
+```bash
+~/.local/share/glb/glb restore
+```
+
+Alternatively, clone it yourself and run `glb` directly:
 
 ```bash
 git clone https://github.com/ggregoro/GLB.git

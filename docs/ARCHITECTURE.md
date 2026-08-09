@@ -11,6 +11,7 @@ sets up).
 ```
 GLB/
 ├── glb                  # dispatcher: parses the command, sources lib/*, dispatches
+├── install.sh            # curl-install bootstrap script (clones GLB itself)
 ├── VERSION               # current GLB_VERSION, read by glb and embedded in exports
 ├── lib/                  # library modules (see below)
 ├── profiles/              # named profiles: packages.txt, extras.txt, dotfiles/, description.txt
@@ -31,6 +32,19 @@ wrapper calling into the relevant `lib/` function — the dispatcher itself
 has no business logic beyond argument parsing (e.g. `restore`'s
 `--dry-run`/`--undo`/`--from-snapshot <name>`/`--from-manifest <path>`
 flags).
+
+## The installer (`install.sh`)
+
+A standalone bootstrap script, independent of everything above — it
+runs *before* GLB exists on a machine, so it can't depend on `lib/` or
+`GLB_ROOT`. `curl -fsSL <url>/install.sh | sh` clones the repo into
+`~/.local/share/glb` (or `git pull`s it if already there), then prints
+the next command to run. It deliberately does not invoke `glb restore`
+itself — that's a separate, interactive, opinionated step (package
+installs, dotfile changes), not something that should happen as a
+side effect of "get GLB onto my machine." Requires the source repo to
+be publicly reachable, since a fresh machine has no GitHub credentials
+to clone a private one.
 
 ## Library modules (`lib/`)
 
