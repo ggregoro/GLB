@@ -37,7 +37,7 @@ flags).
 
 A standalone bootstrap script, independent of everything above — it
 runs *before* GLB exists on a machine, so it can't depend on `lib/` or
-`GLB_ROOT`. `curl -fsSL <url>/install.sh | sh` clones the repo into
+`GLB_ROOT`. `curl -fsSL <url>/install.sh | bash` clones the repo into
 `~/.local/share/glb` (or `git pull`s it if already there), then prints
 the next command to run. It deliberately does not invoke `glb restore`
 itself — that's a separate, interactive, opinionated step (package

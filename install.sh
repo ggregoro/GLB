@@ -2,7 +2,7 @@
 #
 # ============================================================
 # GLB - Greg's Linux Bootstrap
-# Installer: curl -fsSL <url>/install.sh | sh
+# Installer: curl -fsSL <url>/install.sh | bash
 #
 # Clones GLB into ~/.local/share/glb (or updates it if already
 # there) and tells you the next command to run. Does not run

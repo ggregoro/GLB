@@ -56,7 +56,7 @@ The quickest way — a one-line installer that clones GLB into
 `~/.local/share/glb` (or updates it in place if already there):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/main/install.sh | bash
 ```
 
 It only sets up the checkout — it deliberately doesn't run `glb restore`

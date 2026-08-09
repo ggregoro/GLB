@@ -99,7 +99,7 @@ This project follows a simple versioning approach:
   anywhere on disk, not just `profiles/` or `snapshots/`, for a one-off
   custom install without adding a profile to the repo.
 - Added `install.sh`, a curl-install bootstrap script
-  (`curl -fsSL <url>/install.sh | sh`) that clones GLB itself into
+  (`curl -fsSL <url>/install.sh | bash`) that clones GLB itself into
   `~/.local/share/glb` (or updates it in place if already there) and
   prints the next command to run. Doesn't run `glb restore` itself -
   that's a separate, opinionated, interactive step. Requires the
@@ -170,6 +170,15 @@ This project follows a simple versioning approach:
   whatever terminal the user already has.
 
 ### Fixed
+- Fixed `install.sh`'s documented one-liner using `curl | sh` when the
+  script itself requires bash (`set -o pipefail`, a bash-only option -
+  `sh` is `dash` on Debian/Ubuntu, which rejects it at runtime with
+  `set: Illegal option -o pipefail`). Found via a real end-user test
+  on a fresh machine, not caught by the test suite, since the bats
+  tests invoke the script via `bash install.sh` directly rather than
+  through the documented `curl | sh` pipe. Changed every reference
+  (`README.md`, `install.sh`'s own header comment,
+  `docs/ARCHITECTURE.md`) to `curl | bash`.
 - Fixed a real `pam_faillock` lockout bug: sudo-gated package
   install/remove/update calls used plain `sudo`, which on a no-TTY
   invocation still triggers a real `pam_unix` auth-failure attempt -

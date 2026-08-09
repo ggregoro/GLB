@@ -384,6 +384,39 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real bug found by an actual end user running the documented
+  `install.sh` one-liner (2026-08-09, Greg, real Pop!_OS machine) — the
+  exact same `sh`-vs-`bash` bug class as the `lazydocker` fix just
+  below, but in `install.sh` itself, which I failed to check for it at
+  the time.** Greg ran the README's own documented command verbatim —
+  `curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/main/
+  install.sh | sh` — and got `sh: 14: set: Illegal option -o pipefail`
+  immediately. Root cause: `install.sh` has `set -euo pipefail` at the
+  top (`pipefail` is a bash-only `set -o` option), but every piece of
+  documentation told users to pipe it through `sh`, which is `dash` on
+  Debian/Ubuntu/Pop!_OS and rejects `pipefail` at runtime — confirmed
+  precisely via `dash -c 'set -euo pipefail'` reproducing Greg's exact
+  error text. `dash -n install.sh` does **not** catch this ahead of
+  time (it's a runtime-rejected option value, not a parse error), and
+  `tests/install.bats` never caught it either since those tests invoke
+  `bash "$GLB_REPO_ROOT/install.sh"` directly rather than through the
+  documented `curl | sh` pipe — confirmed by Greg separately reporting
+  "I ran it in bash" and it working fine, exactly as expected. **Fixed**
+  by changing every real reference from `| sh` to `| bash`: `README.md`
+  (the documented one-liner), `install.sh`'s own header comment, and
+  `docs/ARCHITECTURE.md`'s installer description. Left the *other*
+  `| sh` references in `CLAUDE.md` and `docs/design/
+  update-components.md` alone — those describe Starship's own separate,
+  already-confirmed-working `starship.rs` installer, not GLB's
+  `install.sh`, distinguished by checking full grep context before
+  touching anything. **Real process gap, not just a code gap**: this is
+  the identical bug pattern just fixed in `lib/extras.sh` for
+  `lazydocker` minutes earlier in the same session (see entry directly
+  below) — should have prompted checking `install.sh` for the same
+  issue at that time and didn't. Worth remembering: any future
+  `sh`-vs-`bash` fix in this project should trigger a repo-wide grep for
+  the same pattern, not just a fix at the one call site that happened to
+  surface it.
 - **`developer` gets four new TUI tools, plus a real `sh`-vs-`bash`
   install bug found and fixed along the way (2026-08-09, cloud
   session).** Prompted by Greg noticing `mc` (Midnight Commander)
