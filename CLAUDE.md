@@ -201,11 +201,28 @@ branches on it.
     Oh-My-Zsh-migration leftovers: `.p10k.zsh`, `.shell.pre-oh-my-zsh`,
     `.zshrc.pre-oh-my-zsh`, `.zshrc.pre-oh-my-zsh-2026-08-02_22-24-02`,
     `.bashrc.original`) so WezTerm now falls through to the real
-    GLB-managed symlink. **Not yet verified for real** — this was
-    changed from the repo alone (cloud session); Greg still needs to
-    `git pull`, move `~/.wezterm.lua` into the archive folder, and
-    relaunch WezTerm to confirm it picks up the (now-matching)
-    `~/.config/wezterm/wezterm.lua`.
+    GLB-managed symlink.
+  - **Real gap found verifying the above (2026-08-09, same session):
+    moving `~/.wezterm.lua` out of `$HOME` broke WezTerm entirely**
+    (`Error opening /home/grego/.wezterm.lua: No such file or
+    directory (os error 2)`) instead of falling through to
+    `~/.config/wezterm/wezterm.lua` the way WezTerm's own documented
+    config-search order says it should when that file is simply
+    absent. Nothing in any GLB-managed dotfile sets `WEZTERM_CONFIG_FILE`
+    or passes `--config-file` at runtime (checked directly), so
+    something *outside* the repo — most likely a Flatpak environment
+    override on `org.wezfurlong.wezterm` (`flatpak override --user
+    --show org.wezfurlong.wezterm`, checking for a
+    `WEZTERM_CONFIG_FILE` line) or a `WEZTERM_CONFIG_FILE` set
+    somewhere else on this specific machine — is explicitly pinning
+    that exact path rather than letting WezTerm search normally.
+    **Not yet root-caused or fixed** — reverted immediately by moving
+    `~/.wezterm.lua` back out of `~/archived-configs/` to unbreak
+    WezTerm, since the file's content is now identical to the
+    GLB-managed one anyway (see above), so nothing is lost by leaving
+    it in place for now. Worth investigating on this machine
+    specifically next time it comes up — check the Flatpak override
+    first.
 - `glb prompt` (Starship install + preset picker) was built and tested
   end-to-end on a Zorin OS VirtualBox VM on 2026-08-05.
 - **The unified bash/zsh/fish + Starship + `GLB_SHELL` indicator setup
