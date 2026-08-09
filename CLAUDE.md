@@ -396,6 +396,32 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Fresh Fedora 44 GNOME 50 VM verified end-to-end (2026-08-10, Greg,
+  real hardware) — `install.sh`'s curl-install path now confirmed on
+  the last of the four supported package managers (dnf), closing out
+  full real-hardware coverage of apt, dnf, pacman, and zypper.** Ran
+  the documented one-liner via VirtualBox; Greg's own report: "Worked
+  perfectly. All apps installed. Only one instance of a prompt to add
+  sudo password." Unlike the openSUSE VM, this one had git preinstalled
+  already, so no manual intervention was needed at all before the
+  installer could run. Fastfetch output (screenshot) confirms Fedora
+  Linux 44 (Workstation Edition), zsh 5.9 active as the shell, and a
+  clean-looking Starship prompt — Greg's own words, "Starship all
+  cleaned up" — a real-hardware, fresh-install visual confirmation of
+  the glyph-recovery fix from directly above this entry, on a distro
+  that had never even been tested since that fix landed.
+  - **Restored `default`, not `developer`** — so the one open item
+    flagged for this VM (confirming `ncdu`/`lazygit`/`glow`/
+    `lazydocker` resolve as real package names on dnf specifically,
+    never verified beyond apt) is **still open**. Worth a quick
+    `glb restore developer` on this same VM before it gets torn down,
+    since it's already up and this is the cheapest remaining chance to
+    close that gap.
+  - **`install.sh` is now confirmed end-to-end, via a real restore, on
+    all four supported package managers** — apt (Pop!_OS, 2026-08-09),
+    pacman (CachyOS, 2026-08-10), zypper (openSUSE, 2026-08-10), and
+    now dnf (Fedora, this entry). No package manager has any remaining
+    curl-install gap.
 - **Real, longstanding bug found and fixed (2026-08-10, cloud session):
   zsh's Tokyo Night `starship.toml` has been missing roughly half its
   glyphs — including the git-branch symbol, all five language-module
