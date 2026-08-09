@@ -2812,6 +2812,51 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-10, cloud session) — pausing here for a
+  break; Greg is heading back to his laptop first to `git pull` and
+  visually confirm the starship glyph fix there, then plans to test
+  `developer` and `server` on the still-running CachyOS VM first, then
+  the still-running openSUSE VM second.** Everything is committed and
+  pushed to `main` — `d2602dc` is the latest commit as of this note,
+  working tree clean. Both VMs are being kept up specifically for this
+  (Greg's words: "I am just going to leave these VMs install in case
+  we need to revisit anything").
+  - **Why this is the next step:** asked directly where the project
+    stands and got a grounded assessment (not a vibe) — roughly 90% of
+    the way to what `docs/ROADMAP.md` calls Version 1.0 (Stable
+    Release). Versions 0.1-0.6 are fully complete; Version 0.7
+    (cross-distro support) is essentially done too now that
+    `install.sh` is confirmed on all four package managers via real
+    fresh-VM restores. The two concrete gaps identified: `developer`'s
+    four newer tools (`ncdu`/`lazygit`/`glow`/`lazydocker`, added
+    2026-08-09) are confirmed on apt and dnf but never verified on
+    pacman or zypper; `server` has only ever been real-tested once, on
+    Pop!_OS, never on dnf/pacman/zypper at all. Both VMs needed for
+    this are already up, so this is the cheapest remaining way to close
+    the gap before anything gets torn down.
+  - **What to check on CachyOS (pacman), in order:**
+    1. `glb restore developer --dry-run` then for real — confirm
+       `ncdu`/`lazygit`/`glow`/`lazydocker` all resolve as real pacman
+       package names (unlike Fedora/dnf, where `lazygit` was a
+       confirmed real gap — see the entry above; pacman may well be
+       fine here, the AUR generally carries things Fedora's official
+       repos don't, but this hasn't been checked directly).
+    2. `glb restore server --dry-run` then for real — first-ever
+       real test of this profile on pacman: `ufw`/`rsync`/`restic`/
+       `fail2ban`/`btop` all need to resolve and install cleanly.
+    3. Note any `_GLB_PACKAGE_OVERRIDES` gaps found, same as every
+       prior cross-distro pass in this file.
+  - **Then the same two checks on the openSUSE VM (zypper)** — same
+    profiles, same two things to confirm, this VM's own package-manager
+    quirks (the earlier fresh-openSUSE session's mirror-preload 404
+    noise is cosmetic, not a sign of trouble, if it shows up again).
+  - **Housekeeping identified but not yet done, lower priority than
+    the two verification items above:** `VERSION` is stale (still
+    `0.5.0` despite two more versions' worth of shipped work since);
+    no `CONTRIBUTING.md` yet, which the roadmap's Version 1.0
+    "community-ready project" goal implies now that the repo is
+    public. Worth picking up once the profile verification above is
+    done, not blocking it.
 - **Session wrap-up (2026-08-10, cloud session) — pausing here by
   Greg's choice; next session picks up on a fresh Fedora 44 GNOME 50
   dnf VM.** Everything is committed and pushed to `main` — `6a6d61b` is
