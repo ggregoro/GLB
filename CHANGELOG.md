@@ -104,8 +104,27 @@ This project follows a simple versioning approach:
   prints the next command to run. Doesn't run `glb restore` itself -
   that's a separate, opinionated, interactive step. Requires the
   source repo to be publicly reachable.
+- Added `ncdu`, `lazygit`, and `glow` to `developer`'s `packages.txt`,
+  and `lazydocker` (via `extras.txt`, curl method - no native package
+  on any of the four managers) - a disk usage analyzer, a TUI git
+  client, a terminal markdown renderer, and a TUI for container
+  management pairing with the existing Podman pick. `lazygit`/`glow`
+  aren't as long-established as the rest of `developer`'s picks;
+  package availability across all four managers isn't empirically
+  verified yet, same caveat as the existing `gh` note.
 
 ### Changed
+- Switched the live resource monitor pick from `htop` to `btop` across
+  `default`/`developer`/`server` - supersedes the original
+  htop-over-btop call from 2026-08-06 (`btop` is judged the better
+  tool now, not a case for carrying both).
+- Fixed the `curl` extras method (`lib/extras.sh`) piping installer
+  scripts to `sh` instead of `bash`. `sh` is `dash` on Debian/Ubuntu,
+  which doesn't support bash-only syntax (e.g. `${VAR//pattern/repl}`)
+  that's common in real-world curl-install scripts - found while
+  adding `lazydocker`, whose official installer requires bash and
+  would have silently failed under the old behavior. GLB itself
+  already requires bash 5.x, so there's no reason extras shouldn't too.
 - Changed `default`'s `.gitconfig` dotfile to stop hardcoding a
   personal git identity: it now only contains an `[include] path =
   ~/.gitconfig.local` directive, so anyone restoring `default` gets

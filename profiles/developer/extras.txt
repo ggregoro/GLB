@@ -1,7 +1,7 @@
 # GLB profile: developer — extras (installs outside apt/dnf/pacman/zypper)
 #
 # Format: <method> <name> <spec>
-#   curl <name> <url>     - runs `curl -fsSL <url> | sh`. <name> is
+#   curl <name> <url>     - runs `curl -fsSL <url> | bash`. <name> is
 #                            checked with `command -v` to detect an
 #                            existing install.
 #   font <name> <zip-url> - downloads a Nerd Fonts release zip,
@@ -23,6 +23,12 @@ curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/mas
 # designed for exactly this curl-pipe-sh pattern and puts the binary at
 # ~/.local/bin/mise (see dotfiles/ for the guarded shell activation).
 curl    mise      https://mise.run
+
+# TUI for container management, pairs with the Podman pick above. No
+# native package on any of the four managers; its own install script
+# (bash-specific, hence the curl-pipe-bash fix above) is the canonical
+# distribution method upstream recommends.
+curl    lazydocker    https://raw.githubusercontent.com/jesseduffield/lazydocker/master/scripts/install_update_linux.sh
 
 # Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
 # aliases). See default/extras.txt for the fuller rationale.

@@ -78,7 +78,7 @@ glb_install_extra() {
     case "$method" in
         curl)
             glb_log_info "Installing $name via curl-install script"
-            curl -fsSL "$spec" | sh
+            curl -fsSL "$spec" | bash
             # PIPESTATUS is clobbered by the very next simple command
             # (even a plain assignment), so capture the whole array in
             # one shot rather than reading two separate indices.
@@ -88,7 +88,7 @@ glb_install_extra() {
                 return 0
             fi
 
-            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" "curl -fsSL $spec | sh"
+            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" "curl -fsSL $spec | bash"
             ;;
         flatpak)
             glb_log_info "Installing $name via Flatpak ($spec)"
@@ -142,7 +142,7 @@ _glb_update_extra() {
     case "$method" in
         curl)
             glb_log_info "Updating $name via curl-install script"
-            curl -fsSL "$spec" | sh
+            curl -fsSL "$spec" | bash
             # See glb_install_extra's curl case for why PIPESTATUS is
             # captured as a whole array rather than read index by index.
             pipe_status=("${PIPESTATUS[@]}")

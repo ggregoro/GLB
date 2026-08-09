@@ -26,9 +26,10 @@ zoxide
 bash-completion    # loads glb's completion file - see lib/completions.sh
 unzip              # needed for the font extras.txt entry
 
-# Live resource monitor — same pick as default (htop over btop, see
-# CLAUDE.md 2026-08-06).
-htop
+# Live resource monitor — same pick as default (btop, see CLAUDE.md
+# 2026-08-09; superseded the original htop-over-btop call from
+# 2026-08-06).
+btop
 
 # Firewall — ufw chosen over firewalld: simpler allow/deny rule syntax
 # is easier for a newcomer to reason about than firewalld's zone model.

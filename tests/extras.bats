@@ -99,7 +99,7 @@ teardown() {
     printf 'curl faketool https://example.test/install.sh\nflatpak wezterm org.wezfurlong.wezterm\n' > "$pdir/extras.txt"
 
     stub_command curl 'exit 0'
-    stub_command sh 'exit 1'
+    stub_command bash 'exit 1'
     stub_command flatpak 'case "$1" in
         remote-add) exit 0 ;;
         install) exit 0 ;;
@@ -133,9 +133,9 @@ teardown() {
     [ "$status" -eq 0 ]
 }
 
-@test "curl: installs by piping the script to sh when not already installed" {
+@test "curl: installs by piping the script to bash when not already installed" {
     stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
-    stub_command sh 'echo "sh ran" >> "$TEST_TMP/calls"; exit 0'
+    stub_command bash 'echo "bash ran" >> "$TEST_TMP/calls"; exit 0'
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
@@ -146,12 +146,12 @@ teardown() {
     "
     [ "$status" -eq 0 ]
     grep -q "curl -fsSL https://example.test/install.sh" "$TEST_TMP/calls"
-    grep -q "sh ran" "$TEST_TMP/calls"
+    grep -q "bash ran" "$TEST_TMP/calls"
 }
 
 @test "curl: pauses on failure, prints the exact command, and succeeds once confirmed" {
     stub_command curl 'exit 0'
-    stub_command sh 'exit 1'
+    stub_command bash 'exit 1'
     stub_command fresh 'exit 0'
 
     run bash -c "
@@ -163,7 +163,7 @@ teardown() {
     "
     [ "$status" -eq 0 ]
     [[ "$output" == *"Run this yourself"* ]]
-    [[ "$output" == *"curl -fsSL https://example.test/install.sh | sh"* ]]
+    [[ "$output" == *"curl -fsSL https://example.test/install.sh | bash"* ]]
     [[ "$output" == *"Confirmed installed after manual step: fresh"* ]]
 }
 
@@ -181,9 +181,9 @@ teardown() {
     [[ "$output" == *"Skipped: install fresh"* ]]
 }
 
-@test "curl: a failed curl isn't masked by sh exiting 0 on empty input" {
+@test "curl: a failed curl isn't masked by bash exiting 0 on empty input" {
     stub_command curl 'exit 7'
-    stub_command sh 'exit 0'
+    stub_command bash 'exit 0'
 
     run bash -c "
         source '$GLB_ROOT/lib/logging.sh'
@@ -387,14 +387,14 @@ teardown() {
     printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
     stub_command fresh 'exit 0'
     stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
-    stub_command sh 'echo "sh ran" >> "$TEST_TMP/calls"; exit 0'
+    stub_command bash 'echo "bash ran" >> "$TEST_TMP/calls"; exit 0'
 
     run glb_update_profile_extras "$pdir"
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"Updating fresh via curl-install script"* ]]
     grep -q "curl -fsSL https://example.test/install.sh" "$TEST_TMP/calls"
-    grep -q "sh ran" "$TEST_TMP/calls"
+    grep -q "bash ran" "$TEST_TMP/calls"
 }
 
 @test "update: flatpak - runs flatpak update, not install, for an already-installed extra" {
@@ -433,7 +433,7 @@ teardown() {
     printf 'curl fresh https://example.test/install.sh\n' > "$pdir/extras.txt"
     stub_command fresh 'exit 0'
     stub_command curl 'exit 0'
-    stub_command sh 'exit 1'
+    stub_command bash 'exit 1'
 
     run glb_update_profile_extras "$pdir" </dev/null
 

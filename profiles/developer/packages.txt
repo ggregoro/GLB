@@ -21,7 +21,7 @@ fzf
 eza
 bat
 zoxide
-htop
+btop
 bash-completion    # loads glb's completion file - see lib/completions.sh
 unzip              # needed for the font extras.txt entry
 
@@ -47,6 +47,15 @@ jq
 # Not empirically verified on every distro yet — flag for real-machine
 # testing.
 gh
+
+ncdu
+
+# TUI git client and terminal markdown renderer. Not as long-established
+# as the rest of this list (fzf/ripgrep/etc.) - package availability
+# across all four managers isn't empirically verified yet, same caveat
+# as gh above. Flag for real-machine testing.
+lazygit
+glow
 
 # Fresh (code editor) and mise (language version manager) have no
 # native package on any of these managers — installed via extras.txt.

@@ -384,6 +384,71 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`developer` gets four new TUI tools, plus a real `sh`-vs-`bash`
+  install bug found and fixed along the way (2026-08-09, cloud
+  session).** Prompted by Greg noticing `mc` (Midnight Commander)
+  wasn't actually installed — clarified it was only ever an
+  illustrative example in the GUI-vs-terminal scope note, never a real
+  package. Discussed what other terminal tools might be worth adding
+  given how cheap it is (`packages.txt`/`extras.txt` are one line);
+  Greg picked `ncdu`, `lazygit`, `glow`, and `lazydocker` for
+  `developer`, deliberately skipping `mc` (redundant with `ranger`).
+  Separately, Greg judged `btop` superior to `htop` and asked to
+  switch — done across `default`/`developer`/`server`, superseding the
+  original 2026-08-06 htop-over-btop call.
+  - **Real bug found while adding `lazydocker`**: its official install
+    script requires bash (`${VAR//pattern/repl}`-style parameter
+    expansion, not POSIX), but `lib/extras.sh`'s `curl` method piped
+    every install script to `sh` — which is `dash` on Debian/Ubuntu,
+    not bash-compatible. This would have silently broken `lazydocker`
+    (and any future bash-requiring installer) had it shipped as-is.
+    **Fixed**: `curl -fsSL "$spec" | sh` → `| bash` in both
+    `glb_install_extra` and `_glb_update_extra`, plus the `extras.txt`
+    format-comment docs in both `default` and `developer`. GLB itself
+    already requires bash 5.x, so there's no compatibility reason to
+    keep using `sh` for extras specifically. Verified the fix is
+    real by fetching `lazydocker`'s actual install script and checking
+    it against `dash -n` (fails) before making the change, not just
+    reasoning about it.
+  - **Detour that turned up nothing, but worth recording so it isn't
+    re-investigated:** Greg initially suspected Fresh (the code editor
+    extra) "might not be ready yet," which raised the hypothesis that
+    Fresh's installer had the *same* `sh`-vs-`bash` bug. Checked
+    directly: Fresh's script is genuinely `#!/bin/sh`-compatible (no
+    bashisms, confirmed via `dash -n`), so that wasn't it. Greg then
+    retracted the original concern entirely ("Fresh did in fact
+    install") before identifying any real issue — so as of this note,
+    there's no known Fresh problem, just a ruled-out hypothesis.
+  - **Genuinely tricky bats test-infrastructure bug found and fixed
+    while updating tests for the `sh`→`bash` change.** Several tests
+    stub `sh` to intercept the curl-install target; renaming those to
+    stub `bash` instead broke in two distinct, non-obvious ways before
+    landing on the correct fix (`tests/test_helper.bash`):
+    1. A naive `#!/usr/bin/env bash` stub for "bash" recurses into
+       itself - `env` does its own PATH lookup for "bash", which
+       (with `STUB_BIN` prepended) finds the stub again.
+    2. Less obviously: *every other* stub (`curl`, `apt`, etc.) also
+       uses `#!/usr/bin/env bash`, so the instant a test *also* stubs
+       "bash", `env`'s PATH lookup for every other stub's shebang gets
+       hijacked too - their actual bodies never ran, only the fake
+       "bash" stub's fallback logging did. Traced by adding explicit
+       arg-count tracing inside a hand-built reproduction outside bats
+       entirely, not by guessing from bats' own output.
+    Fixed by giving **every** stub (not just "bash") an absolute-path
+    shebang (`$GLB_REAL_BASH`, resolved once at file-load time before
+    any test mutates `PATH`), which sidesteps `env`'s PATH lookup
+    entirely. The "bash" stub additionally passes any invocation with
+    one or more arguments straight through to the real bash (covers
+    both `bash -c "..."` and `bash <script-path>`, e.g. how the
+    kernel/`env` actually invokes `glb`'s own
+    `#!/usr/bin/env bash` shebang) - only a truly bare, zero-argument
+    invocation (the real `curl | bash` pipe-target case) runs the
+    test's given stub body. Updated the 3 `tests/dispatcher.bats` and
+    6 `tests/extras.bats` call sites that test the extras curl path
+    accordingly (left the 2 that test Starship's separate,
+    unmodified `lib/prompt.sh` `sh` path alone). 211/215 bats pass
+    after all of this - same 4 pre-existing root-sandbox permission
+    failures, confirmed unrelated.
 - **First real post-scope-narrowing end-user verification (2026-08-09,
   fresh Pop!_OS VM) — worked essentially perfectly.** This is the test
   everything since the "what's left before stable" checkpoint was

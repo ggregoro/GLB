@@ -68,7 +68,7 @@ teardown() {
     stub_command starship 'exit 0'
     stub_command git 'mkdir -p "$5"; exit 0'
     stub_command curl 'exit 0'
-    stub_command sh 'exit 0'
+    stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
 
@@ -88,7 +88,7 @@ teardown() {
     stub_command starship 'exit 0'
     stub_command git 'mkdir -p "$5"; exit 0'
     stub_command curl 'exit 0'
-    stub_command sh 'exit 0'
+    stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
 
@@ -446,7 +446,7 @@ teardown() {
     stub_command starship 'exit 0'
     stub_command git 'mkdir -p "$5"; exit 0'
     stub_command curl 'exit 0'
-    stub_command sh 'exit 0'
+    stub_command bash 'exit 0'
     stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'

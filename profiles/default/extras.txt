@@ -1,7 +1,7 @@
 # GLB profile: default — extras (installs outside apt/dnf/pacman/zypper)
 #
 # Format: <method> <name> <spec>
-#   curl <name> <url>       - runs `curl -fsSL <url> | sh`. <name> is
+#   curl <name> <url>       - runs `curl -fsSL <url> | bash`. <name> is
 #                              checked with `command -v` to detect an
 #                              existing install.
 #   flatpak <name> <app-id> - ensures the flathub remote, then
