@@ -155,6 +155,13 @@ if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
 fi
 
 # ------------------------------------------------------------
+# Rust / Cargo (cargo install puts binaries in ~/.cargo/bin)
+# ------------------------------------------------------------
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+# ------------------------------------------------------------
 # Prompt (Linux Mint default bash prompt — no Starship here)
 # ------------------------------------------------------------
 case "$TERM" in

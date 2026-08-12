@@ -137,6 +137,13 @@ if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then
 fi
 
 # ------------------------------------------------------------
+# Rust / Cargo (cargo install puts binaries in ~/.cargo/bin)
+# ------------------------------------------------------------
+if [ -d "$HOME/.cargo/bin" ]; then
+    export PATH="$HOME/.cargo/bin:$PATH"
+fi
+
+# ------------------------------------------------------------
 # Framework-free plugins vendored by `glb restore` (see lib/plugins.sh)
 # ------------------------------------------------------------
 source "$HOME/.local/share/glb/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"

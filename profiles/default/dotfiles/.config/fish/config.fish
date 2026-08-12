@@ -201,3 +201,10 @@ end
 if test -x /home/linuxbrew/.linuxbrew/bin/brew
     eval (/home/linuxbrew/.linuxbrew/bin/brew shellenv)
 end
+
+# ------------------------------------------------------------
+# Rust / Cargo (cargo install puts binaries in ~/.cargo/bin)
+# ------------------------------------------------------------
+if test -d ~/.cargo/bin
+    fish_add_path ~/.cargo/bin
+end
