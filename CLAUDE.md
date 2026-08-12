@@ -396,6 +396,46 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real `tldr`/`tealdeer` bug found and worked around on the Dell laptop
+  (2026-08-12), documented rather than wired into GLB's install path.**
+  Greg hit `Data.Binary.Get.runGet ... Did not find end of central
+  directory signature` from the apt-packaged Haskell `tldr` client on a
+  plain `tldr --update`. Swapping to `tealdeer` via apt (`1.6.1-4build2`)
+  hit the identical symptom. Root-caused via the upstream issue trackers,
+  not guessed: both are unmaintained/stale-packaged clients hitting the
+  same real bug class — pre-1.8.0 tealdeer (and the old Haskell client)
+  tries to fetch a locale-specific pages archive (e.g.
+  `tldr-pages.en_US.zip`) that doesn't exist in the release, gets a 404
+  page back, and crashes trying to unzip it
+  ([tealdeer#459](https://github.com/tealdeer-rs/tealdeer/issues/459),
+  duplicate [#466](https://github.com/tealdeer-rs/tealdeer/issues/466)).
+  Confirmed this laptop's own locale (`LANG=en_US.UTF-8`,
+  `LC_MESSAGES=en_US.UTF-8`) is exactly the triggering combination — a
+  plain `LANG=C` override didn't help since `LC_MESSAGES` takes priority
+  over `LANG` and was still set. Fixed by removing the apt package and
+  building a patched version instead: `cargo install --locked tealdeer`
+  (1.8.1), which updates its cache correctly.
+  - **Added a guarded `~/.cargo/bin` PATH entry to `default`'s three
+    shell dotfiles** (`.bashrc`, `.zshrc`, `config.fish`) — nothing
+    previously put `cargo install`'s binary output directory on `PATH`,
+    same guarded-if-present pattern as the existing Homebrew block.
+    This is a real, permanent `default`-profile change (any `cargo
+    install` a user runs afterward becomes usable without extra setup),
+    independent of the tldr fix itself.
+  - **Confirmed via `AskUserQuestion`: docs-only, not wired into GLB's
+    install path.** Considered adding `tealdeer` to `default`'s
+    `packages.txt` directly, but apt's version is the broken one on
+    every apt distro tested so far — shipping it via GLB would hand
+    every `en_US`-locale user this exact crash on first `glb restore`.
+    Building a real `cargo` extras method (`lib/extras.sh` currently
+    only supports `curl`/`flatpak`/`font`) was the other option
+    discussed but deferred as unscoped feature work, not something to
+    fold into a same-session bug fix. Documented instead as a
+    recommended-but-manual add-on in a new README.md section
+    ("Recommended Manual Add-ons"), with the exact apt-vs-cargo caveat,
+    so a future user hitting the same crash has the fix already written
+    down rather than rediscovering it.
+
 - **Fresh Fedora 44 GNOME 50 VM verified end-to-end (2026-08-10, Greg,
   real hardware) — `install.sh`'s curl-install path now confirmed on
   the last of the four supported package managers (dnf), closing out

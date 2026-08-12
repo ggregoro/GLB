@@ -113,6 +113,24 @@ All profiles share the same underlying shell setup (bash/zsh/fish with
 per-shell distinct prompts) and differ in their package lists, extras, and
 profile-specific dotfiles.
 
+## Recommended Manual Add-ons
+
+GLB deliberately keeps its curated package list minimal (see
+[`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md)) — a few genuinely useful
+terminal tools are worth adding by hand rather than being pulled into a
+profile. One worth knowing about:
+
+- **[`tldr`](https://tldr.sh)** — quick, example-based command help
+  (`tldr tar` instead of wading through `man tar`). Not installed by any
+  GLB profile. **Be careful which client you install**: the
+  distro-packaged `tealdeer` (apt's package on Debian/Ubuntu/Pop!_OS, as
+  well as the older Haskell `tldr` client) fails to update its page cache
+  on `en_US`-locale systems — a real upstream bug where pre-1.8.0
+  tealdeer tries to fetch a locale-specific pages archive that doesn't
+  exist, then crashes trying to decompress the resulting 404 page. Fix:
+  install a patched version directly —
+  `cargo install --locked tealdeer` — instead of `apt install tealdeer`.
+
 ## Supported Distributions
 
 GLB detects and supports four package managers, each verified end-to-end
