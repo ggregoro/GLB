@@ -56,6 +56,75 @@ reasonably clean and documented, not just "works on my machine."
   same fresh-VM plan — used to verify `install.sh`'s curl-install path
   and the `glb_sudo`/`pam_faillock` fix on real pacman/Arch-based
   hardware (both confirmed working, see Roadmap entry).
+  - **Still open as of 2026-08-13, confirmed by a full commit-history
+    audit (`git log -i --grep`) — the `developer`/`server` profile
+    verification on pacman planned in the 2026-08-09 handoff
+    (`81309df`, "verify developer + server on CachyOS then openSUSE")
+    was never actually run.** This CachyOS VM's only real verification
+    (`b201600`, same day) covered `install.sh`'s curl-installer and the
+    `glb_sudo`/`pam_faillock` fix specifically — not the profile tools.
+    No commit anywhere mentions running `glb restore developer` or
+    `glb restore server` on pacman, or any pacman-specific result for
+    `ncdu`/`lazygit`/`glow`/`lazydocker`/`ufw`/`rsync`/`restic`/
+    `fail2ban`/`btop`. The zypper half of this same plan is now done
+    (see the openSUSE VM entry above, 2026-08-13) — pacman is the one
+    real gap left before both halves of the 2026-08-09 plan are closed.
+    **What to check here, in order** (same checklist the openSUSE VM
+    entry above just used):
+    1. `glb restore developer --dry-run` then **for real** — dry-run
+       only distinguishes "already installed" from a blind "would
+       install" and never actually queries the package manager
+       (confirmed this session), so the real, non-dry-run restore is
+       required to actually learn anything. Confirm `ncdu`/`lazygit`/
+       `glow`/`lazydocker` all resolve as real pacman package names —
+       `lazygit` is a confirmed gap on Fedora/dnf but confirmed
+       *working* on zypper, pacman is the one still-unknown data point
+       (the AUR generally carries more than Fedora's official repos,
+       so it may well be fine, but this has never been checked
+       directly).
+    2. `glb restore server --dry-run` then for real — first-ever real
+       test of `server` on pacman: `ufw`/`rsync`/`restic`/`fail2ban`/
+       `btop` all need to resolve and install cleanly. Also check
+       `ranger` + `yazi`, added to `server` on 2026-08-13 (this same
+       session, see the openSUSE VM entry above for the full writeup)
+       — `ranger` should be an ordinary pacman package, but `yazi`
+       depends on `snapd`, which `packages.txt` already documents as
+       **not in Arch/pacman's official repos at all (AUR-only)** —
+       expect the same "confirmed gap, `yazi` doesn't install" outcome
+       zypper just hit, but confirm it for real rather than assuming;
+       if pacman surprises us and it somehow works, that's worth
+       knowing too.
+    3. Note any `_GLB_PACKAGE_OVERRIDES` gaps found (see
+       `lib/package.sh`), same as every prior cross-distro pass in this
+       file.
+    - **Real package installs need `sudo`, which needs a real TTY** —
+      if this is done from a cloud/headless session again, don't try
+      to run the real restore yourself; it'll fall back to `sudo -n`
+      and fail immediately, and repeated no-TTY sudo failures count
+      against `pam_faillock`'s `deny=3` (the exact lockout this VM's
+      own `glb_sudo` fix exists to prevent from a real terminal, but a
+      no-TTY tool bypasses that protection entirely) — have Greg run it
+      himself in his own terminal instead.
+    - **Getting the repo onto a fresh/replacement CachyOS VM**: same
+      playbook used successfully on the openSUSE VM this session — the
+      repo is public now, so a plain `git clone
+      https://github.com/ggregoro/GLB.git` needs no credentials at all.
+      For push access back out (no SSH key needed either): `gh` ships
+      as part of `developer`'s own package list, so once `glb restore
+      developer` has run once, `gh auth login` → GitHub.com → HTTPS →
+      "Login with a web browser" gives a device code Greg enters at
+      github.com/login/device on any other device, then `gh auth
+      setup-git` wires the resulting token into `git push`. If `gh`
+      isn't installed yet (before the first real restore), `zypper`'s
+      openSUSE equivalent was `sudo zypper install -y git` by hand
+      first — check whether this CachyOS VM already has `git`/`gh`
+      preinstalled before assuming that manual step is needed again.
+    - Confirm first whether this is the **same** CachyOS VM from
+      2026-08-10 or a fresh replacement — unlike the openSUSE VM, no
+      note in this file describes this one being retired or rebuilt,
+      so unless told otherwise, treat it as the same machine and check
+      `git log`/`git status` here before assuming a clean clone is
+      needed.
 - **New (2026-08-10): a fresh openSUSE Tumbleweed VM**, third machine
   under the same plan, distinct from the older openSUSE Tumbleweed VM
   further down this list (that one predates the fresh-VM plan and is
@@ -2989,7 +3058,20 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
-- **Session (2026-08-13, on the openSUSE VM itself) — closed out the
+- **Session (2026-08-13, still on the openSUSE VM, after the zypper
+  work below) — audited whether the CachyOS/pacman half of the
+  2026-08-09 handoff plan (`81309df`) was ever actually run, since it
+  was flagged as unconfirmed in every note since.** Answer: **no** —
+  confirmed via a full `git log -i --grep="cachyos"`/`--grep="pacman"`/
+  `--grep="developer"` audit of the whole repo history, not just this
+  file. The only real CachyOS work on record is `b201600` (2026-08-09,
+  `install.sh` + `glb_sudo`/`pam_faillock` fix on pacman) — a different,
+  earlier, already-closed piece of verification, not the `developer`/
+  `server` profile-tools check the 2026-08-09 plan called for. Full
+  checklist and context for picking this up added as a new sub-bullet
+  on the CachyOS VM entry in Test Environments above — **that's the
+  next real piece of work, on the CachyOS VM, not this one.** Nothing
+  else changed this session; this was an audit-and-document pass only.
   deferred `developer`/`server` zypper verification from the
   2026-08-10 wrap-up, plus added `ranger`/`yazi` to `server`.** See the
   new sub-bullet on the openSUSE VM entry in Test Environments above
