@@ -7,6 +7,11 @@
 #                            `fc-cache -f`. <name> becomes the install
 #                            directory, so no spaces. Requires unzip
 #                            (see packages.txt).
+#   snap <name> <confinement> - `sudo snap install <name>
+#                            [--<confinement>]`. <confinement> is
+#                            typically "classic" or left blank for
+#                            strict; checked via `snap list <name>`.
+#                            Requires snapd (see packages.txt).
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
@@ -14,3 +19,12 @@
 # Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
 # aliases). See default/extras.txt for the fuller rationale.
 font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+
+# File manager alternative to ranger (kept, not replaced) - same tool,
+# same rationale as default/extras.txt (stronger plugin support,
+# git-status plugin configured in dotfiles/.config/yazi/). Needs
+# --classic confinement. Confirmed real gap on zypper (see packages.txt)
+# - snapd itself isn't available there, so this entry is a documented
+# no-op on openSUSE rather than a GLB bug. Known gap, not being chased
+# further (same call as lazygit on Fedora/dnf).
+snap    yazi      classic

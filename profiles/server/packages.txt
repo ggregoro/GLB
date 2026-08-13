@@ -31,6 +31,21 @@ unzip              # needed for the font extras.txt entry
 # 2026-08-06).
 btop
 
+# File manager — same pairing as default (ranger + yazi, see CLAUDE.md
+# 2026-08-13): ranger as the plain-package baseline, yazi (extras.txt)
+# as the stronger alternative kept alongside it, not replacing it.
+ranger
+
+# snapd - needed for the snap extras.txt entry below (yazi). Confirmed
+# in apt's index (Pop!_OS/Debian/Ubuntu). Not in Arch/pacman's official
+# repos at all (AUR-only). Confirmed real gap on zypper too (2026-08-13,
+# openSUSE Tumbleweed VM, real restore): `zypper info snapd` reports
+# "package 'snapd' not found" in the default repos — snap/yazi simply
+# don't install as a result, same known-gap treatment as lazygit on
+# Fedora/dnf rather than chasing a non-default OBS snapd repo. dnf
+# unverified.
+snapd
+
 # Firewall — ufw chosen over firewalld: simpler allow/deny rule syntax
 # is easier for a newcomer to reason about than firewalld's zone model.
 ufw

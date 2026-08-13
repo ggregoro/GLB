@@ -88,6 +88,25 @@ reasonably clean and documented, not just "works on my machine."
     was abandoned in favor of the new one, so if that specific old VM
     is ever revisited, treat it independently rather than assuming this
     resolution applies to it too.
+  - **Verification actually completed (2026-08-13, this VM, real
+    restores) — the deferred `developer`/`server` zypper checks from the
+    2026-08-10 wrap-up are now done.** `glb restore developer` for real:
+    every package installed cleanly, including `lazygit` — confirmed
+    working on zypper, unlike the confirmed Fedora/dnf gap (see Roadmap
+    entry above). `glb restore server` for real: `ufw`/`restic`/
+    `fail2ban`/`btop`/`rsync` all installed cleanly too (the initial
+    `which fail2ban` check looked like a miss but was a false alarm —
+    its binaries are `fail2ban-client`/`fail2ban-server`, confirmed
+    installed via `rpm -q` and `systemctl status`). One real gap:
+    `snapd` isn't in this VM's default zypper repos at all (`zypper
+    info snapd` → "package 'snapd' not found"), so `yazi` (which was
+    also just added to `server`, matching `default`'s existing
+    ranger+yazi pairing, per Greg's request) doesn't install here —
+    documented as a known gap in both profiles' `packages.txt`/
+    `extras.txt`, same treatment as the lazygit/Fedora gap rather than
+    chasing a non-default OBS snapd repo. **Still unconfirmed: whether
+    the CachyOS/pacman leg of this same verification plan was ever
+    run** — worth checking before assuming full cross-distro coverage.
   - **Original note, kept for history**: this VM was in a
     degraded/uncertain state as of 2026-08-13, not a GLB issue — the
     Windows/VirtualBox host, not this VM's own guest OS. Greg installed
@@ -2970,6 +2989,27 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session (2026-08-13, on the openSUSE VM itself) — closed out the
+  deferred `developer`/`server` zypper verification from the
+  2026-08-10 wrap-up, plus added `ranger`/`yazi` to `server`.** See the
+  new sub-bullet on the openSUSE VM entry in Test Environments above
+  for the full verification writeup (both profiles' real `glb restore`
+  results, the `lazygit`-on-zypper confirmation, the `fail2ban`
+  false-alarm, and the confirmed `snapd` gap on zypper).
+  - **Separately, per Greg's request: `ranger` + `yazi` added to
+    `server`**, matching `default`'s existing pairing exactly —
+    `ranger` in `packages.txt`, `yazi` via `snap` in `extras.txt`, and
+    `server/dotfiles/.config/{ranger,yazi}/` copied byte-identical from
+    `default` (custom `yazi.toml`/`init.lua`, the vendored git-status
+    plugin, `ranger/rc.conf`) rather than a bare install with no config
+    — confirmed via `AskUserQuestion`, Greg chose the full-config
+    option. Dry-run confirmed all of it picks up correctly before the
+    real restore ran.
+  - Not yet committed/pushed as of this note — this VM is a clean
+    clone, not wired back to `origin` as a push target (deliberately,
+    same pattern as the Pop!_OS end-user-simulation VM). Whoever
+    commits this needs to either push from here or relay the diff to a
+    machine that can.
 - **Session (2026-08-13, cloud session, status check) — Greg is now
   working from the openSUSE VM** (the freshly-created one whose boot
   issue was just diagnosed and fixed, per the entry directly below this
