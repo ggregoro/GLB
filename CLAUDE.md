@@ -194,6 +194,36 @@ reasonably clean and documented, not just "works on my machine."
       install everything except `snapd`/`yazi`, which should hit the
       normal manual-step pause/skip prompt exactly like the zypper
       session's `snapd` gap did.
+  - **Verification actually completed (2026-08-13, later the same day,
+    Greg's own terminal) — the deferred `developer`/`server` pacman
+    checks are now done, and both halves of the 2026-08-09
+    developer/server verification plan (pacman + zypper) are closed.**
+    First hit a real, unrelated blocker: this VM's local pacman sync
+    database was stale (last refreshed 2026-08-10, never since),
+    causing 404s on `.sig`/package files across many unrelated packages
+    and mirrors (`podman`/`netavark`/`aardvark-dns`/`crun`/
+    `containers-common`/`lazygit`/`glow` all hit it) — not a GLB bug,
+    root cause was the local db referencing builds already
+    superseded/removed from every mirror. Fixed with `sudo pacman
+    -Syyu` (full sync+upgrade), which prompted a reboot (expected and
+    safe on a rolling-release distro). After the reboot, real restores
+    ran clean:
+    - **`developer`: every package installed/already-installed
+      cleanly** — `podman`/`gh`/`ncdu`/`lazygit`/`glow` included,
+      confirming the `pacman -Si` resolution checks above for real. No
+      manual-step prompts, no gaps.
+    - **`server`: `ufw`/`rsync`/`restic`/`fail2ban` already installed,
+      `btop`/`ranger` installed cleanly.** `snapd` failed exactly as
+      predicted (`error: target not found: snapd`, confirmed AUR-only
+      gap, same manual-step pause/skip prompt as zypper hit), and
+      `yazi` then failed as a consequence (needs `snap`, which isn't
+      present without `snapd`) — matching the zypper outcome
+      documented above.
+    - **Not yet resolved: pushing from this VM.** No `gh auth`/SSH
+      configured here yet, so this update plus the still-unpushed
+      `e8515ab` need `gh auth login` (device-code flow, now unblocked
+      since `gh` is confirmed installed via `developer`) or some other
+      push path.
 - **New (2026-08-10): a fresh openSUSE Tumbleweed VM**, third machine
   under the same plan, distinct from the older openSUSE Tumbleweed VM
   further down this list (that one predates the fresh-VM plan and is
