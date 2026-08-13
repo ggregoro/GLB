@@ -119,12 +119,15 @@ reasonably clean and documented, not just "works on my machine."
       openSUSE equivalent was `sudo zypper install -y git` by hand
       first — check whether this CachyOS VM already has `git`/`gh`
       preinstalled before assuming that manual step is needed again.
-    - Confirm first whether this is the **same** CachyOS VM from
-      2026-08-10 or a fresh replacement — unlike the openSUSE VM, no
-      note in this file describes this one being retired or rebuilt,
-      so unless told otherwise, treat it as the same machine and check
-      `git log`/`git status` here before assuming a clean clone is
-      needed.
+    - **Confirmed (2026-08-13, Greg): this is the same CachyOS VM from
+      2026-08-10, not a fresh replacement — and unlike the openSUSE VM,
+      it was never broken by the WSL2/Windows 11 upgrade on the host.**
+      No VM-repair detour needed here; go straight to the checklist
+      above. Still worth a `git log`/`git status` check on it first
+      (this VM was never wired to `origin` as a push target either, per
+      the fresh-VM plan's own pattern — same `git clone` + `gh auth
+      login` device-code playbook as the openSUSE VM if it needs
+      (re-)cloning or push access).
 - **New (2026-08-10): a fresh openSUSE Tumbleweed VM**, third machine
   under the same plan, distinct from the older openSUSE Tumbleweed VM
   further down this list (that one predates the fresh-VM plan and is
