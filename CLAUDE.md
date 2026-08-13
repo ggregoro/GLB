@@ -128,6 +128,72 @@ reasonably clean and documented, not just "works on my machine."
       the fresh-VM plan's own pattern — same `git clone` + `gh auth
       login` device-code playbook as the openSUSE VM if it needs
       (re-)cloning or push access).
+  - **Verification attempted (2026-08-13, same day): package resolution
+    confirmed for real on pacman, but the actual sudo-gated install
+    itself is still deferred to Greg's own terminal — this session had
+    no TTY.** `git pull` confirmed already up to date at `89acf0a`
+    (this same, non-fresh VM already carries `default`'s packages from
+    the 2026-08-10 curl-install session — `git`/`curl`/`zsh`/`fish`/
+    `fzf`/`eza`/`bat`/`zoxide`/`btop`/`gcc`/`make`/`jq`/`fresh`/
+    `starship`/both zsh plugins all pre-existing, plus `ranger`/`ufw`/
+    `rsync` already present too even though those are server-only,
+    presumably from earlier ad-hoc setup on this VM). `glb restore
+    developer --dry-run` and `glb restore server --dry-run` both ran
+    clean, listing exactly which packages were already installed vs.
+    "would install" — but per this file's own standing caveat, dry-run
+    alone never actually queries the package manager, so that list
+    alone doesn't answer the real question here.
+    - **No real TTY in this session** (`tty` → "not a tty") **and no
+      cached sudo ticket** (`sudo -n true` → "a password is required")
+      — per the standing no-TTY rule above, did not force the real,
+      sudo-gated `glb restore`. Instead ran direct, real pacman
+      sync-database queries (`pacman -Si <pkg>`, read-only, no sudo
+      needed — this VM's `cachyos-extra-v3`/`extra` DBs are already
+      synced) for every package either dry-run listed as "would
+      install" — this genuinely queries the package manager for real
+      name resolution, the same thing `pacman -S` itself would do
+      first, just stops short of the actual sudo-gated download/install
+      step.
+    - **`developer`: `podman`, `ncdu`, `lazygit`, `glow` all confirmed
+      as real packages in `cachyos-extra-v3`** via `pacman -Si`. `gh`
+      resolves through the existing `gh:pacman` → `github-cli` override
+      in `_GLB_PACKAGE_OVERRIDES`, also confirmed real. **`lazygit` is
+      confirmed present on pacman** — the last unknown data point from
+      the checklist above is resolved: working on pacman (like zypper),
+      unlike the confirmed Fedora/dnf gap.
+    - **`server`: `restic` and `fail2ban` both confirmed as real
+      packages** (`fail2ban` comes from the plain `extra` repo, not
+      `cachyos-extra-v3`, unlike everything else checked here). `ufw`/
+      `rsync`/`ranger` were already installed on this VM going in (see
+      above). **`snapd` confirmed absent from pacman's official/
+      cachyos repos** — `pacman -Si snapd` and `pacman -Ss snapd` both
+      return nothing — the same AUR-only gap already documented in
+      `packages.txt`, and the same real outcome zypper hit on
+      2026-08-13.
+    - **New finding, not previously known: `yazi` itself has a real,
+      direct pacman package** (`yazi`, `cachyos-extra-v3`, confirmed via
+      `pacman -Si yazi`) — unlike zypper, which has no path to `yazi` at
+      all without a non-default OBS repo. But `server/extras.txt`
+      installs `yazi` specifically via the `snap` method, which needs
+      `snapd` first, so on pacman GLB's current implementation will
+      still hit the same practical "`yazi` doesn't install" outcome as
+      zypper even though a working native package sits right there
+      unused. Worth a future per-distro override (install `yazi` as a
+      plain pacman package instead of via `snap` on pacman specifically)
+      but out of scope for this verification pass — not built this
+      session, just flagged.
+    - **Zero new `_GLB_PACKAGE_OVERRIDES` gaps** — every package above
+      resolved correctly, including the pre-existing `gh:pacman`
+      override.
+    - **Still needed**: the actual sudo-gated install execution itself
+      (`pacman -S`, `snap install`), which needs a real terminal.
+      Manual commands for Greg to run himself, in his own terminal on
+      this VM: `cd ~/GLB && ./glb restore developer` then `./glb
+      restore server`. Based on the `pacman -Si` data above, expect
+      `developer` to install cleanly end-to-end, and `server` to
+      install everything except `snapd`/`yazi`, which should hit the
+      normal manual-step pause/skip prompt exactly like the zypper
+      session's `snapd` gap did.
 - **New (2026-08-10): a fresh openSUSE Tumbleweed VM**, third machine
   under the same plan, distinct from the older openSUSE Tumbleweed VM
   further down this list (that one predates the fresh-VM plan and is
