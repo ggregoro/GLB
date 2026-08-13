@@ -25,6 +25,13 @@ btop
 unzip      # needed for the font extras.txt entry below
 bash-completion    # loads glb's completion file - see lib/completions.sh
 
+# snapd - needed for the snap extras.txt entry below (yazi). Confirmed
+# in apt's index (Pop!_OS/Debian/Ubuntu). Not in Arch/pacman's official
+# repos at all (AUR-only) - expect this to hit the same manual-step
+# pause/skip as any other real packaging gap on a pacman machine, needs
+# verification there and on dnf/zypper.
+snapd
+
 # Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
 # setup, nor on Linux Mint 22.3 - confirmed 2026-08-07) — may need a PPA
 # or manual install. No known curl-install script to move this to

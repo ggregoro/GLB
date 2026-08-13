@@ -71,6 +71,7 @@ teardown() {
     stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
+    stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
 
     run "$GLB_ROOT/glb" restore default <<< ''
 
@@ -78,8 +79,10 @@ teardown() {
     [[ "$output" == *"Profile applied: default"* ]]
     [[ "$output" == *"Installing fresh via curl-install script"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [[ "$output" == *"Installing yazi via snap"* ]]
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.gitconfig" ]
+    [ -L "$HOME/.config/yazi/yazi.toml" ]
     [ ! -e "$HOME/.config/wezterm" ]
 }
 
@@ -451,6 +454,7 @@ teardown() {
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
     stub_command apt-mark 'printf ""'
+    stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
 
     mkdir -p "$GLB_ROOT/profiles"
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"

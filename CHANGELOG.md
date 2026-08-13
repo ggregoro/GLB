@@ -112,6 +112,17 @@ This project follows a simple versioning approach:
   aren't as long-established as the rest of `developer`'s picks;
   package availability across all four managers isn't empirically
   verified yet, same caveat as the existing `gh` note.
+- Added a `snap` extras method (`lib/extras.sh`): detects via `snap
+  list <name>`, installs via `sudo snap install <name>
+  [--<confinement>]`, updates via `snap refresh`, same
+  pause/manual-step/skip UX as the existing curl/flatpak/font methods.
+- Added `yazi` to the `default` profile, alongside `ranger` (not
+  replacing it) - installed via the new `snap` method (`classic`
+  confinement; not in apt's index on any Debian/Ubuntu-family distro)
+  plus `snapd` in `packages.txt`. Ships with the git-status plugin
+  (`yazi-rs/plugins:git`) pre-configured, vendored as a static dotfile
+  under `dotfiles/.config/yazi/` rather than fetched via `ya pkg add`
+  at restore time.
 
 ### Changed
 - Switched the live resource monitor pick from `htop` to `btop` across

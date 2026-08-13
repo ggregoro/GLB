@@ -396,6 +396,90 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **yazi added to `profiles/default`, alongside ranger (not replacing it) —
+  new `snap` extras method built to install it (2026-08-13, Dell laptop /
+  Pop!_OS).** Greg and a counterpart session had already manually installed
+  and configured yazi on this real laptop as a proof of concept before this
+  session started (git-status plugin via `yazi-rs/plugins:git`, config
+  validated by hand) — this session's job was porting that real, working
+  setup into the GLB project, not designing from scratch.
+  - **Real environment quirk that shaped the install method**: yazi has no
+    package at all in apt's index on Debian/Ubuntu/Pop!_OS-family distros —
+    confirmed empirically this session (`apt-cache search`/`apt-cache
+    madison yazi` both return nothing on this Pop!_OS 24.04 machine). It's
+    installed here via snap (`classic` confinement) instead, and the snap
+    build has its own known quirk: the `ya` CLI isn't exposed as a bare
+    command on PATH (upstream yazi issue #2903) — only reachable via
+    `/snap/yazi/current/ya` or the snap-provided `yazi.ya` alias.
+  - **Confirmed via `AskUserQuestion` before building** (two real forks: how
+    to install the git-status plugin, and how to handle the apt gap) — Greg
+    dismissed both questions and clarified the actual situation instead:
+    this isn't a hypothetical design decision, it's "follow what's already
+    installed and configured on this laptop." That directly resolved both
+    forks:
+    - **Install method: snap, not a new cargo/binary extras mechanism.**
+      Confirmed via `snap list`: yazi is genuinely installed here as a
+      classic-confinement snap. New `snap` method added to `lib/extras.sh`
+      (`glb_extra_installed`/`glb_install_extra`/`_glb_update_extra`),
+      format `snap <name> <confinement>` in extras.txt (confinement
+      typically `classic` or blank for strict), detected via `snap list
+      <name>`, installed via `glb_sudo snap install <name>
+      [--<confinement>]` — same pause/manual-step/skip UX on failure as
+      curl/flatpak/font. `snapd` added to `profiles/default/packages.txt`
+      (confirmed in apt's index) so the `snap` binary exists before the
+      extras entry runs, same pattern as `unzip` for the font method.
+    - **Plugin install: vendored as a static dotfile, not run via `ya pkg
+      add` at restore time.** Copied the actual files already on this
+      laptop's `~/.config/yazi/` (`yazi.toml`, `init.lua`, `package.toml`,
+      `plugins/git.yazi/{LICENSE,types.lua,main.lua,README.md}`)
+      byte-for-byte into `profiles/default/dotfiles/.config/yazi/` (`diff
+      -r` confirmed identical). Chose this over having `glb restore` invoke
+      `ya pkg add yazi-rs/plugins:git` at restore time (the zsh-plugin
+      git-clone-at-restore-time pattern `lib/plugins.sh` already uses)
+      specifically because of the snap `ya`-CLI-on-PATH quirk above — a
+      restore-time `ya pkg add` step would be unreliable exactly where it
+      matters (the apt-family distros most likely to install yazi via snap
+      in the first place). `package.toml` is included for provenance
+      (records the plugin's pinned upstream rev/hash) but is inert unless
+      `ya pkg upgrade`/`ya pkg add` gets run for real later — not actively
+      used by anything GLB does.
+  - **Real cross-distro gap, flagged not solved, same as the existing
+    `lazygit`-on-Fedora/`gh:pacman` precedent**: `snapd` is not in
+    Arch/pacman's official repos at all (AUR-only) — a pacman restore will
+    hit the normal manual-step pause/skip for it, same as any other
+    packaging gap. dnf/zypper availability of `snapd` is unverified.
+    Flagged in both `packages.txt`'s own comment and here; needs real
+    verification next time a non-apt machine in the VM matrix is tested.
+  - 14 new bats tests in `tests/extras.bats` (detection, dry-run, install
+    with/without a confinement flag, pause/confirm, pause/skip, and the
+    update-via-`snap refresh`-not-`install` case) plus stub coverage added
+    to `tests/dispatcher.bats`'s two real-`default`-profile end-to-end
+    tests (`glb restore`, `glb repair`). 219/223 bats tests pass — the 4
+    failures are pre-existing and unrelated, confirmed via `git stash` to
+    fail identically on unmodified `main`: this laptop now has both
+    `fresh` (from the earlier tealdeer/cargo session) and `yazi` genuinely
+    on PATH for real, which a few tests that don't explicitly stub those
+    commands don't isolate against. Not fixed this session — same class of
+    gap as every other `fresh`-on-PATH note already in this file, not
+    something this session's changes caused.
+  - **Not run for real** — per the standing rule (never invoke `glb
+    restore`/`glb_apply_profile_extras` against the real system without
+    stubbing sudo/the package manager/snap first), everything above was
+    verified entirely through the bats sandbox. A real `glb restore
+    default` re-run on this laptop would currently report "Already
+    installed" for both `snapd` and `yazi` (both are genuinely present
+    already, installed by hand before this session) rather than exercising
+    the actual install path — real fresh-install verification of the
+    `snap` method itself needs a machine that doesn't already have
+    yazi/snapd, i.e. the VM matrix, not this laptop.
+  - **Next step, not started**: test across the VM matrix (per the
+    original POC's own "next steps" list) — particularly the
+    `snapd`-on-pacman gap and whatever `snap` install actually does on a
+    genuinely fresh machine where snap has never been used (first-run
+    `snapd` service/seeding delay is a known real-world snap quirk that
+    hasn't been exercised here at all, since this laptop's snapd was
+    already fully set up going in).
+
 - **Real `tldr`/`tealdeer` bug found and worked around on the Dell laptop
   (2026-08-12), documented rather than wired into GLB's install path.**
   Greg hit `Data.Binary.Get.runGet ... Did not find end of central

@@ -6,8 +6,8 @@
 # Module: extras.sh
 # Purpose: Install software that doesn't fit the plain
 #          apt/dnf/pacman/zypper packages.txt model - curl-install
-#          scripts and Flatpak apps - driven by a profile's
-#          extras.txt.
+#          scripts, Flatpak apps, and Snap packages - driven by a
+#          profile's extras.txt.
 # ============================================================
 
 # Prevent direct execution
@@ -34,6 +34,9 @@ glb_extra_installed() {
             ;;
         font)
             compgen -G "$HOME/.local/share/fonts/$name/*.[ot]tf" >/dev/null
+            ;;
+        snap)
+            snap list "$name" >/dev/null 2>&1
             ;;
         *)
             return 1
@@ -117,6 +120,16 @@ glb_install_extra() {
             _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
                 "curl -fsSL $spec -o font.zip && mkdir -p $font_dir && unzip -o font.zip -d $font_dir && fc-cache -f $font_dir"
             ;;
+        snap)
+            glb_log_info "Installing $name via snap${spec:+ (--$spec)}"
+
+            if glb_sudo snap install "$name" ${spec:+--$spec}; then
+                return 0
+            fi
+
+            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
+                "sudo snap install $name${spec:+ --$spec}"
+            ;;
         *)
             glb_log_error "Unknown extras method: $method"
             return 1
@@ -166,6 +179,10 @@ _glb_update_extra() {
 
             rm -f "$tmp_zip"
             return 1
+            ;;
+        snap)
+            glb_log_info "Updating $name via snap"
+            glb_sudo snap refresh "$name"
             ;;
         *)
             glb_log_error "Unknown extras method: $method"

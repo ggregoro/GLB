@@ -14,6 +14,11 @@
 #                              `fc-cache -f`. <name> becomes the install
 #                              directory, so no spaces. Requires unzip
 #                              (see packages.txt).
+#   snap <name> <confinement> - `sudo snap install <name>
+#                              [--<confinement>]`. <confinement> is
+#                              typically "classic" or left blank for
+#                              strict; checked via `snap list <name>`.
+#                              Requires snapd (see packages.txt).
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
@@ -27,3 +32,13 @@ curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/mas
 # had this font pre-installed by hand, which masked the fact glb
 # restore never actually installed it itself - a real fresh-install gap.
 font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip
+
+# File manager alternative to ranger (kept, not replaced) - stronger
+# plugin support (image previews, the git-status plugin configured in
+# dotfiles/.config/yazi/). Installed via snap since it's not in apt's
+# index on any Debian/Ubuntu-family distro (confirmed empirically on
+# Pop!_OS 24.04, apt-cache has no candidate at all) - snap was chosen
+# because that's genuinely how it's installed on Greg's real laptop,
+# not picked in the abstract. Needs --classic confinement. Cross-distro
+# snapd availability beyond apt is unverified (see packages.txt).
+snap    yazi      classic

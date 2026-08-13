@@ -353,6 +353,135 @@ teardown() {
     [[ "$output" == *"Skipped: install jetbrains-mono-nerd-font"* ]]
 }
 
+# --- snap method -----------------------------------------------------------
+
+@test "snap: skips install when snap list reports it present" {
+    stub_command snap 'case "$1" in list) exit 0 ;; esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed snap yazi classic
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "snap: not installed when snap list fails" {
+    stub_command snap 'case "$1" in list) exit 1 ;; esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed snap yazi classic
+    "
+    [ "$status" -ne 0 ]
+}
+
+@test "dry-run: snap extra announces would-install without installing" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'snap yazi classic\n' > "$pdir/extras.txt"
+    # This machine genuinely has yazi installed via snap (see CLAUDE.md) -
+    # stub snap explicitly so `snap list` doesn't bleed through to the
+    # real installed state, same PATH-bleed class already documented for
+    # fresh/starship elsewhere in this suite.
+    stub_command snap 'case "$1" in list) exit 1 ;; esac'
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: yazi (via snap)"* ]]
+}
+
+@test "snap: installs with the given confinement flag via glb_sudo" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    stub_command snap 'echo "snap $*" >> "$TEST_TMP/calls"; case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra snap yazi classic
+    "
+    [ "$status" -eq 0 ]
+    grep -q "snap install yazi --classic" "$TEST_TMP/calls"
+}
+
+@test "snap: omits the confinement flag when spec is blank" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    stub_command snap 'echo "snap $*" >> "$TEST_TMP/calls"; case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra snap sometool ''
+    "
+    [ "$status" -eq 0 ]
+    grep -q "snap install sometool$" "$TEST_TMP/calls"
+}
+
+@test "snap: pauses on failure, prints the exact command, and succeeds once confirmed" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    # install fails (triggers the pause); list succeeds on the recheck
+    # _glb_extras_prompt_and_recheck performs after the manual step -
+    # same single-stub-covers-both-calls pattern as the flatpak test.
+    stub_command snap 'case "$1" in
+        install) exit 1 ;;
+        list) exit 0 ;;
+    esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra snap yazi classic <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Run this yourself"* ]]
+    [[ "$output" == *"sudo snap install yazi --classic"* ]]
+    [[ "$output" == *"Confirmed installed after manual step: yazi"* ]]
+}
+
+@test "snap: returns failure when the user skips the manual step" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    stub_command snap 'case "$1" in
+        list) exit 1 ;;
+        install) exit 1 ;;
+    esac'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra snap yazi classic <<< 's'
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Skipped: install yazi"* ]]
+}
+
+@test "update: snap - runs snap refresh, not install, for an already-installed extra" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'snap yazi classic\n' > "$pdir/extras.txt"
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    stub_command snap 'echo "snap $*" >> "$TEST_TMP/calls"; case "$1" in list) exit 0 ;; esac'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    grep -q "snap refresh yazi" "$TEST_TMP/calls"
+    ! grep -q "snap install" "$TEST_TMP/calls"
+}
+
 # --- glb_update_profile_extras / _glb_update_extra --------------------------
 #
 # Re-running an already-installed extra to pick up updates. Deliberately
