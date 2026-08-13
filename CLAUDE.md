@@ -3061,6 +3061,65 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-13, openSUSE VM) — ending here; Greg is
+  moving to the CachyOS VM next.** Everything below is committed and
+  pushed to `main` — `1ea1c05` is the latest commit on `origin/main` as
+  of this note, working tree clean on this VM. Full session, in order:
+  1. Cloned GLB fresh onto this openSUSE VM (`git` wasn't preinstalled,
+     `sudo zypper install -y git` first, run by Greg in a real terminal
+     since this session has no TTY for sudo prompts).
+  2. `glb restore developer` for real: every package installed cleanly
+     via zypper, including `lazygit` — a real confirmation, since
+     `lazygit` is a known gap on Fedora/dnf specifically, not a
+     universal one. Closes the last unverified `developer` tool on
+     zypper (`ncdu`/`glow` were already confirmed).
+  3. `glb restore server` for real: `ufw`/`restic`/`fail2ban`/`btop`/
+     `rsync` all confirmed working via zypper too — first-ever real
+     test of `server` on this package manager. (`fail2ban` looked like
+     a miss at first via `which fail2ban`; false alarm — its binaries
+     are `fail2ban-client`/`fail2ban-server`, confirmed via `rpm -q`
+     and `systemctl status`.)
+  4. Added `ranger` + `yazi` to `server` per Greg's request, matching
+     `default`'s existing pairing exactly — same dotfiles config
+     (`yazi.toml`/`init.lua`/vendored git-status plugin/`ranger/
+     rc.conf`) copied byte-identical rather than a bare install,
+     confirmed via `AskUserQuestion`.
+  5. Real gap found in the process: `snapd` isn't in zypper's default
+     repos at all (`zypper info snapd` → package not found), so `yazi`
+     never installs on openSUSE. Documented as a known gap in both
+     `default` and `server` (`packages.txt`/`extras.txt`), same
+     treatment as the `lazygit`/Fedora gap rather than chasing a
+     non-default OBS snapd repo.
+  6. Set up push access for this VM: `gh` (already present from the
+     `developer` restore) authenticated via `gh auth login`'s
+     device-code flow — no SSH key needed, Greg approved it from a
+     browser on another device — then `gh auth setup-git` wired the
+     token into `git push`. Also set this VM's git identity (`Greg
+     Gregorowicz <ggregoro@gmail.com>`, pulled from `gh api user`) and
+     amended+force-pushed the one commit made before that was set, to
+     fix its author.
+  7. Audited the **entire** repo's commit history (not just this file)
+     via `git log -i --grep`, confirming the CachyOS/pacman half of the
+     2026-08-09 handoff plan (`81309df`) was never actually run — only
+     its `install.sh`/`glb_sudo` verification happened there
+     (`b201600`), not the `developer`/`server` profile-tools check.
+     Documented a full pickup checklist on the CachyOS VM entry in Test
+     Environments above (what to verify, the dry-run-doesn't-verify-
+     anything caveat, the no-TTY-sudo/`pam_faillock` hazard, the
+     clone/push playbook). Greg then confirmed it's the same CachyOS VM
+     from 2026-08-10, not rebuilt, and — unlike this openSUSE VM — was
+     never broken by the WSL2/Windows 11 host upgrade, so no repair
+     detour is needed before starting there.
+  - **Next session: pick up on the CachyOS VM.** Full checklist is the
+    sub-bullet on the CachyOS VM entry in Test Environments above —
+    `glb restore developer`/`glb restore server` for real (dry-run
+    alone won't verify anything), watching specifically for `lazygit`
+    (pacman's AUR-vs-official-repo story may differ from zypper's) and
+    `yazi`/`snapd` (pacman's `packages.txt` comment already expects
+    this to be a known gap there too, same as zypper, but hasn't been
+    confirmed for real). **Pull first**
+    (`git fetch && git log main..origin/main`) before assuming that VM
+    is caught up — this session made several commits it won't have yet.
 - **Session (2026-08-13, still on the openSUSE VM, after the zypper
   work below) — audited whether the CachyOS/pacman half of the
   2026-08-09 handoff plan (`81309df`) was ever actually run, since it
