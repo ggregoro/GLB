@@ -64,6 +64,20 @@ reasonably clean and documented, not just "works on my machine."
   (confirmed working; only intervention needed was installing `git`
   itself, which wasn't preinstalled — see Roadmap entry for the full
   writeup).
+  - **Currently in a degraded/uncertain state (2026-08-13), not a GLB
+    issue — the Windows/VirtualBox host, not this VM's own guest OS.**
+    Greg installed WSL2 on the Windows host running this VM, which
+    broke it (the predicted WSL2-vs-VirtualBox Hyper-V conflict — see
+    memory `user-no-wsl2`); he then removed WSL2 and separately
+    upgraded that host to Windows 11, which introduced its own
+    additional VirtualBox conflicts. WSL2 itself is now backed out, but
+    VirtualBox issues are still ongoing as of this note (symptoms not
+    yet diagnosed — likely candidates: `Virtual Machine Platform`/
+    `Windows Hypervisor Platform`/Hyper-V left enabled even after
+    uninstalling WSL2 itself, or Win11's Core Isolation/Memory
+    Integrity). **Don't assume this VM is ready for testing until Greg
+    confirms the host is fixed** — treat any planned openSUSE
+    verification as blocked until then.
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
@@ -2938,6 +2952,54 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Handoff (2026-08-13, Dell laptop session, moving to the Windows/
+  VirtualBox host next) — mid-troubleshooting on the openSUSE VM's
+  host, not a GLB code task.** Context for whoever (or whichever
+  machine) picks this up:
+  - This same session added `yazi` to `profiles/default` (new `snap`
+    extras method, `snapd` in `packages.txt`, git-status plugin
+    vendored as a static dotfile) — committed and pushed as `8c9ecf2`,
+    already rebased cleanly on top of another session's `scan_timeout`/
+    glyph-fix commit (`6d502bc`). Fully done, nothing pending there.
+  - Separately, Greg reported the openSUSE Tumbleweed test VM (see Test
+    Environments above) is currently broken. Sequence: installed WSL2
+    on the Windows host running that VM (predicted WSL2-vs-VirtualBox
+    Hyper-V conflict, per memory `user-no-wsl2`) → broke the VM →
+    removed WSL2 → VirtualBox issues persisted anyway. Also separately
+    upgraded that host to Windows 11, which has its own additional
+    VirtualBox conflicts. **All other VMs on that host still work
+    fine** — only the openSUSE VM is affected.
+  - **Symptom, as reported**: launching the VM hangs at the boot menu
+    on "Install from Hard Drive"; the Live Installer boot option hangs
+    the same way. Both hanging identically (not just the installed-disk
+    boot path) points at the VM's virtual hardware/hypervisor settings,
+    not a corrupted guest disk — nothing is executing past the menu
+    screen regardless of what's being booted.
+  - **Diagnostic checklist already given to Greg, not yet run/reported
+    back**, in priority order — all on this specific VM's own
+    Settings, not host-wide:
+    1. System → Acceleration → **Paravirtualization Interface** —
+       VirtualBox may have auto-set this VM to `Hyper-V` mode while
+       WSL2/Hyper-V was active; if it's still set to `Hyper-V` now,
+       that alone can hang a Linux guest. Recommended for a Linux
+       guest: `KVM` (or `Default`). Compare against a working VM's
+       same setting.
+    2. System → Processor → **"Enable Nested VT-x/AMD-V"** — should be
+       off.
+    3. Whether the VM was left in a **"Saved" state** (not powered
+       off) when the WSL2 install happened — if so, discard the saved
+       state and do a fully cold boot rather than resume.
+    4. Pull this VM's **`VBox.log`** (VirtualBox Manager → the VM →
+       Logs, or the VM's folder under `Logs/VBox.log`) and check the
+       tail for the actual hang reason instead of guessing further.
+  - **Next step**: Greg is moving to the Windows machine itself to work
+    through this list. Nothing about this is a GLB code change — it's
+    purely host/VirtualBox configuration. Once the VM boots again,
+    resume the originally-planned VM-matrix testing (the `developer`/
+    `server` profile verification on pacman/CachyOS and zypper/openSUSE
+    flagged in the 2026-08-10 wrap-up note further down this section)
+    — don't assume the openSUSE VM is ready until this is confirmed
+    fixed.
 - **Session (2026-08-13, Windows machine, ported from GWB) — found and
   fixed a real, previously-undiscovered continuation of the 2026-08-10
   glyph-corruption bug, plus ported the `scan_timeout` fix from GWB
