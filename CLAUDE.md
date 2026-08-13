@@ -64,20 +64,38 @@ reasonably clean and documented, not just "works on my machine."
   (confirmed working; only intervention needed was installing `git`
   itself, which wasn't preinstalled — see Roadmap entry for the full
   writeup).
-  - **Currently in a degraded/uncertain state (2026-08-13), not a GLB
-    issue — the Windows/VirtualBox host, not this VM's own guest OS.**
-    Greg installed WSL2 on the Windows host running this VM, which
-    broke it (the predicted WSL2-vs-VirtualBox Hyper-V conflict — see
-    memory `user-no-wsl2`); he then removed WSL2 and separately
-    upgraded that host to Windows 11, which introduced its own
-    additional VirtualBox conflicts. WSL2 itself is now backed out, but
-    VirtualBox issues are still ongoing as of this note (symptoms not
-    yet diagnosed — likely candidates: `Virtual Machine Platform`/
-    `Windows Hypervisor Platform`/Hyper-V left enabled even after
-    uninstalling WSL2 itself, or Win11's Core Isolation/Memory
-    Integrity). **Don't assume this VM is ready for testing until Greg
-    confirms the host is fixed** — treat any planned openSUSE
-    verification as blocked until then.
+  - **Resolved (2026-08-13, same day): this exact VM was retired, and a
+    freshly-created replacement openSUSE Tumbleweed VM now boots and
+    installs correctly.** The original degraded/uncertain state noted
+    below (WSL2 install/removal + a Windows 11 upgrade on the host)
+    turned out not to be the actual blocker for the new VM — real
+    `VBox.log` inspection on the new VM showed `HM: HMR3Init: VT-x w/
+    nested paging` and `GIM: Using provider 'KVM'`, i.e. VirtualBox's
+    own native VT-x engine engaging cleanly with no Hyper-V fallback,
+    ruling out an active hypervisor conflict on this host. The new VM's
+    actual symptom (stuck on "Booting from local disk...") was two
+    ordinary, unrelated VM-config issues: (1) no explicit boot order set
+    on a freshly-created VM, defaulting to Hard Disk before the attached
+    installer ISO — fixed via Settings → System → Boot Order, moving
+    Optical above Hard Disk; (2) even after that, it was reaching the
+    ISO's own installer boot menu and silently timing out to that
+    menu's "Boot from Local Disk" entry because nobody interacted with
+    it in time — fixed by clicking into the VM and selecting
+    "Installation" before the timeout. Confirmed reaching openSUSE's
+    real installer (Language/Keyboard/License Agreement screen).
+    **openSUSE-profile verification is unblocked again** — the original
+    VM this note describes was never actually confirmed repaired and
+    was abandoned in favor of the new one, so if that specific old VM
+    is ever revisited, treat it independently rather than assuming this
+    resolution applies to it too.
+  - **Original note, kept for history**: this VM was in a
+    degraded/uncertain state as of 2026-08-13, not a GLB issue — the
+    Windows/VirtualBox host, not this VM's own guest OS. Greg installed
+    WSL2 on the Windows host running this VM, which broke it (the
+    predicted WSL2-vs-VirtualBox Hyper-V conflict — see memory
+    `user-no-wsl2`); he then removed WSL2 and separately upgraded that
+    host to Windows 11, which introduced its own additional VirtualBox
+    conflicts.
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
@@ -2952,6 +2970,42 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session (2026-08-13, Windows machine, in a GWB session — resolved
+  the openSUSE VM issue the handoff note below asked to diagnose.** Not
+  a GLB code change; purely VM/host troubleshooting, done live with
+  Greg while working on GWB in a separate conversation and asked to
+  update GLB's notes once resolved. The original VM this file's Test
+  Environments section describes was retired; Greg created a fresh
+  openSUSE Tumbleweed VM and hit what looked like the same "stuck on
+  'Booting from local disk...'" symptom on it too. Diagnosed for real
+  rather than assuming it was a continuation of the WSL2/Hyper-V
+  damage:
+  - Read the new VM's own `VBox.log` directly: `HM: HMR3Init: VT-x w/
+    nested paging` and `GIM: Using provider 'KVM'` — VirtualBox's
+    native VT-x engine engaging cleanly, no Hyper-V/NEM fallback. This
+    ruled out an active hypervisor conflict on this host being the
+    cause for the *new* VM, separate from whatever state the old,
+    retired VM was actually left in.
+  - Actual cause was two ordinary, unrelated VM-config gaps: (1) the
+    freshly-created VM had no explicit boot order set, defaulting to
+    Hard Disk before the attached installer ISO (confirmed by grepping
+    the VM's `.vbox` XML for `<Order>` entries — none existed) — fixed
+    via Settings → System → Boot Order, Optical above Hard Disk; (2)
+    even after that fix, `VBox.log` showed it correctly reaching
+    `BIOS: Booting from CD-ROM...` and the installer's own boot menu,
+    but nobody was there to select "Installation" before the menu's
+    timeout silently defaulted it back to "Boot from Local Disk" —
+    same on-screen message, different real cause than the boot-order
+    issue. Fixed by clicking into the VM and selecting Installation in
+    time. Confirmed reaching openSUSE's real installer
+    (Language/Keyboard/License Agreement screen, screenshot-verified).
+  - **openSUSE-profile verification is unblocked again** on this new
+    VM. The original VM's WSL2/Hyper-V damage (described in the
+    now-superseded Test Environments note and the handoff below) was
+    never actually confirmed repaired — it was abandoned in favor of
+    this new VM, not fixed in place. If that specific old VM ever
+    resurfaces, diagnose it independently rather than assuming this
+    same resolution applies.
 - **Handoff (2026-08-13, Dell laptop session, moving to the Windows/
   VirtualBox host next) — mid-troubleshooting on the openSUSE VM's
   host, not a GLB code task.** Context for whoever (or whichever
