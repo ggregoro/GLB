@@ -3061,6 +3061,33 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session (2026-08-13, cloud session) — Greg has moved from the
+  CachyOS VM (pacman verification still not actually run — see that
+  VM's Test Environments entry above, the checklist is still open) to
+  a Fedora VM for testing, and is installing Claude Code there now.**
+  Not yet confirmed whether this is the same Fedora 44 GNOME 50 VM
+  used for the 2026-08-10 `install.sh`/dnf verification (see Roadmap
+  entry, "Fresh Fedora 44 GNOME 50 VM verified end-to-end") or a fresh
+  one — worth checking `glb version`/prior restore state once a
+  session is running there.
+  - **Real, still-open gap on dnf worth targeting once that session is
+    up**: `developer` was already tested for real on this distro family
+    (2026-08-10) and found `lazygit` genuinely missing from Fedora's
+    official dnf repos (`ncdu`/`glow` confirmed fine) — but `server`
+    has **never been tested on dnf at all**, unlike zypper (confirmed
+    2026-08-13) and apt (Pop!_OS). Same checklist as CachyOS/openSUSE
+    applies: `glb restore server --dry-run` then for real, checking
+    `ufw`/`rsync`/`restic`/`fail2ban`/`btop` plus the newly-added
+    `ranger`/`yazi`. `yazi`'s `snapd` dependency is a real open
+    question on dnf specifically — confirmed *absent* on zypper,
+    unverified either way on dnf (Fedora's repos are generally richer
+    than openSUSE's default ones, so this one might actually go
+    differently rather than repeating the same gap).
+  - Gave Greg dnf-flavored Claude Code CLI install instructions in
+    chat (native `curl -fsSL claude.ai/install.sh | bash` installer,
+    or `sudo dnf install nodejs npm && npm install -g
+    @anthropic-ai/claude-code` as the alternative) — not yet confirmed
+    installed/working as of this note.
 - **Session wrap-up (2026-08-13, openSUSE VM) — ending here; Greg is
   moving to the CachyOS VM next.** Everything below is committed and
   pushed to `main` — `1ea1c05` is the latest commit on `origin/main` as
