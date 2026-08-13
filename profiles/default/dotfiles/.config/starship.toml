@@ -1,5 +1,10 @@
 "$schema" = 'https://starship.rs/config-schema.json'
 
+# Raised from Starship's own 30ms default - too tight for a large or
+# cold-cache directory (measured ~305ms scanning a slow real-world
+# directory on GWB, GLB's Windows sibling, before landing on this value).
+scan_timeout = 1000
+
 # zsh only, applied via `starship init zsh` (.zshrc) - bash and fish use
 # their own native prompts. Based on the official "Tokyo Night" preset
 # from starship.rs/presets, with one addition: $cmd_duration (the

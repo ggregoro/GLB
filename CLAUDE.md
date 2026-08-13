@@ -2854,6 +2854,71 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session (2026-08-13, Windows machine, ported from GWB) — found and
+  fixed a real, previously-undiscovered continuation of the 2026-08-10
+  glyph-corruption bug, plus ported the `scan_timeout` fix from GWB
+  (GLB's Windows sibling).** Greg asked to port GWB's `System32`
+  starting-directory fix over; that part doesn't apply here (no Linux
+  distro has an equivalent "elevated shells default into a system
+  directory" problem), but GWB's *other* same-day fix — Starship's
+  `scan_timeout` — genuinely does, since GLB installs Starship too.
+  While diffing all three profiles' `starship.toml` before adding it, a
+  byte-level check (`diff` first, then the same codepoint-counting
+  technique the original 2026-08-10 fix used) found that `developer`
+  and `server` still shipped **zero** BMP Private-Use-Area glyphs
+  (`default` has 25) — the exact signature of the original bug. The
+  2026-08-10 fix only ever rebuilt `default`'s copy; `developer`/
+  `server` were built 2026-08-07, before that fix existed, and
+  inherited the original broken 2026-08-06 preset, which nothing since
+  had touched. Every real machine that's ever restored `developer` or
+  `server` (Pop!_OS VM, CachyOS, openSUSE, per this file's own history)
+  has had the degraded prompt the whole time, unnoticed for the same
+  reason as before — normal tools render the missing range as if
+  nothing's wrong.
+  - **Fixed the same way the original bug was fixed, following this
+    file's own documented lesson**: never hand-type or let a model
+    regenerate the glyphs through a text pipeline (both silently drop
+    BMP-PUA characters). Raw byte-copied `default`'s already-verified-
+    correct file over both, then reapplied each file's own small
+    pre-existing wording difference (an em-dash vs. hyphen, "doesn't"
+    vs. "does not" in the header comment) via plain ASCII/common-
+    Unicode text edits, which carry no such risk. Verified via the same
+    codepoint-counting method: all three files now show 25 BMP-PUA/14
+    astral-PUA glyphs. `starship prompt --path .` renders cleanly
+    against all three configs with no parse warnings.
+  - Added `scan_timeout = 1000` to all three files — GWB measured
+    Starship's bare 30ms default genuinely timing out (~305ms real scan
+    time against a slow directory) before landing on 1000ms; ported the
+    same value here pre-emptively, since GLB has never had a user
+    report this symptom but carries the identical unset-`scan_timeout`
+    gap GWB had until today.
+  - **A genuine environment blocker hit and worked around, worth
+    knowing about**: this session ran on a Windows machine with GLB
+    checked out at `C:\Users\ggreg\Projects\GLB` — every file in that
+    checkout (confirmed via `icacls`, not assumed) has an ACL granting
+    the local `Users` group only Read+Execute, no Write, and even
+    attempting to grant write access via `icacls /grant` was itself
+    denied (Access is denied both ways, non-elevated). This session
+    wasn't running elevated and couldn't self-elevate (no interactive
+    UAC path from an automated tool). Worked around by using the
+    second checkout this file already documents,
+    `OneDrive\Documents\GitHub\GLB` — confirmed same remote, same HEAD
+    commit, clean tree, and genuinely writable (`ggreg:(F)` in its own
+    ACL) before touching anything there. All of this session's edits
+    are in the OneDrive checkout; `Projects\GLB` is unchanged and still
+    has the ACL problem — worth fixing at the OS level (or just always
+    using the OneDrive checkout on this machine) if a future Windows
+    session hits the same wall.
+  - Not yet verified on real Linux hardware — this session had no
+    access to any of the Linux test machines/VMs this file documents,
+    only a Windows checkout. Both fixes are verified structurally
+    (byte/codepoint-level correctness, valid TOML, clean `starship
+    prompt` render) but not via a live `glb restore` + visual check on
+    a real distro. Since `~/.config/starship.toml` is a live symlink
+    into wherever GLB is checked out (documented earlier in this file),
+    no `glb restore` re-run should be needed on any already-restored
+    machine — just a `git pull` — but that's still unconfirmed live for
+    this specific pair of fixes.
 - **Session wrap-up (2026-08-10, cloud session) — pausing here for a
   break; Greg is heading back to his laptop first to `git pull` and
   visually confirm the starship glyph fix there, then plans to test

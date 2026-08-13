@@ -239,6 +239,31 @@ This project follows a simple versioning approach:
   accident on non-pacman/non-dnf hosts; they now override
   `glb_detect_package_manager` directly so the apt/zypper-specific
   branches they exercise actually run regardless of the real host.
+- Fixed `developer` and `server`'s `starship.toml` still shipping the
+  original 2026-08-06 glyph-corruption bug (git-branch symbol, all five
+  language-module icons, half the OS icons, powerline separators all
+  silently empty) — the 2026-08-10 byte-level fix only ever touched
+  `default`'s copy. Confirmed via the same codepoint-level technique
+  that found the original bug: `developer`/`server` had 0 glyphs in the
+  BMP Private Use Area range (`U+E000`-`U+F8FF`) versus `default`'s 25,
+  with the unaffected astral-PUA range (14 glyphs, surrogate pairs)
+  matching on all three — the exact signature of the original bug.
+  Fixed by raw byte-copying `default`'s already-verified-correct file
+  over both (never hand-typing/regenerating the glyphs through any text
+  pipeline, per this file's own hard-won lesson), then reapplying each
+  file's own small pre-existing wording difference (an em-dash vs a
+  hyphen, "doesn't" vs "does not" in the header comment). Verified: all
+  three files now show identical BMP-PUA/astral-PUA counts (25/14), and
+  `starship prompt --path .` renders cleanly against all three with no
+  parse warnings.
+- Added `scan_timeout = 1000` to all three profiles' `starship.toml`
+  (previously unset, so every restore ran on Starship's own tight 30ms
+  default) — ported from the same fix on GWB, GLB's Windows sibling,
+  after it hit a real `Scanning current directory timed out` warning
+  there (measured ~305ms scanning a real slow directory before landing
+  on 1000ms as a safe margin). Not yet hit as a live symptom on GLB
+  itself, but the same latent gap existed here too - preemptive, not
+  reactive.
 
 ### Planned
 
