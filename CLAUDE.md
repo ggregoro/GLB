@@ -2970,6 +2970,33 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session (2026-08-13, cloud session, status check) — Greg is now
+  working from the openSUSE VM** (the freshly-created one whose boot
+  issue was just diagnosed and fixed, per the entry directly below this
+  one — ordinary VM boot-order/installer-timeout config, not the old
+  WSL2/Hyper-V damage). Checked the repo before doing anything else:
+  `origin/main` and this checkout are both at `fa874a2`, working tree
+  clean, nothing to pull or push. No code changed this session — this
+  was a status/handoff check, not a build.
+  - **This confirms the openSUSE VM is now the right machine to resume
+    the deferred verification from the 2026-08-10 wrap-up note further
+    down this section**, which was blocked on exactly this VM being
+    reachable: `glb restore developer --dry-run` then for real
+    (confirm `ncdu`/`lazygit`/`glow`/`lazydocker` all resolve as real
+    zypper package names — `lazygit` is a confirmed gap on dnf/Fedora,
+    unverified on zypper), and `glb restore server --dry-run` then for
+    real (first-ever real test of `server` on zypper —
+    `ufw`/`rsync`/`restic`/`fail2ban`/`btop` all need to resolve and
+    install cleanly). Per that same wrap-up note, the plan was CachyOS
+    (pacman) first, then this VM — worth checking whether the CachyOS
+    half happened before starting here, since no session note since
+    2026-08-10 records either half as done.
+  - This cloud session has no direct access to run commands on Greg's
+    real openSUSE VM — the actual `glb restore developer`/
+    `glb restore server` runs and their results still need to happen
+    on that machine itself (or be relayed back here) before this
+    Roadmap/Test-environments section can be updated with real
+    findings.
 - **Session (2026-08-13, Windows machine, in a GWB session — resolved
   the openSUSE VM issue the handoff note below asked to diagnose.** Not
   a GLB code change; purely VM/host troubleshooting, done live with
