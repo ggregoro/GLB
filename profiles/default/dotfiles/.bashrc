@@ -51,6 +51,13 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # ------------------------------------------------------------
+# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+# ------------------------------------------------------------
+if [ -d /snap/bin ]; then
+    export PATH="/snap/bin:$PATH"
+fi
+
+# ------------------------------------------------------------
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then
@@ -144,6 +151,8 @@ if [ -f /usr/share/doc/fzf/examples/key-bindings.bash ]; then
     source /usr/share/doc/fzf/examples/key-bindings.bash
 elif [ -f /usr/share/fzf/key-bindings.bash ]; then
     source /usr/share/fzf/key-bindings.bash
+elif [ -f /usr/share/fzf/shell/key-bindings.bash ]; then
+    source /usr/share/fzf/shell/key-bindings.bash
 fi
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
 
