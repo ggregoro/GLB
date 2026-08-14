@@ -283,6 +283,45 @@ reasonably clean and documented, not just "works on my machine."
     `user-no-wsl2`); he then removed WSL2 and separately upgraded that
     host to Windows 11, which introduced its own additional VirtualBox
     conflicts.
+- **New (2026-08-13): a fresh Fedora 44 VM**, another machine under the
+  fresh-VM plan above — `git clone`d from the public repo (not a dev
+  checkout), `glb restore default` run for real. Every package/dotfile
+  installed and linked correctly (`snapd`/`yazi` needed a manual `sudo
+  dnf install -y snapd` + `sudo snap install yazi --classic` — the usual
+  no-TTY-for-sudo limitation, run by Greg himself; `snapd` needed a
+  moment to finish seeding plus `sudo ln -s /var/lib/snapd/snap /snap`
+  for classic-snap support on Fedora before `yazi` would install).
+  - **Two real bugs found and fixed** in `profiles/default/dotfiles/
+    .bashrc` (commit `ada3a40`), both specific to how packages actually
+    landed on this distro's dnf/snap combination, not anything the
+    dry-run/restore logic itself got wrong:
+    1. **`yazi` installed but wasn't runnable** — snap puts its
+       binaries in `/snap/bin`, and `.bashrc` never added that
+       directory to `PATH`. Fixed with a new guarded
+       `if [ -d /snap/bin ]` block, same pattern as the existing
+       `~/.cargo/bin` guard.
+    2. **Ctrl-R/Ctrl-T (fzf) did nothing** — Fedora's `fzf` dnf package
+       installs `key-bindings.bash` under `/usr/share/fzf/shell/`, a
+       path the existing lookup chain (which only checked
+       `/usr/share/doc/fzf/examples/` and `/usr/share/fzf/`) never
+       matched, so the `source` line silently no-opped. Added a third
+       `elif` branch for the Fedora path.
+    Both confirmed fixed live on this VM (`command -v yazi` resolves,
+    `bind -X` shows the fzf widgets bound) before committing/pushing.
+  - **This VM has no `git`/`gh` credentials configured by default** —
+    needed a real one-time setup pass to commit from here at all:
+    `git config user.email`/`user.name` (Greg's own identity, matching
+    every other machine), then `gh auth login` (device-code flow,
+    approved from a browser on another device) and `gh auth setup-git`
+    to wire that into `git push` — same playbook the CachyOS/openSUSE
+    VM entries above already document. Confirmed `gh auth setup-git`
+    also writes a `credential.https://github.com` helper block directly
+    into `~/.gitconfig`, which is this profile's own tracked/symlinked
+    dotfile — deliberately left uncommitted rather than pushed, since
+    it's machine-specific auth wiring, not something every other
+    machine's `.gitconfig` should carry. This VM is temporary and being
+    torn down, so it wasn't worth relocating into `~/.gitconfig.local`
+    either — it simply won't outlive the VM.
 - Dell E7450 laptop running Pop!_OS
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
