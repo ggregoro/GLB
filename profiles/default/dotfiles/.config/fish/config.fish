@@ -9,6 +9,11 @@ set -U fish_greeting
 # User programs
 fish_add_path ~/.local/bin
 
+# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+if test -d /snap/bin
+    fish_add_path /snap/bin
+end
+
 # ------------------------------------------------------------
 # eza (modern ls)
 # ------------------------------------------------------------

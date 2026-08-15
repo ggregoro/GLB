@@ -419,6 +419,86 @@ reasonably clean and documented, not just "works on my machine."
     wire it into `git push`. Confirmed via `gh auth status` and a real
     `git push --dry-run`. First confirmation this exact playbook also
     works cleanly on Manjaro, not just CachyOS/openSUSE/Fedora.
+  - **Correction, same day, later session: the "confirmed working
+    end-to-end" claim above was wrong — the real restore that actually
+    ran on this VM was plain `glb restore default`, not the
+    `--from-manifest` command given.** Every dotfile symlink on the
+    machine (`~/.zshrc`, `~/.bashrc`, `~/.gitconfig`, etc.) pointed
+    straight into `profiles/default/dotfiles/...`, not the manifest
+    path — caught by `readlink -f ~/.zshrc` while chasing an unrelated
+    `yazi` issue, not assumed. Net effect: the native-Manjaro-prompt
+    customization never actually applied; the live `.zshrc` still had
+    GLB's normal Starship init the whole time. The Manjaro powerline
+    prompt still visibly on screen was just a stale already-open shell
+    session that hadn't re-sourced `.zshrc` since — the file itself had
+    already changed underneath it (same "a live symlink doesn't help an
+    already-open shell" class of gotcha documented elsewhere in this
+    file for `exec fish`). **Lesson for future sessions**: after handing
+    someone a specific restore command, verify what actually ran
+    (`readlink -f` on a resulting symlink) rather than trusting a
+    "that all worked"-type report at face value — the visible result
+    (a rendering prompt) can look right even when the wrong command ran,
+    since a stale shell session doesn't reflect a dotfile change until
+    reloaded.
+  - **Real, new finding correcting the "AUR-only" assumption above:
+    `snapd` is NOT AUR-only on Manjaro** — unlike CachyOS/EndeavourOS,
+    Manjaro carries `snapd` in its own official `extra` repo (packaged
+    by a Manjaro dev, confirmed via `pacman -Si snapd`), so GLB's
+    package-manager install step for it succeeds cleanly here. The real
+    Manjaro-specific gap is different: `snapd`'s systemd units
+    (`snapd.socket`, `snapd.apparmor`) aren't enabled by default after
+    the package installs, and the classic-confinement `/snap` symlink
+    doesn't exist either — so `sudo snap install yazi --classic` (what
+    GLB's `snap` extras method actually runs) fails outright with
+    "cannot communicate with server," triggering the normal pause/skip
+    prompt. Same *shape* of gap the Fedora VM hit (snapd needing manual
+    enabling before first use), not the pacman/AUR-only gap CachyOS and
+    EndeavourOS hit — worth not conflating the two. Manual fix, run
+    directly by Greg (sudo, no TTY in this session):
+    `sudo systemctl enable --now snapd.socket`,
+    `sudo ln -s /var/lib/snapd/snap /snap`,
+    `sudo systemctl enable --now snapd.apparmor`, then retry
+    `sudo snap install yazi --classic`. Hit one transient "too early for
+    operation, device not yet seeded" error on the very first retry
+    right after enabling the socket — `snap debug seeding` confirmed
+    `seeded: true` (352ms completion) moments later, so this is just a
+    startup race right after `snapd.socket` first activates, not a real
+    blocker; a second retry succeeded.
+  - **Real bug found and fixed: the `/snap/bin` `PATH` guard added for
+    the Fedora VM (2026-08-13, see that entry above) was incomplete —
+    only ever added to `default`'s `.bashrc`, never `.zshrc` or
+    `config.fish`, even though zsh is Manjaro's (and this profile's)
+    actual default shell, and never added to `developer`/`server` at
+    all despite `server` also installing `yazi` via the same `snap`
+    method (added 2026-08-13, see the openSUSE VM entry above).**
+    `snap install yazi --classic` succeeded here, but `yazi` still
+    wasn't runnable afterward (`zsh: command not found: yazi`) for
+    exactly this reason. Fixed by adding the same guarded
+    `if [ -d /snap/bin ]; then export PATH="/snap/bin:$PATH"; fi`
+    (bash/zsh) / `if test -d /snap/bin; fish_add_path /snap/bin; end`
+    (fish) block to the 8 files that were missing it: `default`'s
+    `.zshrc`/`config.fish`, and `developer`/`server`'s
+    `.bashrc`/`.zshrc`/`config.fish`. Not yet verified on `developer`/
+    `server` specifically (no machine with `yazi`-via-snap installed
+    under those profiles at hand this session) — only confirmed fixed
+    on `default`/zsh, on this VM.
+  - **Re-ran `glb restore --from-manifest` for real this time**,
+    verified via `readlink -f` both before starting (still pointing at
+    `profiles/default`) and after (correctly pointing at the manifest)
+    rather than trusting the visible prompt alone, per the lesson above.
+    One more real gotcha caught before running it: the manifest's own
+    `~/glb-manifests/default-manjaro-prompt/dotfiles/.gitconfig` copy
+    predated this session's `gh auth setup-git` run, so it was missing
+    the `[credential "https://github.com"]` helper block that command
+    had since written into the *tracked* `.gitconfig` — relinking to
+    the manifest as-is would have silently broken `git push` credential
+    resolution on this VM. Synced that block into the manifest copy
+    first. Confirmed for real afterward, in a genuinely fresh terminal
+    (not just this session's tools, which have no real TTY): Manjaro's
+    native powerline prompt renders correctly, `yazi` launches. This is
+    the point where the native-prompt `--from-manifest` approach is
+    actually confirmed working end-to-end, superseding the earlier
+    (wrong) claim above.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already

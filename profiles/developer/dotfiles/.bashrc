@@ -51,6 +51,13 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # ------------------------------------------------------------
+# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+# ------------------------------------------------------------
+if [ -d /snap/bin ]; then
+    export PATH="/snap/bin:$PATH"
+fi
+
+# ------------------------------------------------------------
 # eza (modern ls) with plain ls fallback
 # ------------------------------------------------------------
 if command -v eza >/dev/null 2>&1; then

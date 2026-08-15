@@ -20,6 +20,13 @@ setopt SHARE_HISTORY
 export PATH="$HOME/.local/bin:$PATH"
 
 # ------------------------------------------------------------
+# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+# ------------------------------------------------------------
+if [ -d /snap/bin ]; then
+    export PATH="/snap/bin:$PATH"
+fi
+
+# ------------------------------------------------------------
 # Completions (zsh has no completion system on its own -- Oh My Zsh
 # used to init this too; glb's own completion lives in the fpath dir
 # below, see lib/completions.sh)
