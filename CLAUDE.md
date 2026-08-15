@@ -367,6 +367,58 @@ reasonably clean and documented, not just "works on my machine."
   no-TTY sudo attempts during a sandboxed restore count as failed auth
   attempts against `pam_faillock`'s `deny=3` default, and can lock a
   real user out of their own terminal as a side effect.
+- **New (2026-08-15): a fresh Manjaro Linux (Gnome) VM — first real test
+  of Manjaro**, previously flagged "not tested" in `docs/ROADMAP.md`
+  (pacman itself already confirmed via CachyOS/EndeavourOS). `glb info`
+  correctly detected `manjaro`/`pacman`. This session (Claude Code) had
+  no TTY, so the real sudo-gated restore itself was run by Greg in his
+  own terminal, not attempted directly — same standing no-TTY/
+  `pam_faillock`-caution pattern as every other Arch-based VM above.
+  - **Not a stock `default` restore — a custom `glb restore
+    --from-manifest` variant, per Greg's request to keep this machine's
+    native zsh prompt instead of GLB's usual Starship setup.** Built at
+    `~/glb-manifests/default-manjaro-prompt` (machine-local, outside the
+    repo, deliberately not committed — a one-machine customization, not
+    a change to the shared profile): a byte-for-byte copy of
+    `profiles/default`'s `packages.txt`/`extras.txt`/`dotfiles/`, except
+    `.zshrc`'s `eval "$(starship init zsh)"` block is replaced with
+    sourcing Manjaro's own `/usr/share/zsh/manjaro-zsh-config` +
+    `manjaro-zsh-prompt` — exactly what a stock Manjaro `.zshrc` already
+    sources, confirmed by reading this VM's real pre-restore `.zshrc`
+    and `/etc/skel/.zshrc` before building the swap. Every other part of
+    `default`'s `.zshrc` (history settings, `PATH`, completions,
+    aliases, zoxide, fzf, vendored zsh plugins) stays identical.
+    `--dry-run` confirmed the plan (backs up the real `.zshrc` to
+    `.zshrc.glb-backup`, links the modified one) before the real run.
+  - **Confirmed working end-to-end** (Greg: "that all worked") — Fresh
+    editor and the JetBrains Mono Nerd Font extras both installed
+    successfully. One real false alarm mid-restore worth remembering:
+    the font download (`curl -fsSL ... -o font.zip`, `lib/extras.sh`'s
+    `font` method) looked "stuck" for a while — not actually hung,
+    `curl`'s `-s` flag just suppresses all progress output while
+    fetching a genuinely large zip over this VM's (likely NAT'd)
+    VirtualBox networking. Confirmed still-alive via a second terminal
+    (`ps aux | grep curl` + watching the tmp zip's size grow between
+    checks) rather than assumed — worth checking the same way if a
+    future session sees the same "nothing printing" symptom on a slow
+    connection, instead of assuming a real hang.
+  - **`snapd`/`yazi`'s known Arch/pacman gap** (AUR-only, not in
+    official repos, already documented in `packages.txt`) **was
+    expected on this run but never explicitly confirmed hit or
+    skipped** — still open, worth checking directly next time this VM
+    comes up rather than assuming it behaved identically to
+    CachyOS/EndeavourOS.
+  - **Git identity + `gh` auth set up on this VM afterward**, same
+    playbook documented elsewhere in this file: created
+    `~/.gitconfig.local` (the `default` profile's own `.gitconfig`
+    already just does `[include] path = ~/.gitconfig.local` for exactly
+    this reason) with Greg's identity, `sudo pacman -S github-cli`
+    (`gh` isn't in `default`'s package list, only `developer`'s — this
+    VM used the `default`-based manifest above), `gh auth login`
+    device-code flow approved from a browser, `gh auth setup-git` to
+    wire it into `git push`. Confirmed via `gh auth status` and a real
+    `git push --dry-run`. First confirmation this exact playbook also
+    works cleanly on Manjaro, not just CachyOS/openSUSE/Fedora.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
