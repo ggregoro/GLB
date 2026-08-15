@@ -478,10 +478,17 @@ reasonably clean and documented, not just "works on my machine."
     (bash/zsh) / `if test -d /snap/bin; fish_add_path /snap/bin; end`
     (fish) block to the 8 files that were missing it: `default`'s
     `.zshrc`/`config.fish`, and `developer`/`server`'s
-    `.bashrc`/`.zshrc`/`config.fish`. Not yet verified on `developer`/
-    `server` specifically (no machine with `yazi`-via-snap installed
-    under those profiles at hand this session) — only confirmed fixed
-    on `default`/zsh, on this VM.
+    `.bashrc`/`.zshrc`/`config.fish`. **Verified same day, follow-up
+    check**: rather than running full `developer`/`server` restores
+    on this VM (would pull in each profile's extra packages/dotfiles
+    unnecessarily, since `yazi` and `snapd` are already installed
+    system-wide here), sourced each profile's `.bashrc`/`.zshrc`/
+    `config.fish` directly (`bash -i -c`/`zsh -c`/`fish -c`) and
+    confirmed `command -v yazi` resolves to `/snap/bin/yazi` and
+    `/snap/bin` is on `PATH` in all six combinations
+    (`developer`/`server` × bash/zsh/fish). Confirms the fix is
+    real for both profiles, not just `default`/zsh where the bug was
+    first found.
   - **Re-ran `glb restore --from-manifest` for real this time**,
     verified via `readlink -f` both before starting (still pointing at
     `profiles/default`) and after (correctly pointing at the manifest)
