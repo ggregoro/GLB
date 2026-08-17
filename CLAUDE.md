@@ -854,6 +854,21 @@ branches on it.
     pre-existing and unrelated (this VM already has `fresh`/`starship`
     genuinely on real `PATH`, the same test-isolation gap documented
     repeatedly elsewhere in this file).
+  - **Confirmed for real the same day (Greg, this VM's own terminal):**
+    a genuine `glb restore developer` (this VM's first real restore,
+    not sandboxed) ran completely through with exactly **one** sudo
+    password prompt in about 10 seconds — no manual-step pause anywhere,
+    confirming `podman`/`jq`/`gh`/`ncdu`/`lazygit`/`glow` all install
+    cleanly via pacman and `mise`/`lazydocker` via curl. A second real
+    `glb restore developer` immediately after came back fully clean/
+    idempotent — every package/extra/dotfile "Already installed"/
+    "Already linked", zero sudo calls needed the second time, exit 0.
+    `yazi` confirmed genuinely present as the native pacman package
+    (`pacman -Q yazi` → `26.5.6-4`) and `snapd` confirmed absent
+    (`pacman -Q snapd` → not installed) — the fix works exactly as
+    designed on a real restore, not just in dry-run/bats. `developer` is
+    now fully confirmed end-to-end on real, vanilla Arch (not just the
+    Arch-derivatives tested before).
 - **yazi added to `profiles/default`, alongside ranger (not replacing it) —
   new `snap` extras method built to install it (2026-08-13, Dell laptop /
   Pop!_OS).** Greg and a counterpart session had already manually installed
