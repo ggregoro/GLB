@@ -506,6 +506,21 @@ reasonably clean and documented, not just "works on my machine."
     the point where the native-prompt `--from-manifest` approach is
     actually confirmed working end-to-end, superseding the earlier
     (wrong) claim above.
+- **New (2026-08-16): a fresh Arch Linux (Xfce) VM** — first real test of
+  vanilla Arch itself (not an Arch-based derivative like CachyOS/
+  EndeavourOS/Manjaro, all already tested), and the first machine tested
+  with Xfce specifically. `glb info` correctly detected `arch`/`pacman`.
+  Dry-run of `developer` confirmed zero `_GLB_PACKAGE_OVERRIDES` gaps —
+  `podman`/`jq`/`gh`/`ncdu`/`lazygit`/`glow` all resolve as real pacman
+  packages (`gh` correctly through its existing `gh:pacman` → `github-cli`
+  override), verified read-only via `pacman -Si` rather than a real
+  install since this session had no TTY. This VM is also where the
+  long-flagged `yazi`/`snapd`-on-pacman gap finally got fixed — see the
+  Roadmap entry below for the real bug/fix writeup. `gh` set up for push
+  access via the standard device-code playbook (`sudo pacman -S
+  github-cli` + `gh auth login` + `gh auth setup-git`, run by Greg
+  himself in a real terminal since this session had no TTY) — confirmed
+  via `gh auth status` and a real `git push --dry-run`.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
@@ -793,6 +808,52 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Real, previously-flagged gap fixed (2026-08-16, fresh Arch/Xfce VM):
+  `yazi`/`snapd` no longer pause a pacman restore.** Flagged as a known
+  follow-up back on 2026-08-13 ("worth a future per-distro override...
+  not built this session, just flagged" — see the entry right below this
+  one) and picked up here. Root problem: `default`/`server`'s `snap yazi
+  classic` extras.txt entry only ever checked/installed via `snap list`/
+  `snap install`, so on pacman — where `yazi` has a real native package
+  in the `extra` repo but `snapd` itself is confirmed AUR-only — every
+  restore tried to install `snapd` (fails), then tried to install `yazi`
+  via snap (fails, no snap binary at all), hitting two manual-step pauses
+  per restore for a tool that's really just a normal package away.
+  - New `_GLB_SNAP_NATIVE_OVERRIDES` table (`lib/extras.sh`, keyed
+    `<name>:<package-manager>`) lets a `snap`-method extras.txt entry
+    route through the plain package manager instead of snap when a real
+    native package exists. Added `yazi:pacman` → `yazi`. Wired into
+    `glb_extra_installed` (checks via `glb_package_installed` instead of
+    `snap list`), `glb_install_extra` (delegates straight to
+    `glb_install_package` instead of `snap install`), `_glb_update_extra`
+    (no-ops — already covered by the plain package-manager update via
+    `glb_update_packages`), and `glb_apply_profile_extras`'s dry-run
+    wording (now says "via the package manager, yazi - not snap").
+  - New `_GLB_PACKAGE_SKIP` table (`lib/package.sh`, same
+    `<name>:<pkg-mgr>` keying style as the existing
+    `_GLB_PACKAGE_OVERRIDES`) lets `glb_apply_profile_packages` skip a
+    package known to have no real install path on the current package
+    manager — log-and-continue instead of attempting an install that's
+    guaranteed to fail and pausing for a manual step on every single
+    restore. Added `snapd:pacman` — confirmed AUR-only, and now genuinely
+    unneeded on pacman since `yazi` routes around it entirely via the
+    override above.
+  - **Deliberately scoped to pacman only** — zypper's `snapd`/`yazi` gap
+    stays exactly as documented (no native `yazi` package exists there at
+    all, confirmed 2026-08-13, would need a non-default OBS repo), and
+    dnf was never confirmed either way. Not chased further this session,
+    same "known gap, not chased further" treatment this file already
+    gives e.g. `lazygit` on Fedora/dnf.
+  - **Verified via dry-run** on this VM's real `default`/`server`
+    restores: `snapd` now logs `Skipping snapd: ...` instead of `Would
+    install`, and `yazi` (already present natively on this VM) correctly
+    shows `Already installed: yazi` instead of `Would install: yazi (via
+    snap)`. Full bats suite (223 tests, via a scratchpad-cloned
+    `bats-core` — `bats` itself isn't installed on this VM) — 218/223
+    pass; confirmed via `git stash` that the same 5 failures are
+    pre-existing and unrelated (this VM already has `fresh`/`starship`
+    genuinely on real `PATH`, the same test-isolation gap documented
+    repeatedly elsewhere in this file).
 - **yazi added to `profiles/default`, alongside ranger (not replacing it) —
   new `snap` extras method built to install it (2026-08-13, Dell laptop /
   Pop!_OS).** Greg and a counterpart session had already manually installed

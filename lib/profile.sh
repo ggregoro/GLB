@@ -57,6 +57,7 @@ glb_apply_profile_packages() {
     # on a failed install, which needs real stdin free to wait on the
     # user's actual keypress rather than silently consuming the next
     # line of packages_file as if it were the answer.
+    local skip_reason
     while IFS= read -r line <&3 || [[ -n "$line" ]]; do
         package="${line%%#*}"
         package="$(echo "$package" | xargs)"
@@ -65,6 +66,11 @@ glb_apply_profile_packages() {
 
         if glb_package_installed "$package" 2>/dev/null; then
             glb_log_info "Already installed: $package"
+            continue
+        fi
+
+        if skip_reason="$(glb_package_skip_reason "$package")"; then
+            glb_log_info "Skipping $package: $skip_reason"
             continue
         fi
 

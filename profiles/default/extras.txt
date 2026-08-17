@@ -39,9 +39,12 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 # index on any Debian/Ubuntu-family distro (confirmed empirically on
 # Pop!_OS 24.04, apt-cache has no candidate at all) - snap was chosen
 # because that's genuinely how it's installed on Greg's real laptop,
-# not picked in the abstract. Needs --classic confinement. Confirmed
-# real gap on zypper (see packages.txt) - snapd itself isn't available
-# there, so this entry is a documented no-op on openSUSE rather than a
-# GLB bug. Known gap, not being chased further (same call as lazygit on
-# Fedora/dnf).
+# not picked in the abstract. Needs --classic confinement. On pacman
+# specifically, this line is routed to a real native `yazi` pacman
+# package instead of snap entirely (see _GLB_SNAP_NATIVE_OVERRIDES in
+# lib/extras.sh) - confirmed 2026-08-16. Confirmed real gap on zypper
+# (see packages.txt) - snapd itself isn't available there and there's
+# no native yazi package either, so this entry is a documented no-op on
+# openSUSE rather than a GLB bug. Known gap there, not being chased
+# further (same call as lazygit on Fedora/dnf).
 snap    yazi      classic

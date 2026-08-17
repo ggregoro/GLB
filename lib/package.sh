@@ -34,6 +34,49 @@ declare -gA _GLB_PACKAGE_OVERRIDES=(
 )
 
 # ------------------------------------------------------------
+# Packages known to have no real path to installing on a given
+# package manager - keyed "<generic-name>:<package-manager>" to a
+# short reason. glb_apply_profile_packages (lib/profile.sh) skips
+# these entirely (log-and-continue) rather than attempting an
+# install that's guaranteed to fail and pausing for a manual step
+# every single restore. Distinct from _GLB_PACKAGE_OVERRIDES above:
+# that table is for a package that installs fine everywhere under a
+# different name; this one is for a package that doesn't install at
+# all on that manager.
+#
+# [snapd:pacman]: confirmed AUR-only, not in Arch's official repos
+# (2026-08-13, CachyOS/EndeavourOS VMs). Safe to skip outright here
+# specifically because nothing in these profiles still needs snapd
+# on pacman - yazi's snap extras.txt entry has its own native-pacman-
+# package override (see _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh),
+# so skipping snapd doesn't strand anything. Left unskipped on
+# dnf/zypper (same confirmed gap, see packages.txt's own comment) -
+# yazi has no native package on those, so pausing there still
+# surfaces a real, actionable choice rather than silently dropping
+# the tool.
+declare -gA _GLB_PACKAGE_SKIP=(
+    [snapd:pacman]="not in Arch's official repos (AUR-only); nothing in these profiles needs it on pacman since yazi installs as a native package instead"
+)
+
+# ------------------------------------------------------------
+# Look up whether a package is known-unavailable on the current
+# package manager. Prints the reason and returns 0 if so; returns 1
+# with no output otherwise.
+# ------------------------------------------------------------
+
+glb_package_skip_reason() {
+    local package="$1"
+    local pkg_mgr
+    local reason
+
+    pkg_mgr="$(glb_detect_package_manager)" || return 1
+    reason="${_GLB_PACKAGE_SKIP[${package}:${pkg_mgr}]:-}"
+
+    [[ -n "$reason" ]] || return 1
+    printf "%s\n" "$reason"
+}
+
+# ------------------------------------------------------------
 # Resolve a generic package name to the name a given package
 # manager expects, applying _GLB_PACKAGE_OVERRIDES if present.
 # ------------------------------------------------------------

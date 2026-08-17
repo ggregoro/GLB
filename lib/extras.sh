@@ -17,6 +17,34 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 fi
 
 # ------------------------------------------------------------
+# Some snap-method extras have a real native package on certain
+# package managers - when that's true, check/install/update through
+# the plain package manager instead of snap, sidestepping a snap/
+# snapd dependency entirely where it isn't actually needed. Keyed
+# "<name>:<package-manager>" -> the native package name.
+#
+# yazi:pacman - confirmed real (2026-08-16): Arch's own `extra` repo
+# ships `yazi` directly, unlike CachyOS/EndeavourOS's snapd, which is
+# AUR-only (see _GLB_PACKAGE_SKIP in lib/package.sh). Flagged as a
+# known follow-up in packages.txt/CLAUDE.md since 2026-08-13, built
+# now. zypper has no native yazi package at all (would need a
+# non-default OBS repo), so it deliberately has no entry here - the
+# snap method (and its own known snapd gap) stays the only path there.
+# ------------------------------------------------------------
+
+declare -gA _GLB_SNAP_NATIVE_OVERRIDES=(
+    [yazi:pacman]="yazi"
+)
+
+_glb_extra_native_package() {
+    local name="$1"
+    local pkg_mgr
+
+    pkg_mgr="$(glb_detect_package_manager)" || return 1
+    printf "%s\n" "${_GLB_SNAP_NATIVE_OVERRIDES[${name}:${pkg_mgr}]:-}"
+}
+
+# ------------------------------------------------------------
 # Check whether an extra is already installed
 # ------------------------------------------------------------
 
@@ -24,6 +52,7 @@ glb_extra_installed() {
     local method="$1"
     local name="$2"
     local spec="$3"
+    local native
 
     case "$method" in
         curl)
@@ -36,7 +65,12 @@ glb_extra_installed() {
             compgen -G "$HOME/.local/share/fonts/$name/*.[ot]tf" >/dev/null
             ;;
         snap)
-            snap list "$name" >/dev/null 2>&1
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_package_installed "$native"
+            else
+                snap list "$name" >/dev/null 2>&1
+            fi
             ;;
         *)
             return 1
@@ -121,6 +155,14 @@ glb_install_extra() {
                 "curl -fsSL $spec -o font.zip && mkdir -p $font_dir && unzip -o font.zip -d $font_dir && fc-cache -f $font_dir"
             ;;
         snap)
+            local native
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_log_info "Installing $name via the package manager ($native), not snap"
+                glb_install_package "$native"
+                return $?
+            fi
+
             glb_log_info "Installing $name via snap${spec:+ (--$spec)}"
 
             if glb_sudo snap install "$name" ${spec:+--$spec}; then
@@ -181,6 +223,15 @@ _glb_update_extra() {
             return 1
             ;;
         snap)
+            local native
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                # Native package - already kept current by
+                # glb_update_packages (the plain package-manager
+                # update), nothing extra to do here.
+                return 0
+            fi
+
             glb_log_info "Updating $name via snap"
             glb_sudo snap refresh "$name"
             ;;
@@ -264,7 +315,13 @@ glb_apply_profile_extras() {
         fi
 
         if [[ "$dry_run" == "--dry-run" ]]; then
-            glb_log_info "Would install: $name (via $method)"
+            local native=""
+            [[ "$method" == "snap" ]] && native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_log_info "Would install: $name (via the package manager, $native - not snap)"
+            else
+                glb_log_info "Would install: $name (via $method)"
+            fi
             continue
         fi
 
