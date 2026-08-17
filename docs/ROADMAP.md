@@ -389,9 +389,21 @@ Expand platform support.
   methods (curl/flatpak/font/starship-installer) working, and a clean
   idempotent second restore. Also where the `pam_faillock` lockout
   issue above was root-caused — see the Version 0.2 known-issue entry.
-- **Manjaro** — not tested. Arch-family, so the underlying package
-  manager (pacman) is already confirmed via CachyOS, but Manjaro itself
-  has never actually been run.
+  **Vanilla Arch itself (not just Arch-based derivatives) confirmed
+  2026-08-16** on a fresh Arch/Xfce VM — all three profiles
+  (`default`/`developer`/`server`) restored for real, twice each,
+  fully idempotent both times; zero `_GLB_PACKAGE_OVERRIDES` gaps. Also
+  where the `yazi`/`snapd` pacman fix (routes `yazi` through its native
+  package instead of snap, skips the AUR-only `snapd`) was found and
+  fixed — see CLAUDE.md for the full writeup.
+- **Manjaro ✅** — confirmed 2026-08-15 on a fresh Manjaro (Gnome) VM.
+  `snapd` is genuinely in Manjaro's own `extra` repo (unlike CachyOS/
+  EndeavourOS, where it's AUR-only), so this is a real gap of its own:
+  the package installs but its systemd units aren't enabled by default,
+  needing a one-time manual `systemctl enable --now snapd.socket`/
+  `snapd.apparmor` before `yazi` installs via snap. See CLAUDE.md for
+  the full writeup, including the `--from-manifest` custom-prompt
+  variant tested on the same VM.
 
 All four package managers GLB supports (apt, dnf, pacman, zypper) are
 now confirmed clean end-to-end across real hardware and VMs — see

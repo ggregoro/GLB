@@ -3455,6 +3455,57 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-16, fresh Arch/Xfce VM) — ending here; Greg
+  is moving to his primary laptop next.** Everything below is committed
+  and pushed to `origin/main` — `2a2f106` is the latest commit as of
+  this note, working tree clean on this VM. Full session, in order:
+  1. Cloned GLB fresh onto this new Arch/Xfce test VM (built specifically
+     to test Arch + Xfce). `glb info` correctly detected `arch`/`pacman`.
+  2. Dry-run of `developer`, then confirmed every "would install"
+     package via read-only `pacman -Si` before touching anything real —
+     zero `_GLB_PACKAGE_OVERRIDES` gaps (`gh` correctly resolved through
+     its existing `gh:pacman` override).
+  3. **Found and fixed a real, previously-flagged bug**: `yazi`/`snapd`
+     paused every pacman restore twice (once for `snapd`, AUR-only on
+     Arch; once for `yazi` via snap, which needs `snapd`) even though
+     `yazi` has a real native pacman package. New
+     `_GLB_SNAP_NATIVE_OVERRIDES` (`lib/extras.sh`) and
+     `_GLB_PACKAGE_SKIP` (`lib/package.sh`) fix this on pacman
+     specifically — see the dedicated Roadmap entry above for the full
+     design and verification (dry-run + full bats suite, 218/223 passing,
+     confirmed the same 5 failures are pre-existing via `git stash`).
+  4. Set up this VM for GitHub push access: git identity, `sudo pacman -S
+     github-cli`, `gh auth login` (device-code flow, run by Greg himself
+     in a real terminal since this session has no TTY), `gh auth
+     setup-git`. Committed and pushed the fix.
+  5. Ran real (non-sandboxed) restores of **all three profiles** —
+     `developer`, `default`, `server` — each one run twice by Greg
+     himself to confirm idempotency. All three confirmed clean, all real
+     package/extras deltas verified installed and functional, zero
+     manual-step pauses anywhere, and the `yazi`/`snapd` fix held on
+     every single one. See the Roadmap entry's sub-bullets for the full
+     per-profile results.
+  6. **Real gotcha hit and fixed, not a GLB bug**: `default`'s restore
+     replaced `~/.gitconfig` with GLB's own tracked symlink, silently
+     backing up the git identity set earlier via `--global`. Fixed by
+     moving identity + the `gh`-written credential-helper block into
+     `~/.gitconfig.local` instead (untracked, survives future restores).
+     **Worth remembering for any future fresh-VM session**: set up
+     git/gh identity in `~/.gitconfig.local` from the start rather than
+     `git config --global`, if `default`/`server` haven't been restored
+     yet.
+  - **This VM is now a fully verified, fully documented reference
+    point**: all three profiles confirmed real and idempotent on vanilla
+    Arch/Xfce, a real bug fixed and pushed, `CHANGELOG.md`/
+    `docs/ROADMAP.md`/this file all brought current in the same session
+    (see this note plus the Roadmap entry above).
+  - **Next session, on Greg's primary laptop: pull first**
+    (`git fetch && git log main..origin/main`) before assuming it's
+    caught up — this session made several commits (`f7fc968` through
+    `2a2f106`) it won't have yet. Nothing is specifically queued as a
+    "pick up here" item; the yazi/snapd fix is done and verified on
+    pacman, zypper's equivalent gap (no native `yazi` package there)
+    remains an intentional known gap, not something to chase next.
 - **Session wrap-up (2026-08-13, openSUSE VM) — ending here; Greg is
   moving to the CachyOS VM next.** Everything below is committed and
   pushed to `main` — `1ea1c05` is the latest commit on `origin/main` as

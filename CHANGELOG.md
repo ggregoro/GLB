@@ -275,6 +275,19 @@ This project follows a simple versioning approach:
   on 1000ms as a safe margin). Not yet hit as a live symptom on GLB
   itself, but the same latent gap existed here too - preemptive, not
   reactive.
+- Fixed `default`/`server`'s `yazi` extras.txt entry pausing every
+  restore on pacman: it only ever checked/installed via `snap`, but
+  `snapd` is confirmed AUR-only on Arch, so every restore tried (and
+  failed) to install `snapd`, then tried (and failed) to install
+  `yazi` via snap - two manual-step pauses for a tool that actually has
+  a real native pacman package. New `_GLB_SNAP_NATIVE_OVERRIDES`
+  (`lib/extras.sh`) routes `yazi` through the package manager instead
+  of snap on pacman specifically; new `_GLB_PACKAGE_SKIP`
+  (`lib/package.sh`) skips `snapd` there outright since nothing needs
+  it anymore. Verified via dry-run, the bats suite, and real
+  `default`/`developer`/`server` restores (twice each, confirming
+  idempotency) on a fresh vanilla Arch/Xfce VM - zero pauses, zero
+  sudo calls needed on the re-run.
 
 ### Planned
 
