@@ -881,7 +881,38 @@ branches on it.
     present. `yazi` confirmed linked and functional
     (`~/.config/yazi/...` dotfiles all "Already linked"). Both `default`
     and `developer` are now fully confirmed end-to-end for real on this
-    VM; `server` is the only profile left untested here.
+    VM.
+    - **Real gotcha hit along the way, not a GLB bug**: `default`'s
+      restore replaced `~/.gitconfig` with GLB's own managed symlink
+      (one of `default`'s tracked dotfiles), silently backing up the
+      `git config --global user.name/user.email` set earlier in this
+      session before any restore had run - exactly the documented
+      2026-08-09 behavior (the tracked file only does `[include] path =
+      ~/.gitconfig.local`), just newly confirmed end-to-end for a fresh
+      machine going through the full sequence (set global identity ->
+      later restore `default` -> identity silently backed up) for the
+      first time. Fixed by writing identity plus the `gh`-written
+      credential-helper block into `~/.gitconfig.local` instead (copied
+      from `~/.gitconfig.glb-backup`'s content) - untracked, survives
+      future restores. Confirmed via a real `git push`. **Worth
+      remembering for any future fresh-VM session**: set up `git`/`gh`
+      identity in `~/.gitconfig.local` from the start, not
+      `git config --global`, if `default`/`server` (both symlink
+      `.gitconfig`) haven't been restored yet - saves re-doing this
+      step.
+  - **`server` confirmed for real too, same day, same VM:** a genuine
+    `glb restore server` ran clean end-to-end - `ufw`/`rsync`/`restic`/
+    `fail2ban` were the only real deltas versus what `default` had
+    already installed, all confirmed functional (`restic version` ->
+    `0.19.1`, `fail2ban-client -V` -> `v1.1.1`). A second real restore
+    was fully idempotent, `Skipping snapd: ...` fired correctly again,
+    and `~/.gitconfig.local`'s identity survived this restore too
+    (confirmed via `git push --dry-run`) since `server` doesn't
+    re-touch `.gitconfig` at all (only `default` ships that dotfile).
+    **All three profiles (`default`/`developer`/`server`) are now fully
+    confirmed end-to-end for real on this VM** - the most complete
+    single-machine verification pass this project has had on vanilla
+    Arch.
 - **yazi added to `profiles/default`, alongside ranger (not replacing it) —
   new `snap` extras method built to install it (2026-08-13, Dell laptop /
   Pop!_OS).** Greg and a counterpart session had already manually installed
