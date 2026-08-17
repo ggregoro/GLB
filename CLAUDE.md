@@ -869,6 +869,19 @@ branches on it.
     designed on a real restore, not just in dry-run/bats. `developer` is
     now fully confirmed end-to-end on real, vanilla Arch (not just the
     Arch-derivatives tested before).
+  - **`default` confirmed for real too, same day, same VM (Greg's own
+    terminal):** a genuine `glb restore default` ran clean end-to-end
+    (`fastfetch` was this profile's only real delta versus what
+    `developer` had already installed - confirmed via `fastfetch
+    --version`). A second real restore immediately after was fully
+    idempotent, and crucially showed `Skipping snapd: ...` printed
+    correctly even on a re-run (not silently absorbed into the
+    already-installed path) - confirms the skip logic itself is what's
+    firing, not a coincidental side effect of everything already being
+    present. `yazi` confirmed linked and functional
+    (`~/.config/yazi/...` dotfiles all "Already linked"). Both `default`
+    and `developer` are now fully confirmed end-to-end for real on this
+    VM; `server` is the only profile left untested here.
 - **yazi added to `profiles/default`, alongside ranger (not replacing it) —
   new `snap` extras method built to install it (2026-08-13, Dell laptop /
   Pop!_OS).** Greg and a counterpart session had already manually installed
