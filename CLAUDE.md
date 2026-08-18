@@ -808,25 +808,56 @@ branches on it.
 
 ## Roadmap / in progress
 
-- **`cpufetch` added to `default`'s `extras.txt` (2026-08-17, cloud
-  session), per Greg's request.** CPU architecture info banner (James
-  Tigert / kz6fittycent), v1.07 at the time this was added — pairs with
-  `fastfetch`'s general system-info banner (`packages.txt`) as a
-  dedicated CPU-specific one, same category of tool. Installed via the
-  existing `snap` extras method (`lib/extras.sh`, built for `yazi`) —
-  strict confinement, no `--classic` needed (confirmed via the snap's
-  own install page, `snapcraft.io/install/cpufetch/ubuntu`, which shows
-  a bare `sudo snap install cpufetch`). No new mechanism needed, just a
-  one-line `extras.txt` addition (`snap    cpufetch`). Full bats suite
-  (223 tests) still passes unchanged. Verified via `glb restore default
-  --dry-run` on this machine, which already has a real
-  `cpufetch 1.07` snap installed from an earlier session — correctly
-  reported `Already installed: cpufetch`, confirming the detection
-  (`snap list cpufetch`) resolves the real package name correctly, not
-  just a syntax check. **Not yet verified as a genuinely fresh install**
-  (this machine already had it) — worth confirming on a VM that's never
-  had it, same as every other extras.txt addition in this file's
-  history, next time one's available.
+- **`cpufetch` added to `default` (2026-08-17, cloud session), per
+  Greg's request — corrected same session from `snap`/`extras.txt` to a
+  plain `packages.txt` entry once real per-distro package data showed
+  the snap route was unnecessary.** CPU architecture info banner (James
+  Tigert / kz6fittycent) — pairs with `fastfetch`'s general system-info
+  banner as a dedicated CPU-specific one.
+  - **First pass (wrong):** added as `snap cpufetch` in `extras.txt`,
+    same method already used for `yazi`, without first checking
+    whether a native package existed anywhere. Committed and pushed as
+    `c70040e`.
+  - **Corrected after Greg mentioned Debian has an apt version (just
+    not the latest one)** — prompted checking all four package
+    managers properly instead of assuming snap was the only option, the
+    same mistake flagged after the fact rather than caught up front.
+    Real per-distro data, checked directly against each authoritative
+    package page (not generic answers): apt (Debian stable/trixie) has
+    a real `cpufetch` package but at `1.06-2`, one point release behind
+    upstream's `1.07` (Ubuntu varies by release - noble/24.04 is
+    `1.05-1`, resolute/26.04 is current at `1.07-2`); dnf (Fedora 44)
+    has it at `1.07-3`, current; pacman (Arch `extra` repo) has it at
+    `1.07-1`, current; zypper (openSUSE Tumbleweed specifically -
+    confirmed via the real `software.opensuse.org` package search UI,
+    not just a site-restricted web search, which returned nothing
+    useful) has it at `1.07`, current. **Every one of the four package
+    managers this project supports has a real, working `cpufetch`
+    package under the exact same name** - no `_GLB_PACKAGE_OVERRIDES`
+    entry needed either.
+  - **Fixed:** removed the `extras.txt`/`snap` entry, added `cpufetch`
+    as a plain line in `default/packages.txt` instead (right after
+    `fastfetch`/`snapd`), with a comment documenting the confirmed
+    per-manager versions and the one real, minor, tolerated gap (apt
+    lagging upstream by one point release) rather than a workaround -
+    same tolerance this project already gives other "not quite latest"
+    packages. This also sidesteps a real problem the `snap` route would
+    have caused: `snapd` is deliberately skipped on pacman (see its own
+    packages.txt comment, the 2026-08-16 yazi fix) and isn't available
+    on zypper at all, so `cpufetch` via snap would have hit the normal
+    manual-step pause on both — using the native package instead avoids
+    that entirely, on every distro.
+  - Full bats suite (223 tests) passes on both the original and
+    corrected version. Verified via `glb restore default --dry-run` on
+    this machine: correctly reports `Would install: cpufetch` post-fix
+    (this machine's only `cpufetch` install is via snap from the first,
+    reverted pass - apt itself has never installed it here, so this is
+    genuine "not yet installed via the package manager" signal, not a
+    stale check). **Still not verified as a real install on any VM** -
+    Greg's own planned Arch/Fedora/openSUSE VM tests (see the
+    conversation this session) will be the first real, non-dry-run
+    signal on all three, plus the first live confirmation apt's
+    one-version-behind package is otherwise fine to use as-is.
 - **Real, previously-flagged gap fixed (2026-08-16, fresh Arch/Xfce VM):
   `yazi`/`snapd` no longer pause a pacman restore.** Flagged as a known
   follow-up back on 2026-08-13 ("worth a future per-distro override...

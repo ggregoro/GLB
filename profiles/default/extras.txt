@@ -48,14 +48,3 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 # openSUSE rather than a GLB bug. Known gap there, not being chased
 # further (same call as lazygit on Fedora/dnf).
 snap    yazi      classic
-
-# CPU architecture info banner (James Tigert / kz6fittycent), pairs
-# with fastfetch's general system-info banner (packages.txt). Strict
-# confinement - no --classic needed, confirmed via the snap's own
-# install page (snapcraft.io/install/cpufetch/ubuntu). Version 1.07 at
-# the time this was added (2026-08-17). Unlike yazi above, this has no
-# _GLB_SNAP_NATIVE_OVERRIDES entry, so it hits the normal manual-step
-# pause on pacman (snapd deliberately skipped there, see packages.txt)
-# and on zypper (snapd not in the default repos at all) - same known-gap
-# treatment as yazi's own snapd dependency on those two.
-snap    cpufetch

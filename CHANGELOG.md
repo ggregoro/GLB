@@ -123,11 +123,12 @@ This project follows a simple versioning approach:
   (`yazi-rs/plugins:git`) pre-configured, vendored as a static dotfile
   under `dotfiles/.config/yazi/` rather than fetched via `ya pkg add`
   at restore time.
-- Added `cpufetch` (James Tigert / kz6fittycent, v1.07) to the
-  `default` profile's `extras.txt`, via the `snap` method - strict
-  confinement, no `--classic` needed. Pairs with `fastfetch`'s general
-  system-info banner (`packages.txt`) as a dedicated CPU-architecture
-  banner.
+- Added `cpufetch` (James Tigert / kz6fittycent) to the `default`
+  profile's `packages.txt` - a real native package on apt, dnf, pacman,
+  and zypper, no per-distro override needed. Pairs with `fastfetch`'s
+  general system-info banner as a dedicated CPU-architecture one.
+  Debian/older-Ubuntu's apt package lags one point release behind
+  upstream (1.06 vs 1.07) - a minor, tolerated gap, not chased further.
 
 ### Changed
 - Switched the live resource monitor pick from `htop` to `btop` across
