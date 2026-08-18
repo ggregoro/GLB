@@ -808,6 +808,25 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`cpufetch` added to `default`'s `extras.txt` (2026-08-17, cloud
+  session), per Greg's request.** CPU architecture info banner (James
+  Tigert / kz6fittycent), v1.07 at the time this was added — pairs with
+  `fastfetch`'s general system-info banner (`packages.txt`) as a
+  dedicated CPU-specific one, same category of tool. Installed via the
+  existing `snap` extras method (`lib/extras.sh`, built for `yazi`) —
+  strict confinement, no `--classic` needed (confirmed via the snap's
+  own install page, `snapcraft.io/install/cpufetch/ubuntu`, which shows
+  a bare `sudo snap install cpufetch`). No new mechanism needed, just a
+  one-line `extras.txt` addition (`snap    cpufetch`). Full bats suite
+  (223 tests) still passes unchanged. Verified via `glb restore default
+  --dry-run` on this machine, which already has a real
+  `cpufetch 1.07` snap installed from an earlier session — correctly
+  reported `Already installed: cpufetch`, confirming the detection
+  (`snap list cpufetch`) resolves the real package name correctly, not
+  just a syntax check. **Not yet verified as a genuinely fresh install**
+  (this machine already had it) — worth confirming on a VM that's never
+  had it, same as every other extras.txt addition in this file's
+  history, next time one's available.
 - **Real, previously-flagged gap fixed (2026-08-16, fresh Arch/Xfce VM):
   `yazi`/`snapd` no longer pause a pacman restore.** Flagged as a known
   follow-up back on 2026-08-13 ("worth a future per-distro override...

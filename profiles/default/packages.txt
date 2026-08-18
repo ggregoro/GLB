@@ -25,18 +25,24 @@ btop
 unzip      # needed for the font extras.txt entry below
 bash-completion    # loads glb's completion file - see lib/completions.sh
 
-# snapd - needed for the snap extras.txt entry below (yazi). Confirmed
-# in apt's index (Pop!_OS/Debian/Ubuntu). Not in Arch/pacman's official
-# repos at all (AUR-only) - but this no longer matters on pacman
-# specifically: yazi has a real native pacman package (`extra` repo),
-# so the snap extras.txt entry below routes through it directly there
-# (see _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh) and snapd itself is
+# snapd - needed for the snap extras.txt entries below (yazi,
+# cpufetch). Confirmed in apt's index (Pop!_OS/Debian/Ubuntu). Not in
+# Arch/pacman's official repos at all (AUR-only) - this no longer
+# matters for yazi specifically, which has a real native pacman package
+# (`extra` repo) that the snap extras.txt entry routes through instead
+# (see _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh), and snapd itself is
 # skipped outright on pacman via _GLB_PACKAGE_SKIP in lib/package.sh -
 # confirmed 2026-08-16, no more manual-step pause on Arch-family
-# machines. Confirmed real gap on zypper too (2026-08-13, openSUSE
-# Tumbleweed VM, real restore of the server profile): `zypper info
-# snapd` reports "package 'snapd' not found" in the default repos, and
-# zypper has no native yazi package either (no OBS repo), so snap/yazi
+# machines for yazi. cpufetch has no such native-package override
+# though (added 2026-08-17), so on pacman specifically it will still
+# hit the normal manual-step pause (no snap binary present, since
+# snapd is deliberately skipped there) - not yet worth a
+# _GLB_SNAP_NATIVE_OVERRIDES entry unless cpufetch turns out to have a
+# real AUR/pacman package worth routing through instead. Confirmed real
+# gap on zypper too (2026-08-13, openSUSE Tumbleweed VM, real restore
+# of the server profile): `zypper info snapd` reports "package 'snapd'
+# not found" in the default repos, and zypper has no native yazi
+# package either (no OBS repo), so snap/yazi (and now snap/cpufetch)
 # still don't install there - same known-gap treatment as lazygit on
 # Fedora/dnf rather than chasing a non-default repo. dnf unverified.
 snapd

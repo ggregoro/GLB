@@ -123,6 +123,11 @@ This project follows a simple versioning approach:
   (`yazi-rs/plugins:git`) pre-configured, vendored as a static dotfile
   under `dotfiles/.config/yazi/` rather than fetched via `ya pkg add`
   at restore time.
+- Added `cpufetch` (James Tigert / kz6fittycent, v1.07) to the
+  `default` profile's `extras.txt`, via the `snap` method - strict
+  confinement, no `--classic` needed. Pairs with `fastfetch`'s general
+  system-info banner (`packages.txt`) as a dedicated CPU-architecture
+  banner.
 
 ### Changed
 - Switched the live resource monitor pick from `htop` to `btop` across
