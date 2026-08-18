@@ -808,6 +808,40 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`eza --hyperlink` added to the long-listing aliases (2026-08-18,
+  Dell laptop, live/interactive session), per Greg's request.** He
+  first asked for `--hyperlink` on the plain `ls` alias, using an
+  example line that (probably unintentionally) also dropped the
+  existing `--git` flag — flagged that dropping `--git` would
+  reintroduce the per-file git-status regression fixed on 2026-08-09,
+  so paused rather than applying it as literally given. Greg then
+  clarified the real ask: `--hyperlink` on the **long-listing**
+  aliases (`ll`/`la`/`l`, the ones using `-l`) so Ctrl-click can open a
+  file straight from a detailed listing — not on plain `ls`, which he
+  didn't want changed. Applied that instead, across all three profiles
+  (`default`/`developer`/`server`) and all three shells (bash/zsh/
+  fish) — 9 dotfiles, `--git` preserved throughout, `ls` itself left
+  exactly as it was.
+  - **Verified for real, not just syntax-checked** — this laptop's
+    live `~/.bashrc`/`~/.zshrc`/`~/.config/fish/config.fish` are
+    symlinked straight into `profiles/default/dotfiles/...`, so the
+    edits were already live; no `glb restore` re-run needed. Ran `ll`
+    in real interactive bash, zsh, and fish sessions and confirmed
+    each emits genuine OSC 8 hyperlink escape sequences
+    (`ESC]8;;file://...`) around every filename, plus `bash -n`/
+    `zsh -n`/`fish -n` on all 9 edited files.
+  - **One incidental correction along the way**: while testing, `cat
+    -v` failed inside a sandboxed shell command with a `batcat`-flavored
+    error — initially (wrongly) described as "unrelated to GLB, just
+    this session's shell." It's actually GLB's own existing `alias
+    cat='batcat'`/`'bat'` (all three profiles, all three shells,
+    predates this session) doing exactly what it's supposed to — `bat`
+    just doesn't share GNU `cat`'s flag surface (`-v` isn't valid; the
+    equivalent is `-A`/`--show-all`). Not a bug, nothing changed;
+    worth remembering next time `cat`'s exact GNU-coreutils flags are
+    needed on a machine with `default`/`developer`/`server` restored —
+    reach for `/bin/cat` directly or `\cat`, not `cat -v`.
+  - Committed as `5b692d9` and pushed to `origin/main`.
 - **`cpufetch` added to `default` (2026-08-17, cloud session), per
   Greg's request — corrected same session from `snap`/`extras.txt` to a
   plain `packages.txt` entry once real per-distro package data showed
