@@ -1,11 +1,3 @@
-# Changelog
-
-## 0.1.0
-
-- Created the GLB project.
-- Established the project directory structure.
-- Initialized the Git repository.
-
 # GLB Project Changelog
 
 All notable changes to the GLB project will be documented in this file.
@@ -318,5 +310,6 @@ section and `CLAUDE.md` for the complete history behind each item below.
 ### Added
 
 - Initial GitHub repository
+- Initialized the Git repository
 - Documentation structure
 - Debian Server Cheat Sheet
