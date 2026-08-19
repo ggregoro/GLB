@@ -816,6 +816,53 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **pacman's `update` alias switched from `sudo pacman -Syu` to `yay
+  -Syu` (2026-08-19, Dell laptop), fixing a real gap Greg caught via
+  `cosmic-applet-arch`.** That COSMIC panel applet flags pacman and
+  AUR updates separately; it surfaced an AUR-only update (Google
+  Chrome, installed via `yay`) that `update` wasn't catching, since
+  plain `pacman -Syu` only syncs Arch's official repos. `yay -Syu` is
+  a strict superset — same sync/upgrade, plus AUR packages in the same
+  pass — so this is a no-downside swap anywhere `yay` is already
+  installed. Changed in all 9 pacman-branch dotfiles (`default`/
+  `developer`/`server` × bash/zsh/fish's `.bashrc`/`.zshrc`/
+  `config.fish`), `update` only — `install`/`remove`/`search` left on
+  plain pacman, since only `update` was confirmed broken; changing all
+  four was discussed and deliberately deferred as its own decision,
+  not folded into this fix.
+  - **A full yay-bootstrap mechanism was drafted, then explicitly
+    reverted the same session** — a new `glb_ensure_yay` function
+    (`lib/package.sh`, AUR git-clone + `makepkg -si`, same
+    manual-step-pause pattern as every other sudo-gated install) wired
+    into `glb_apply_profile`/`glb_apply_manifest`, plus bats coverage.
+    Greg's call: scope this to "just fix the config files, don't
+    change the overall project" — the underlying issue is specific to
+    this one Arch/COSMIC machine, not a cross-distro gap GLB itself
+    needs to solve right now. Fully reverted (`lib/package.sh`,
+    `lib/profile.sh`, `tests/package.bats` all back to their prior
+    state) before committing; only the 9 dotfiles changed.
+  - **Real, known, deliberately-unfixed gap**: confirmed by reading the
+    full pacman branch of `glb_install_package`/`glb_remove_package`/
+    `glb_update_packages` (`lib/package.sh`) that GLB's bootstrap never
+    installs `yay` itself on pacman systems — nothing there touches an
+    AUR helper. This alias assumes `yay` is already present (true on
+    the Dell laptop, since that's how Chrome got installed in the
+    first place). A *different* fresh Arch machine that's never had
+    `yay` installed would hit `update: command not found` until `yay`
+    is installed by hand — same "known gap, not chased further"
+    treatment this file already gives e.g. `lazygit` on Fedora/dnf or
+    `snapd` on zypper.
+  - **Verified for real** (Greg's own terminal, live shell, not a
+    sandboxed session — this repo's own `pam_faillock` history on
+    Arch-based machines, see the `glb_sudo` fix elsewhere in this
+    file, made running a real sudo-gated command from a no-TTY session
+    the wrong call here): `update` correctly ran `yay -Syu`, synced the
+    official repos, and caught the real AUR-only `google-chrome` update
+    (`151.0.7922.137-1` -> `151.0.7922.169-1`) that `pacman -Syu` alone
+    had been missing. Confirms the fix works exactly as intended, on
+    the exact machine/scenario that surfaced the original bug.
+  - Committed as `688b2d9`, pushed to `origin/main`.
+
 - **`eza --hyperlink` added to the long-listing aliases (2026-08-18,
   Dell laptop, live/interactive session), per Greg's request.** He
   first asked for `--hyperlink` on the plain `ls` alias, using an
