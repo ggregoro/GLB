@@ -420,18 +420,34 @@ Additional distributions will be added as independent modules when practical.
 
 ---
 
-# Version 1.0 — Stable Release
+# Version 1.0 — Stable Release ✅
 
 Deliver the first stable version of GLB.
 
 ### Goals
 
-- Stable installation engine
-- Profile system
-- Modular architecture
-- Reliable cross-distribution support
-- Comprehensive documentation
-- Community-ready project
+- **Stable installation engine ✅** — pause/resume for sudo-gated
+  installs, dry-run preview, rollback/undo, guided wizard, repair, and
+  extensive real-hardware/VM verification across every shipped feature.
+  See CLAUDE.md's Roadmap section for the full history.
+- **Profile system ✅** — `default`/`developer`/`server`, the
+  interactive picker, `--from-snapshot`, and `--from-manifest`.
+- **Modular architecture ✅** — `lib/*.sh` modules sourced by the `glb`
+  dispatcher. See `docs/ARCHITECTURE.md`.
+- **Reliable cross-distribution support ✅** — apt, dnf, pacman, and
+  zypper all confirmed clean end-to-end. See Version 0.7 above.
+- **Comprehensive documentation ✅** — `README.md`, this roadmap,
+  `ARCHITECTURE.md`, `PHILOSOPHY.md`, `PROJECT.md`,
+  `CODING_STANDARDS.md`, design docs, and an extensively detailed
+  `CLAUDE.md`.
+- **Community-ready project ✅** — repository is now public
+  (2026-08-18), MIT licensed. See `docs/PROJECT.md`'s Release Strategy
+  and `CLAUDE.md`'s "Repository is now public" Working notes entry.
+
+Marked complete 2026-08-18, per Greg: real-hardware verification (a
+fresh Arch Linux Cosmic install on the Dell laptop) ran end-to-end
+exactly as designed. Small add-ons are still expected from time to
+time, but the project itself is considered essentially done.
 
 ---
 

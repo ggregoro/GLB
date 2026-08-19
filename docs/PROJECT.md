@@ -103,22 +103,27 @@ Ubuntu-family, Pop!_OS, Fedora, Arch-family) and their test history.
 
 ## Release Strategy
 
-GLB has not yet cut a version beyond the initial `0.1.0` foundation.
 Development happens directly against `main`, with features tracked as
 "Planned" vs. "Completed" per roadmap version in
 [`ROADMAP.md`](ROADMAP.md) and itemized as they ship in the root
-[`CHANGELOG.md`](../CHANGELOG.md)'s `[Unreleased]` section. A version bump
-is expected once a roadmap milestone's items are all complete and the
-project is ready to tag a real release.
+[`CHANGELOG.md`](../CHANGELOG.md).
 
-**The repository stays private until GLB is fully tested and vetted**
-(decided 2026-08-09, no fixed date attached — an open timetable, not a
-deferred-indefinitely non-decision). The bar for "going public" is
-real-world confidence, not a version number: genuine end-to-end
-restores on fresh VMs across every supported package manager, not just
-the automated test suite. Going public itself is a separate decision
-GLB's author will make explicitly when that bar is met — not something
-that happens automatically once testing wraps up.
+**GLB is now on Version `1.0.0` (2026-08-18)** — the bar set below for
+"going public" was met (genuine end-to-end restores on fresh VMs and
+real hardware across every supported package manager, not just the
+automated test suite; see `CLAUDE.md`'s Roadmap/Test Environments
+sections for the full history) and the repository is now public. See
+`CLAUDE.md`'s "Repository is now public" Working notes entry for the
+decision record.
+
+**Prior policy, kept for history**: the repository stayed private until
+GLB was fully tested and vetted (decided 2026-08-09, no fixed date
+attached — an open timetable, not a deferred-indefinitely non-decision).
+The bar for "going public" was real-world confidence, not a version
+number, and going public was a separate decision GLB's author would make
+explicitly when that bar was met — not something that happened
+automatically once testing wrapped up. That decision has now been made,
+per the note above.
 
 ## Long-Term Vision
 

@@ -20,6 +20,22 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+Nothing yet — small add-ons are expected from time to time, but there's
+no unreleased work as of the `1.0.0` cut below.
+
+---
+
+## [1.0.0] - 2026-08-18
+
+GLB's first stable release. Everything previously tracked under
+`[Unreleased]` (2026-08-02 through 2026-08-18) ships here — the
+installation engine, the `default`/`developer`/`server` profile system,
+cross-distribution support for apt/dnf/pacman/zypper (all confirmed via
+real restores on real hardware and VMs, not just the automated test
+suite), and the full guided-restore/dry-run/rollback/export/diff/repair
+feature set. See `docs/ROADMAP.md`'s "Version 1.0 — Stable Release"
+section and `CLAUDE.md` for the complete history behind each item below.
+
 ### Added
 - Added package management abstraction layer.
 - Added support for detecting package managers through GLB.
@@ -294,16 +310,6 @@ This project follows a simple versioning approach:
   `default`/`developer`/`server` restores (twice each, confirming
   idempotency) on a fresh vanilla Arch/Xfce VM - zero pauses, zero
   sudo calls needed on the re-run.
-
-### Planned
-
-- Initial bootstrap framework
-- Documentation system
-- Git bootstrap
-- SSH bootstrap
-- Samba support
-- Support for apps outside the standard package manager (flatpak,
-  AppImage, curl-install scripts)
 
 ---
 

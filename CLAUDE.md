@@ -11,7 +11,8 @@ kind, terminal emulators included** (see the "Removed entirely
 (2026-08-09)" Roadmap entry below for why) — the focus is entirely the
 terminal itself.
 
-- Repo: https://github.com/ggregoro/GLB (private)
+- Repo: https://github.com/ggregoro/GLB (public — see the "Repository is
+  now public" Working notes entry below)
 - License: MIT
 - Language: Bash
 
@@ -322,7 +323,14 @@ reasonably clean and documented, not just "works on my machine."
     machine's `.gitconfig` should carry. This VM is temporary and being
     torn down, so it wasn't worth relocating into `~/.gitconfig.local`
     either — it simply won't outlive the VM.
-- Dell E7450 laptop running Pop!_OS
+- **Dell E7450 laptop — reinstalled from Pop!_OS Cosmic to Arch Linux Cosmic
+  (2026-08-18).** The Pop!_OS install on this hardware no longer exists.
+  Every historical entry elsewhere in this file describing real
+  restores/testing on "the Dell laptop" while it ran Pop!_OS (apt) is
+  accurate history from before this reinstall, not a description of its
+  current state — this machine is now an apt (Debian/Pop!_OS ancestry)
+  → pacman (Arch) test box going forward. Not yet re-verified with a
+  real `glb restore` post-reinstall as of this note.
 - Windows 10 PC running VirtualBox, used to test other distros
 - Debian 13 machine, linked to GitHub, `glb restore default` run for real
   here on 2026-08-06 (see Roadmap section) — a second real daily-driver
@@ -842,6 +850,13 @@ branches on it.
     needed on a machine with `default`/`developer`/`server` restored —
     reach for `/bin/cat` directly or `\cat`, not `cat -v`.
   - Committed as `5b692d9` and pushed to `origin/main`.
+  - **Cross-distro verification status (2026-08-18, updated by Greg):**
+    confirmed working on apt (the original verification above) and
+    pacman (since confirmed too — likely via the Dell laptop's
+    reinstall to Arch, see its own Test Environments entry, and/or the
+    Arch/Xfce or CachyOS VMs). **Still needs testing: dnf (Fedora) and
+    zypper (openSUSE)** — Greg's stated next step, not yet done as of
+    this note.
 - **`cpufetch` added to `default` (2026-08-17, cloud session), per
   Greg's request — corrected same session from `snap`/`extras.txt` to a
   plain `packages.txt` entry once real per-distro package data showed
@@ -3539,6 +3554,53 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Project status (2026-08-18, per Greg, after the Dell laptop's Arch
+  Linux Cosmic reinstall — see its own Test Environments entry above):
+  GLB is essentially feature-complete.** Greg's own assessment, stated
+  directly: "GLB performed exactly what it was intended to do" — a real
+  `glb restore` on the freshly reinstalled Dell laptop (Arch Cosmic, see
+  above) ran end-to-end as designed, with the `eza --hyperlink` and
+  `cpufetch` additions (2026-08-17/18, see Roadmap entries above) being
+  the last features added before this assessment. Greg expects
+  occasional small add-ons going forward, not a large amount of new
+  feature work.
+  - **What's actually left, per Greg**: real-hardware verification
+    beyond VMs — everything tested so far outside the Dell laptop
+    itself has been a VM (see Test Environments above: CachyOS,
+    EndeavourOS, Manjaro, Arch/Xfce, openSUSE, Fedora, Pop!_OS, Linux
+    Mint, all VirtualBox VMs). The Debian 13 machine (see Test
+    Environments) is the only other confirmed non-VM/non-laptop
+    real-hardware test on record. Also still explicitly open: the
+    `eza --hyperlink` change itself needs dnf/zypper verification (see
+    that Roadmap entry's 2026-08-18 update above) — real-hardware
+    coverage and this specific feature's remaining distro coverage are
+    two different open items, not the same one.
+  - **Resolved same day, see the entry directly below**: both the
+    `VERSION` bump and the public/private question were exactly the
+    natural next questions flagged here, and Greg answered both within
+    the same conversation — see "Repository is now public, VERSION
+    bumped to 1.0.0" right below.
+- **Repository is now public, VERSION bumped to `1.0.0` (2026-08-18, per
+  Greg) — both GLB and GWB (GLB's Windows sibling project) are public
+  now.** Directly resolves the two items flagged in the entry above.
+  - `VERSION` (repo root) changed from `0.5.0` → `1.0.0`.
+  - `docs/ROADMAP.md`'s "Version 1.0 — Stable Release" section marked
+    ✅ complete, each goal annotated with what actually shipped and a
+    pointer back to where it's documented (see that file directly).
+  - `docs/PROJECT.md`'s Release Strategy section updated: the
+    2026-08-09 "stays private until fully tested and vetted" policy is
+    now explicitly marked as resolved/historical rather than the
+    active policy, with a new note recording that the bar was met and
+    the repo went public on this date.
+  - This file's own header (top of file, "Repo:" line) updated from
+    "(private)" to "(public)".
+  - **Not done, deliberately**: no edit to `CHANGELOG.md`'s
+    `[Unreleased]` section — cutting that into a dated `[1.0.0]`
+    release entry is a bigger editorial call (deciding exactly where
+    the release boundary falls across a very long unreleased history)
+    that Greg should make explicitly rather than have inferred from
+    "update the version number." Worth asking about directly next time
+    this comes up.
 - **Session wrap-up (2026-08-16, fresh Arch/Xfce VM) — ending here; Greg
   is moving to his primary laptop next.** Everything below is committed
   and pushed to `origin/main` — `2a2f106` is the latest commit as of
