@@ -73,7 +73,7 @@ else if command -q dnf
     alias remove='sudo dnf remove'
     alias search='dnf search'
 else if command -q pacman
-    alias update='sudo pacman -Syu'
+    alias update='yay -Syu'
     alias install='sudo pacman -S'
     alias remove='sudo pacman -R'
     alias search='pacman -Ss'

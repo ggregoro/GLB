@@ -94,7 +94,7 @@ elif command -v dnf >/dev/null 2>&1; then
     alias remove='sudo dnf remove'
     alias search='dnf search'
 elif command -v pacman >/dev/null 2>&1; then
-    alias update='sudo pacman -Syu'
+    alias update='yay -Syu'
     alias install='sudo pacman -S'
     alias remove='sudo pacman -R'
     alias search='pacman -Ss'
