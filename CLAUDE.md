@@ -529,6 +529,63 @@ reasonably clean and documented, not just "works on my machine."
   github-cli` + `gh auth login` + `gh auth setup-git`, run by Greg
   himself in a real terminal since this session had no TTY) — confirmed
   via `gh auth status` and a real `git push --dry-run`.
+- **Dell E7450 laptop reinstalled again (2026-08-19): from Arch Linux
+  Cosmic to Fedora KDE Plasma.** Supersedes the 2026-08-18 Arch Cosmic
+  entry above (that install no longer exists on this hardware) — same
+  physical machine, now on its third distro in this file's history
+  (Pop!_OS Cosmic → Arch Cosmic → Fedora KDE Plasma). First real KDE
+  Plasma test anywhere in this project (prior Fedora testing was
+  GNOME). `fastfetch` confirms: Fedora Linux 44 (KDE Plasma Desktop
+  Edition), KDE Plasma 6.7.4, KWin (Wayland), Konsole installed
+  (`konsole-26.04.3-1.fc44`).
+  - Fresh `git clone` to `~/Projects/GLB` (this machine's own chosen
+    path, not the `~/GLB` used on some earlier test VMs), `gh auth
+    login`/`gh auth setup-git` already done before this session started
+    — push access confirmed.
+  - **Real, non-dry-run `glb restore default` run for real by Greg in
+    his own terminal.** Every package installed cleanly on dnf: `zsh`/
+    `fish`/`neovim`/`ripgrep`/`fzf`/`eza`/`zoxide`/`ranger`/`btop`/
+    `cpufetch`/`fastfetch`/`git` (plus `tmux`/`curl`/`bat`/`unzip`/
+    `bash-completion`, already present). `fresh` (curl) and the
+    JetBrains Mono Nerd Font both installed correctly too. Zero
+    `_GLB_PACKAGE_OVERRIDES` gaps. A second restore came back fully
+    clean/idempotent (`[SUCCESS] Profile applied: default`, every line
+    "Already installed"/"Already linked").
+  - **`snapd`/`yazi` hit the same known gap already documented for the
+    2026-08-13 Fedora GNOME VM**: `snapd` installs via dnf fine and
+    seeds correctly (`snap debug seeding` → `seeded: true`), but the
+    classic-confinement `/snap` symlink doesn't exist by default and
+    `sudo snap install yazi --classic` fails until it's created — same
+    manual-step pause Greg hit as "errors" on the first restore
+    attempt. Fixed with the same two manual commands as before, run by
+    Greg in his own terminal: `sudo ln -s /var/lib/snapd/snap /snap`
+    then `sudo snap install yazi --classic`. Confirmed installed
+    afterward (`yazi v26.8.15`, classic confinement) and genuinely
+    runnable in all three shells (`command -v yazi` resolves to
+    `/snap/bin/yazi` in `bash -i`/`zsh -i`/`fish` — confirms the
+    `/snap/bin` PATH guard fix from the 2026-08-15/16 Manjaro/Arch
+    sessions works correctly on Fedora/KDE too, not just Arch-family
+    distros).
+  - **Git identity set up correctly the first time**: `~/.gitconfig.local`
+    was written (name/email + the pre-existing `gh`-written credential
+    helper block) *before* the restore ran, per this file's own
+    standing lesson — confirmed resolving correctly
+    (`git config user.name/user.email`) immediately after `default`'s
+    `.gitconfig` symlink landed, no identity ever silently backed up or
+    lost.
+  - **Full bats suite run** (no `bats` installed on this machine either,
+    same locally-cloned-`bats-core` workaround as every other machine
+    without it): 219/223 pass. The 4 failures are the exact same
+    pre-existing, already-documented `fresh`/`starship`-genuinely-on-
+    real-PATH test-isolation gap this file describes for nearly every
+    other machine after its own first real restore — confirmed via
+    `git status` (clean working tree, no code changed this session)
+    that these aren't a regression.
+  - **Not yet done**: `developer`/`server` haven't been restored on
+    this machine, and Konsole's Nerd Font glyph rendering hasn't been
+    visually confirmed here specifically (confirmed working on Konsole
+    before, but only on Arch-based distros — CachyOS 2026-08-05 — never
+    on Fedora/KDE).
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
