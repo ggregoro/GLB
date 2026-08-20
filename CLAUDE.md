@@ -961,6 +961,32 @@ branches on it.
     Arch/Xfce or CachyOS VMs). **Still needs testing: dnf (Fedora) and
     zypper (openSUSE)** — Greg's stated next step, not yet done as of
     this note.
+  - **dnf/Fedora confirmed (2026-08-19, Dell E7450, Fedora 44 KDE
+    Plasma — see its own Test Environments entry) — plus a real,
+    non-GLB root cause found and fixed for why it initially looked
+    broken.** `eza`'s alias and escape-sequence output were confirmed
+    100% correct from the very first test — byte-identical, verified
+    via `od -c`, to a manually-crafted `printf` OSC 8 sequence that
+    Konsole *did* render as clickable. The actual cause: **Konsole
+    ships hyperlink support off by default as a security precaution**
+    — `Settings → Configure Konsole → Profiles → [profile] → Edit →
+    Mouse tab → Misc → "Allow escape sequences in hyperlinks"` is
+    unchecked out of the box (Konsole warns about this when enabling
+    it, since it lets any program's output make arbitrary clickable
+    links). Enabling it fixed everything immediately — every
+    `--hyperlink`-bearing alias now works exactly as designed. **Not a
+    GLB bug, not an eza bug, not a dnf/Fedora-specific gap** — this is
+    a one-time, per-profile Konsole setting a user needs to opt into
+    themselves, same category as GLB not managing terminal emulators
+    at all (see PHILOSOPHY.md). Worth remembering if this comes up
+    again on any other KDE/Konsole machine: check this setting *first*
+    before assuming eza/GLB is broken — chasing this from the GLB side
+    (byte-level escape-sequence comparisons, ruling out color codes,
+    ruling out `file://` hostname bugs, checking KDE Bugzilla) all
+    correctly proved GLB's own code was fine, but the actual fix was
+    entirely a Konsole setting outside GLB's code or docs.
+    **zypper/openSUSE is still the only untested package manager for
+    this feature.**
 - **`cpufetch` added to `default` (2026-08-17, cloud session), per
   Greg's request — corrected same session from `snap`/`extras.txt` to a
   plain `packages.txt` entry once real per-distro package data showed
