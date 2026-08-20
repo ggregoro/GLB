@@ -609,6 +609,10 @@ reasonably clean and documented, not just "works on my machine."
     new terminal windows/tabs opened mid-session just inherit the
     already-cached value rather than re-reading the updated passwd
     entry. Not a GLB or Konsole bug — normal `chsh` mechanics.
+  - **Confirmed (2026-08-20, Greg): the full logout/login cleared the
+    cached shell as predicted — fish is now genuinely this machine's
+    login shell.** Closes out this gotcha as fully verified, not just
+    theorized from `chsh`/PAM semantics.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
