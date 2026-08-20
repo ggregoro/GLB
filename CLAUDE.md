@@ -586,6 +586,29 @@ reasonably clean and documented, not just "works on my machine."
     visually confirmed here specifically (confirmed working on Konsole
     before, but only on Arch-based distros — CachyOS 2026-08-05 — never
     on Fedora/KDE).
+  - **Real question raised, confirmed by code (not a bug): `glb
+    restore` never changes which shell is your actual login shell —
+    that's always a manual end-user step, on every profile/machine,
+    not something specific to this one.** Confirmed via a direct
+    `grep` across `lib/`, the `glb` dispatcher, and every profile's
+    manifests — no `chsh`/`usermod -s`/`/etc/shells` logic anywhere in
+    the codebase. `default`/`developer`/`server` all install and
+    unify bash/zsh/fish dotfiles equally (see "Current state" below),
+    but deliberately never pick one as *the* default login shell —
+    consistent with the same philosophy that keeps GLB out of choosing
+    a terminal emulator (see PHILOSOPHY.md's Non-Goals). To make fish
+    (or any shell) the login shell: `chsh -s $(which fish)`.
+  - **Real gotcha hit running that on this machine, worth remembering
+    generally, not Fedora/KDE-specific**: after `chsh`, simply opening
+    and closing terminal windows within the same desktop session still
+    showed bash as the shell — **a full logout/login was required**
+    before the new login shell actually took effect. This is standard
+    `chsh`/PAM behavior on most desktop environments (KDE/Wayland
+    included): `/etc/passwd`'s shell field is only read fresh at actual
+    login time; `$SHELL` gets cached for the rest of that session, so
+    new terminal windows/tabs opened mid-session just inherit the
+    already-cached value rather than re-reading the updated passwd
+    entry. Not a GLB or Konsole bug — normal `chsh` mechanics.
 
 When suggesting changes, keep portability across distros in mind — don't
 assume a single package manager or init system unless the script already
