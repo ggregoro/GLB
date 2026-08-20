@@ -3658,6 +3658,33 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session paused here (2026-08-19, Dell E7450, Fedora KDE Plasma) —
+  Greg chose to stop before restoring `developer`/`server` on this
+  machine; pick up there next.** `default` is fully restored and
+  verified on this machine (see the Test Environments entry above for
+  the full writeup). `glb restore developer --dry-run` was run and
+  looked clean:
+  - `git`/`curl`/`zsh`/`fish`/`fzf`/`eza`/`bat`/`zoxide`/`btop`/
+    `bash-completion`/`unzip`/`podman`/`gcc`/`make`/`jq`/`gh` all
+    already present (podman/gcc/make/jq/gh apparently came with the
+    base Fedora KDE Workstation install, not from GLB); `fresh`/the
+    Nerd Font/`starship`/both zsh plugins already present from the
+    `default` restore.
+  - **Would still need to install**: `ncdu`, `lazygit`, `glow` (dnf),
+    `mise` and `lazydocker` (curl). **Expect `lazygit` specifically to
+    hit the known, already-confirmed manual-step pause** — it has no
+    official Fedora/dnf package (confirmed on the Fedora GNOME VM,
+    2026-08-10) — everything else should install cleanly.
+  - Not yet run for real — this session has no TTY/sudo, so the actual
+    (non-dry-run) `glb restore developer` still needs to be run by Greg
+    in his own terminal on this machine, same as `default` was. Once
+    that's done: verify the `lazygit` gap behaves as expected, confirm
+    a second restore is idempotent, then move on to `server` (not
+    dry-run'd yet at all on this machine) and — separately, still
+    outstanding from the `default` verification — a visual check of
+    Konsole's Nerd Font glyph rendering on Fedora/KDE specifically
+    (only ever confirmed on Arch-based Konsole before, CachyOS
+    2026-08-05).
 - **Project status (2026-08-18, per Greg, after the Dell laptop's Arch
   Linux Cosmic reinstall — see its own Test Environments entry above):
   GLB is essentially feature-complete.** Greg's own assessment, stated
