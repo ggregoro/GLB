@@ -581,11 +581,33 @@ reasonably clean and documented, not just "works on my machine."
     other machine after its own first real restore — confirmed via
     `git status` (clean working tree, no code changed this session)
     that these aren't a regression.
-  - **Not yet done**: `developer`/`server` haven't been restored on
-    this machine, and Konsole's Nerd Font glyph rendering hasn't been
-    visually confirmed here specifically (confirmed working on Konsole
-    before, but only on Arch-based distros — CachyOS 2026-08-05 — never
-    on Fedora/KDE).
+  - **`developer`/`server` restored for real (2026-08-20, Greg's own
+    terminal).** `developer`: every package installed cleanly except
+    `lazygit` — hit the known, already-documented Fedora/dnf gap (no
+    official package, see the 2026-08-10 Fedora GNOME VM entry above)
+    and was skipped via the normal manual-step pause, exactly as
+    expected; `ncdu`/`glow` (dnf) and `mise`/`lazydocker` (curl) all
+    installed fine. `server`: `ufw`/`restic`/`fail2ban` all installed
+    cleanly with no pauses at all — `snapd`/`yazi`/`ranger` were
+    already present system-wide from the earlier `default` restore
+    (see above), so `server`'s dry-run didn't even need to touch them.
+    Both confirmed via `--dry-run` first (clean, zero
+    `_GLB_PACKAGE_OVERRIDES` gaps found) before the real, non-dry-run
+    restores.
+  - **Real finding, not a GLB bug: Konsole did not automatically pick
+    up the installed JetBrains Mono Nerd Font — it had to be set
+    manually in Konsole's own profile settings (font family *and*
+    font size), same as any other terminal-emulator-specific
+    configuration GLB deliberately doesn't manage** (see the Non-Goals
+    reasoning elsewhere in this file — GLB installs the font
+    system-wide via fontconfig, but a terminal app's own font
+    selection is out of scope). Worth checking this explicitly on any
+    future Konsole machine rather than assuming the CachyOS VM's
+    2026-08-05 "Konsole renders fine" confirmation means zero manual
+    steps are ever needed — that entry never records whether Konsole's
+    profile font was already set by hand there. Once set, glyph
+    rendering itself confirmed correct on Fedora/KDE too, closing the
+    "not yet visually confirmed on Fedora/KDE" gap flagged above.
   - **Real question raised, confirmed by code (not a bug): `glb
     restore` never changes which shell is your actual login shell —
     that's always a manual end-user step, on every profile/machine,
