@@ -3790,6 +3790,60 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+- **Session wrap-up (2026-08-25, cloud session, fresh Linux Mint VM) —
+  Greg is stopping here on this VM; `default` only, no need to test
+  `developer`/`server` on this machine.** Full session, in order:
+  1. Greg ran `glb restore default` for real on this fresh Mint VM
+     (via the public repo's `main`). Reported it went well overall,
+     with `snapd`, `fastfetch`, and `yazi` not installing.
+  2. Diagnosed via the exact error text he relayed (this cloud session
+     has no direct access to the VM itself): `fastfetch` is the
+     already-known, already-documented apt-index gap (confirmed
+     2026-08-07, reconfirmed here — "Unable to locate package"). But
+     `snapd`/`yazi` (`yazi` depends on `snapd` via the `snap` extras
+     method) turned out to be a genuinely new finding: unlike every
+     other apt distro tested (Pop!_OS/Debian/Ubuntu, where `snapd`
+     installs cleanly), **Linux Mint ships
+     `/etc/apt/preferences.d/nosnap.pref`, which pins `snapd` to
+     priority -1 by deliberate anti-Snap policy** — the package is
+     genuinely in Mint's index, but apt refuses to consider it
+     installable, producing the same "has no installation candidate"
+     text a truly-absent package would give.
+  3. **Fixed**: new `_GLB_PACKAGE_MANUAL_HINT` table (`lib/package.sh`,
+     keyed `<generic-name>:<distro>` via `glb_detect_os` — finer
+     grained than the existing `<name>:<pkg_mgr>` tables need, since
+     apt itself behaves differently across the distros that share it)
+     plus `glb_package_manual_hint`. `glb_prompt_manual_step` gained an
+     optional third `hint` argument, shown above the resolved command;
+     `glb_install_package` looks it up before pausing. Deliberately
+     *not* auto-skipped the way `snapd:pacman` is — Mint's block is a
+     reversible policy choice with a real user fix, not a true
+     absence, so surfacing it (rather than silently working around it)
+     was the right call, matching the existing dnf/zypper precedent of
+     pausing with a real actionable choice over silently skipping. See
+     the dedicated Roadmap/Test-environments entries for the full
+     design writeup and the exact hint text.
+  4. 4 new bats tests in `tests/package.bats`. Full suite: 223/227 pass
+     — the same 4 pre-existing root-sandbox permission-check failures
+     this file has documented since 2026-08-09 (confirmed via
+     `git stash` unrelated to this change).
+  5. Pushed to `claude/glb-reading-8860vi`, then merged into `main` on
+     Greg's request (clean fast-forward, `f78b1ab`).
+  6. **Verified for real on the actual Mint VM, same day**: Greg pulled
+     `main`, re-ran the restore, and confirmed the `snapd` pause showed
+     the new `nosnap.pref` hint correctly. Ran the hint's fix himself
+     (`sudo rm /etc/apt/preferences.d/nosnap.pref && sudo apt update &&
+     sudo apt install -y snapd`, then `sudo snap install yazi
+     --classic`) and confirmed `yazi` genuinely launches afterward.
+     `fastfetch` was skipped via the normal `s` prompt, as expected.
+     One follow-up doc commit (`37ca88c`, also merged into `main`)
+     recording this real-hardware confirmation.
+  - **This closes the Mint session out fully** — `default` is verified
+    working end-to-end on this VM (with the two known/now-handled apt
+    gaps accounted for), the fix is proven on the real distro/error it
+    was built for (not just bats), and everything is on `main`. Nothing
+    left open here; `developer`/`server` were deliberately not tested
+    on this VM per Greg's call.
 - **Session paused here (2026-08-19, Dell E7450, Fedora KDE Plasma) —
   Greg chose to stop before restoring `developer`/`server` on this
   machine; pick up there next.** `default` is fully restored and
