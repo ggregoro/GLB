@@ -92,12 +92,18 @@ reasonably clean and documented, not just "works on my machine."
     the same 4 pre-existing root-sandbox permission-check failures this
     file has documented since 2026-08-09 (confirmed via `git stash` to
     fail identically on the unmodified tree), unrelated to this change.
-  - **Not yet verified for real on the Mint VM itself** — built and
-    tested from a cloud session using the error text Greg relayed, not
-    a live restore on the actual machine. Worth confirming next time
-    that VM is reachable: does the manual-step pause now show the
-    `nosnap.pref` hint, and does removing the file + re-running let
-    `snapd`/`yazi` install cleanly the normal way.
+  - **Verified for real on this Mint VM, same day, after merging to
+    `main`.** Greg pulled `main` and re-ran the restore: the `snapd`
+    manual-step pause correctly showed the new `nosnap.pref` hint text
+    (confirmed directly, not assumed). `fastfetch` hit the expected,
+    unrelated "Unable to locate package" error — same already-known
+    gap, skipped via the normal `s` prompt. For `snapd`/`yazi`, Greg ran
+    the hint's fix manually (`sudo rm /etc/apt/preferences.d/
+    nosnap.pref && sudo apt update && sudo apt install -y snapd`, then
+    `sudo snap install yazi --classic`) and confirmed `yazi` genuinely
+    launches afterward. Closes this out end-to-end — the hint mechanism
+    works exactly as designed on the real distro/error it was built
+    for, not just in the bats sandbox.
 - **New (2026-08-09): a fresh Pop!_OS VM running on VirtualBox 7.2.8,
   the first one under the plan above** — not connected to the GitHub
   repo as a dev checkout, genuinely standing in for an end user's
