@@ -47,6 +47,57 @@ reasonably clean and documented, not just "works on my machine."
   reaches a stable point. Every entry below this point is history from
   before that decision; new real-hardware verification should happen
   on new VMs set up specifically for this, not by resurrecting these.
+- **New (2026-08-25): a fresh Linux Mint VM**, under the same fresh-VM
+  plan — Greg ran `glb restore default` for real and reported it went
+  well overall, with three things not installing: `snapd`, `fastfetch`,
+  `yazi`. Confirmed via the exact error text ("has no installation
+  candidate" for all three, gathered via a cloud session, not run
+  directly on this VM): `fastfetch` is the already-known, already-
+  documented gap (not in apt's index on Mint, see `packages.txt`'s own
+  comment, first confirmed 2026-08-07) — reconfirmed, not a new issue.
+  `snapd`/`yazi` (which depends on it) are a genuinely new finding,
+  though: unlike every other apt distro tested (Pop!_OS/Debian/Ubuntu,
+  where `snapd` installs fine), **Linux Mint ships
+  `/etc/apt/preferences.d/nosnap.pref`, which pins `snapd` to priority
+  -1 by deliberate anti-Snap policy** — the package is genuinely in
+  Mint's index, but apt refuses to consider it a candidate at all, so
+  `apt install snapd` fails with the exact same "has no installation
+  candidate" wording a genuinely-absent package would give. This is
+  meaningfully different from pacman's/zypper's real absence (both
+  already handled — see `_GLB_PACKAGE_SKIP` and `packages.txt`): the
+  user has a real, actionable fix (delete that one file), so it wasn't
+  auto-skipped the way `snapd:pacman` is — silently skipping would hide
+  a distro's own deliberate policy choice from the user rather than
+  informing them of it.
+  - **Fixed (cloud session, same day):** new `_GLB_PACKAGE_MANUAL_HINT`
+    table (`lib/package.sh`, keyed `<generic-name>:<distro>` via
+    `glb_detect_os` — finer-grained than the existing `<name>:<pkg_mgr>`
+    tables need, since apt itself behaves differently across the
+    distros that share it) plus a new `glb_package_manual_hint`
+    lookup. `glb_prompt_manual_step` now takes an optional third `hint`
+    argument, printed above the resolved command when present;
+    `glb_install_package` looks up the hint before pausing. Net effect
+    on Mint: the `snapd` manual-step pause now explains the
+    `nosnap.pref` pin and gives the exact fix (`sudo rm
+    /etc/apt/preferences.d/nosnap.pref && sudo apt update`) instead of
+    just re-showing a `sudo apt install -y snapd` that would fail
+    identically forever. `yazi`'s own extras.txt pause needed no
+    separate hint — it fails as a direct consequence of `snapd` missing,
+    and `snapd` is processed first in the same restore, so the user
+    already has the explanation by the time they hit it.
+  - 4 new bats tests in `tests/package.bats` (the hint lookup itself,
+    both with and without a matching distro entry; the manual-step
+    pause surfacing the hint text and fix command; and confirming no
+    hint appears on a distro with no entry). Full suite: 223/227 pass —
+    the same 4 pre-existing root-sandbox permission-check failures this
+    file has documented since 2026-08-09 (confirmed via `git stash` to
+    fail identically on the unmodified tree), unrelated to this change.
+  - **Not yet verified for real on the Mint VM itself** — built and
+    tested from a cloud session using the error text Greg relayed, not
+    a live restore on the actual machine. Worth confirming next time
+    that VM is reachable: does the manual-step pause now show the
+    `nosnap.pref` hint, and does removing the file + re-running let
+    `snapd`/`yazi` install cleanly the normal way.
 - **New (2026-08-09): a fresh Pop!_OS VM running on VirtualBox 7.2.8,
   the first one under the plan above** — not connected to the GitHub
   repo as a dev checkout, genuinely standing in for an end user's

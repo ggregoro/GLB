@@ -39,6 +39,19 @@ bash-completion    # loads glb's completion file - see lib/completions.sh
 # zypper has no native yazi package either (no OBS repo), so snap/yazi
 # still don't install there - same known-gap treatment as lazygit on
 # Fedora/dnf rather than chasing a non-default repo. dnf unverified.
+#
+# Linux Mint (apt) is its own distinct case, confirmed 2026-08-25 on a
+# fresh Mint VM: `apt install snapd` fails with "has no installation
+# candidate" even though the package is genuinely in Mint's index -
+# Mint ships /etc/apt/preferences.d/nosnap.pref, pinning snapd to
+# priority -1 by deliberate policy (not a repo gap like pacman/zypper
+# above). Not auto-skipped like snapd:pacman, since the user has a
+# real fix (delete that file) rather than no path at all - see
+# _GLB_PACKAGE_MANUAL_HINT in lib/package.sh, which now surfaces this
+# explanation (and the fix command) at the manual-step pause instead
+# of just re-showing a `sudo apt install -y snapd` that would fail
+# identically every time. yazi below fails as a direct consequence on
+# Mint until snapd is manually unblocked.
 snapd
 
 # CPU architecture info banner (James Tigert / kz6fittycent), pairs
@@ -58,10 +71,11 @@ snapd
 cpufetch
 
 # Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
-# setup, nor on Linux Mint 22.3 - confirmed 2026-08-07) — may need a PPA
-# or manual install. No known curl-install script to move this to
-# extras.txt like fresh; it's a repo-availability gap, not a
-# wrong-install-method one. Not worth chasing further: Mint already
+# setup, nor on Linux Mint 22.3 - confirmed 2026-08-07, reconfirmed on a
+# fresh Mint VM 2026-08-25, same "has no installation candidate" error)
+# — may need a PPA or manual install. No known curl-install script to
+# move this to extras.txt like fresh; it's a repo-availability gap, not
+# a wrong-install-method one. Not worth chasing further: Mint already
 # ships `neofetch` preinstalled, which covers the same "system info
 # banner" niche well enough there (even though neofetch itself is
 # archived/unmaintained upstream - not worth adding as a real

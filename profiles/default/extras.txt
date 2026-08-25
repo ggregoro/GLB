@@ -46,5 +46,9 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 # (see packages.txt) - snapd itself isn't available there and there's
 # no native yazi package either, so this entry is a documented no-op on
 # openSUSE rather than a GLB bug. Known gap there, not being chased
-# further (same call as lazygit on Fedora/dnf).
+# further (same call as lazygit on Fedora/dnf). Same practical outcome
+# on Linux Mint (confirmed 2026-08-25) but a different root cause -
+# Mint blocks snapd by policy rather than lacking it, see snapd's own
+# comment in packages.txt; this entry fails as a direct downstream
+# consequence there until the user acts on that pause's hint.
 snap    yazi      classic

@@ -181,3 +181,63 @@ teardown() {
     [ "$status" -eq 1 ]
     [[ "$output" == *"Still not detected as installed: ripgrep"* ]]
 }
+
+# --- distro-specific manual-step hints --------------------------------------
+
+@test "package_manual_hint returns the Mint-specific snapd hint" {
+    run bash -c "
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_detect_os() { printf 'linuxmint\n'; }
+        glb_package_manual_hint snapd
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nosnap.pref"* ]]
+}
+
+@test "package_manual_hint has nothing to say for snapd on a distro with no hint entry" {
+    run bash -c "
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_detect_os() { printf 'ubuntu\n'; }
+        glb_package_manual_hint snapd
+    "
+    [ "$status" -eq 1 ]
+    [ -z "$output" ]
+}
+
+@test "install_package's manual-step pause surfaces the Mint snapd hint and the fix command" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+    stub_command dpkg 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_detect_os() { printf 'linuxmint\n'; }
+        glb_install_package snapd <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"nosnap.pref"* ]]
+    [[ "$output" == *"sudo rm /etc/apt/preferences.d/nosnap.pref"* ]]
+    [[ "$output" == *"sudo apt install -y snapd"* ]]
+}
+
+@test "install_package's manual-step pause has no hint on a distro without one" {
+    stub_command apt 'exit 1'
+    stub_command sudo 'exit 1'
+    stub_command dpkg 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/detect.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        glb_detect_os() { printf 'ubuntu\n'; }
+        glb_install_package snapd <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" != *"nosnap.pref"* ]]
+}

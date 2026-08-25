@@ -59,6 +59,51 @@ declare -gA _GLB_PACKAGE_SKIP=(
 )
 
 # ------------------------------------------------------------
+# Extra guidance shown alongside a package's manual-step pause, for a
+# failure whose cause the resolved install command alone doesn't
+# explain. Keyed "<generic-name>:<distro>" (the distro ID from
+# /etc/os-release via glb_detect_os) - unlike _GLB_PACKAGE_OVERRIDES/
+# _GLB_PACKAGE_SKIP above, this needs finer granularity than package
+# manager alone, since apt itself behaves differently across the
+# distros that share it.
+#
+# [snapd:linuxmint]: confirmed 2026-08-25 (fresh Mint VM, real
+# restore) - `apt install snapd` fails with "has no installation
+# candidate" even though the package is genuinely in Mint's index.
+# Root cause: Mint ships /etc/apt/preferences.d/nosnap.pref, which
+# pins snapd to priority -1 by policy (Mint has done this since
+# around version 20, as a deliberate anti-Snap stance) - this is
+# different from pacman's real AUR-only absence above, so it isn't
+# auto-skipped the same way; the user has a real, actionable fix
+# (delete that file) and should see it rather than have GLB silently
+# work around a distro's own policy choice. yazi (extras.txt, snap
+# method) fails as a direct consequence - no separate hint needed
+# there since this one fires first, earlier in the same restore.
+# ------------------------------------------------------------
+
+declare -gA _GLB_PACKAGE_MANUAL_HINT=(
+    [snapd:linuxmint]="Linux Mint blocks this by policy via /etc/apt/preferences.d/nosnap.pref (pins snapd to priority -1). Remove that file first, then retry: sudo rm /etc/apt/preferences.d/nosnap.pref && sudo apt update"
+)
+
+# ------------------------------------------------------------
+# Look up extra guidance for a package's manual-step pause on the
+# current distro. Prints the hint and returns 0 if one exists;
+# returns 1 with no output otherwise.
+# ------------------------------------------------------------
+
+glb_package_manual_hint() {
+    local package="$1"
+    local os
+    local hint
+
+    os="$(glb_detect_os 2>/dev/null)" || return 1
+    hint="${_GLB_PACKAGE_MANUAL_HINT[${package}:${os}]:-}"
+
+    [[ -n "$hint" ]] || return 1
+    printf "%s\n" "$hint"
+}
+
+# ------------------------------------------------------------
 # Look up whether a package is known-unavailable on the current
 # package manager. Prints the reason and returns 0 if so; returns 1
 # with no output otherwise.
@@ -170,9 +215,11 @@ glb_list_installed_packages() {
 glb_prompt_manual_step() {
     local cmd="$1"
     local description="${2:-this step}"
+    local hint="${3:-}"
     local reply
 
     glb_log_warn "Could not $description automatically."
+    [[ -n "$hint" ]] && printf "\n  %s\n" "$hint"
     printf "\n  Run this yourself, then come back here:\n\n"
     printf "    %s\n\n" "$cmd"
 
@@ -240,7 +287,10 @@ glb_install_package() {
         return 0
     fi
 
-    if ! glb_prompt_manual_step "sudo ${cmd[*]}" "install $package"; then
+    local hint
+    hint="$(glb_package_manual_hint "$package")" || hint=""
+
+    if ! glb_prompt_manual_step "sudo ${cmd[*]}" "install $package" "$hint"; then
         return 1
     fi
 
