@@ -25,6 +25,13 @@ btop
 bash-completion    # loads glb's completion file - see lib/completions.sh
 unzip              # needed for the font extras.txt entry
 
+# Terminal editor — same as default. A real gap found testing on
+# CachyOS (2026-08-10): developer originally shipped only Fresh (via
+# extras.txt) as its editor, so `nvim` didn't run at all here even
+# though it's one of default's packages. Added neovim alongside Fresh
+# rather than replacing it, matching default's own pairing.
+neovim
+
 # Containers — Podman chosen over Docker: daemonless/rootless fits a
 # newcomer better as a safe default (no root daemon running out of the
 # box), and fits GLB's philosophy over Docker's more familiar name.

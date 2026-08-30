@@ -1433,6 +1433,29 @@ branches on it.
     so a future user hitting the same crash has the fix already written
     down rather than rediscovering it.
 
+- **`developer` never had a Neovim package either — found independently
+  on CachyOS the same day as the original `nvim` gap (2026-08-10, Greg,
+  cross-checked 2026-08-30 against the Neovim+LazyVim work above): this
+  is the plain-`neovim`-missing-from-`developer` bug, distinct from
+  the `default`-only LazyVim-config-cloning feature documented
+  directly above.** `developer` was only ever built with Fresh (via
+  `extras.txt`) as its editor — `neovim` itself was never in
+  `developer/packages.txt`, only in `default`'s. Not a LazyVim gap
+  (confirmed by grepping the whole repo at the time: LazyVim wasn't
+  mentioned or configured anywhere in GLB yet). **Fixed** by adding
+  `neovim` to `profiles/developer/packages.txt`, matching `default`'s
+  pairing of neovim alongside Fresh rather than picking one or the
+  other. Rebased onto the current `main` on 2026-08-30 after
+  discovering (via `ggregoro/claude-memory`) that a parallel session
+  had taken the project all the way to `1.0.0` in the meantime —
+  `developer/packages.txt` on that `main` still didn't have `neovim`,
+  so this fix was still valid and non-conflicting, just needed
+  reapplying on top of the real current history instead of the stale
+  branch it was built on. **Not yet re-verified for real** on this
+  distro after the rebase — the next `glb restore developer` on the
+  CachyOS VM should confirm `nvim` now installs and runs correctly (it
+  still won't be LazyVim-configured there, since that config-cloning
+  mechanism is `default`-only by design).
 - **Fresh Fedora 44 GNOME 50 VM verified end-to-end (2026-08-10, Greg,
   real hardware) — `install.sh`'s curl-install path now confirmed on
   the last of the four supported package managers (dnf), closing out

@@ -206,6 +206,11 @@ section and `CLAUDE.md` for the complete history behind each item below.
   whatever terminal the user already has.
 
 ### Fixed
+- Fixed `developer`: `neovim` was never in `profiles/developer/
+  packages.txt` (only in `default`'s), so `nvim` didn't run on this
+  profile at all - Fresh was the only editor installed. Added
+  `neovim` alongside Fresh, matching how `default` pairs the two.
+  Found testing `developer` for real on CachyOS.
 - Fixed `default`'s zsh `starship.toml`: roughly half its Nerd Font
   glyphs (the git-branch symbol, all five language-module icons, half
   the OS icons, and the powerline separator arrows between prompt
