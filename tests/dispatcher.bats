@@ -66,7 +66,7 @@ teardown() {
 @test "glb restore applies the real default profile end to end" {
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
     stub_command curl 'exit 0'
     stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
@@ -89,7 +89,7 @@ teardown() {
 @test "glb restore applies the real developer profile end to end" {
     cp -r "$GLB_REPO_ROOT/profiles/developer" "$GLB_ROOT/profiles/developer"
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
     stub_command curl 'exit 0'
     stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
@@ -114,15 +114,17 @@ teardown() {
 @test "glb restore applies the real server profile end to end" {
     cp -r "$GLB_REPO_ROOT/profiles/server" "$GLB_ROOT/profiles/server"
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
+    stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
 
     run "$GLB_ROOT/glb" restore server <<< ''
 
     [ "$status" -eq 0 ]
     [[ "$output" == *"Profile applied: server"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [[ "$output" == *"Installing yazi via snap"* ]]
     [[ "$output" == *"apt install -y ufw"* ]]
     [[ "$output" == *"apt install -y restic"* ]]
     [[ "$output" == *"apt install -y fail2ban"* ]]
@@ -141,7 +143,7 @@ teardown() {
 
 @test "glb restore --from-snapshot applies a snapshot end to end" {
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
 
     mkdir -p "$GLB_ROOT/snapshots/host-2026-08-07/dotfiles"
     printf 'git\n' > "$GLB_ROOT/snapshots/host-2026-08-07/packages.txt"
@@ -179,7 +181,7 @@ teardown() {
 
 @test "glb restore --from-manifest applies an external directory end to end" {
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
 
     local manifest="$TEST_TMP/my-manifest"
     mkdir -p "$manifest/dotfiles"
@@ -222,7 +224,7 @@ teardown() {
     stub_command hostname 'echo test-host'
     stub_command date 'if [ "$1" = "+%Y-%m-%d" ]; then echo 2026-08-07; else /usr/bin/date "$@"; fi'
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
 
     mkdir -p "$GLB_ROOT/profiles"
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
@@ -242,7 +244,7 @@ teardown() {
 
 @test "glb restore --undo reverses a prior restore's dotfile changes" {
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
 
     mkdir -p "$GLB_ROOT/profiles/default/dotfiles"
     echo 'new content' > "$GLB_ROOT/profiles/default/dotfiles/.bashrc"
@@ -447,7 +449,7 @@ teardown() {
 
 @test "glb repair finds real drift against the default profile and fixes it once confirmed" {
     stub_command starship 'exit 0'
-    stub_command git 'if [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : > "$d/init.lua"; fi; exit 0'
+    stub_command git 'exit 0'
     stub_command curl 'exit 0'
     stub_command bash 'exit 0'
     stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'

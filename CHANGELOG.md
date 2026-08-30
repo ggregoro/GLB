@@ -13,18 +13,18 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
-- `glb restore` now sets up Neovim's config for a profile that opts in
-  via `profiles/<name>/nvim-config.txt` (one line: a git clone URL).
-  Only the `default` profile ships one, pointing at Greg's own LazyVim
-  setup (`github.com/ggregoro/nvim-config`, private) — cloned into
-  `~/.config/nvim` on first restore, `git pull --ff-only`ed on every
-  restore after. `GLB_NVIM_CONFIG_REPO` overrides the URL; a machine
-  without access to the repo gets a clean "clone failed" message and an
-  otherwise-normal restore (`nvim` still installs, just unconfigured).
-  Backup-on-first-touch (`~/.config/nvim.glb-backup`) and
-  `glb restore --undo` both cover it. Mirrors GWB's
-  `Install-GwbNvimConfig`. See `docs/design/nvim-lazyvim.md`.
-- `tests/nvim_config.bats` — 14 tests for the new `glb_install_nvim_config`.
+- Neovim + LazyVim, built into every profile (`default`/`developer`/
+  `server`): each now vendors the real, public [LazyVim/starter](
+  https://github.com/LazyVim/starter) template as a normal tracked
+  dotfile (`dotfiles/.config/nvim/`), fetched byte-for-byte from
+  upstream and applied the same way as every other dotfile — symlinked
+  per file, backed up on first touch, no external repo, no
+  credentials. `server` also gained `neovim` in its `packages.txt`
+  (previously only `default`/`developer` had it). Replaces an
+  earlier same-day design that cloned a private personal repo on
+  restore — reverted once it became clear a public project's built-in
+  feature shouldn't depend on the maintainer's own repo access. See
+  `docs/design/nvim-lazyvim.md`.
 
 ---
 

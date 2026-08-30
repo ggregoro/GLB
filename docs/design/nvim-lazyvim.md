@@ -1,18 +1,71 @@
 # Design: Neovim + LazyVim config on restore
 
 **Status:** Implemented (2026-08-30)
-**Added:** 2026-08-30
+**Superseded:** 2026-08-30 (same day) — see "Revision: public, vendored
+config" below. The original private-repo-clone design is kept here as a
+record of what was tried and why it changed, not a description of what
+GLB does today.
 
 ## Motivation
 
 GLB's `default` profile has installed the `neovim` package since the
 project's earliest days, but never configured it — `glb restore default`
 left you with a bare `nvim`. GWB (the Windows sibling) closed the same
-gap on 2026-08-30 by having `gwb restore` clone Greg's own LazyVim setup
-(`Install-GwbNvimConfig`, see GWB's `docs/design/nvim-lazyvim.md`). This
-brings GLB to parity.
+gap on 2026-08-30 by having `gwb restore` clone Greg's own LazyVim setup.
+This brought GLB to parity — at first.
 
-## The real fork: vendor a static copy, or clone the config repo?
+## Revision: public, vendored config (2026-08-30, same day)
+
+The first cut (below) cloned Greg's own private `nvim-config` repo on
+every restore — real parity with his actual setup, but only for
+machines with SSH access to that private repo. Greg caught this
+directly: GLB is a public project, and its features — Neovim/LazyVim
+included — should work for anyone, on any machine, with no external
+dependency. **Revised**, same day: GLB now vendors the real, official
+[LazyVim/starter](https://github.com/LazyVim/starter) template as a
+normal tracked dotfile (`dotfiles/.config/nvim/`), fetched byte-for-byte
+from upstream and symlinked exactly like every other dotfile GLB
+manages — no git-clone-a-second-repo mechanism, no SSH key, no private
+repo, in **all three profiles** (`default`/`developer`/`server`, per
+Greg: "Neovim along with Lazy Vim should be built in for all profiles on
+GLB").
+
+**Why per-file symlinks, not a symlinked directory:** LazyVim's own
+`lazy.nvim` plugin manager writes `lazy-lock.json` into
+`~/.config/nvim/` on first launch, and installs the plugins themselves
+into `~/.local/share/nvim/lazy/` (untouched by this at all).
+`glb_apply_profile_dotfiles`'s existing per-file symlink walk (used for
+every dotfile already) creates `~/.config/nvim/` as a real directory
+containing individually-symlinked static files (`init.lua`, `lua/
+config/*.lua`, …) — so when `lazy-lock.json` gets created later, it
+lands as a plain, independent file in a real directory, never inside
+GLB's own git checkout. This is the same reasoning that ruled out
+symlinking `~/.config/nvim` as a whole directory (which the old
+private-repo-clone design used, via `git clone`).
+
+**What this removed:** the entire `glb_install_nvim_config` function
+(`lib/profile.sh`), its calls from `glb_apply_profile`/
+`glb_apply_manifest`/`glb_apply_snapshot`, `profiles/default/
+nvim-config.txt`, the `GLB_NVIM_CONFIG_REPO` override, the
+Neovim-specific special-casing in `glb_undo_restore` (no longer needed —
+the generic per-file backup/restore logic already covers individually
+symlinked dotfiles), and `tests/nvim_config.bats` (14 tests, no longer
+applicable). Replaced by nothing but the vendored files themselves —
+the existing dotfile machinery does the rest, for free.
+
+**What a personal config now looks like:** the same answer as any other
+GLB-managed dotfile (see CLAUDE.md's 2026-08-10 discussion of
+personalizing `starship.toml`) — either edit through the symlink (lands
+inside GLB's own checkout, not ideal for a personal fork) or use `glb
+restore --from-manifest <path>` with your own directory. No
+LazyVim-specific override mechanism was rebuilt; the generic ones
+already cover it.
+
+---
+
+## Original design (2026-08-30, superseded same day — kept for record)
+
+### The real fork: vendor a static copy, or clone the config repo?
 
 Every other config GLB manages (`dotfiles/`, `starship.toml`, the
 `yazi/` config) is a static file vendored into this repo and symlinked
@@ -37,79 +90,21 @@ the living source of truth and clone it. Two sub-decisions:
   `neovim` is only in `default`'s `packages.txt` today and that's where
   the config belongs too. `developer`/`server` are untouched.
 
-This is a new pattern for GLB — a restore reaching out to clone a
-*second*, separate git repo, rather than installing a package or
-symlinking a vendored file. The closest precedent is `lib/plugins.sh`
-git-cloning the zsh plugins, but those are public, pinned, and
-write-once; this is a private repo that gets pulled on every restore.
+This turned out to be exactly backwards from what Greg actually wanted
+once he saw it fail on a machine without his private-repo access (a
+CachyOS VM, 2026-08-30) — see the revision above.
 
-## Scope
+### How it was built (no longer current)
 
-**In scope:**
-
-- **Opt-in per profile** via `profiles/<name>/nvim-config.txt` — one
-  line, the repo's clone URL (blank lines and `#` comments ignored, same
-  parser rules as `packages.txt`). Only `profiles/default/` ships one.
-  No file → `glb_install_nvim_config` is a silent no-op.
-- **`glb_install_nvim_config` (`lib/profile.sh`)**, called from
-  `glb_apply_profile`, `glb_apply_manifest`, and `glb_apply_snapshot`
-  (snapshots never carry an `nvim-config.txt`, so it no-ops there —
-  wired in for consistency, not because a snapshot needs it).
-- Self-gates on `nvim` **and** `git` being present. A restore where the
-  `neovim` package install was skipped (no TTY for the sudo prompt, say)
-  doesn't then fail here.
-- Target is `${XDG_CONFIG_HOME:-$HOME/.config}/nvim`. If that directory
-  is already a clone of the resolved repo URL (checked via `git -C …
-  remote get-url origin`), `git pull --ff-only`; otherwise clone fresh.
-- **Backup-on-first-touch**, the same rule `glb_apply_profile_dotfiles`
-  follows: a real pre-existing `~/.config/nvim` that *isn't* already
-  this clone is moved (not copied — `git clone` needs an empty
-  destination) to `~/.config/nvim.glb-backup` exactly once. A later run
-  that finds a backup already present re-clones over the directory
-  rather than clobbering the backup that's protecting the original data.
-- **`--dry-run`** threaded through: reports "Would clone / Would pull /
-  Would back up … then clone" without touching anything.
-- **`glb restore --undo`** (`glb_undo_restore`) restores `~/.config/nvim`
-  from `~/.config/nvim.glb-backup` explicitly, *before* the generic
-  `$HOME`-walk — the generic symlink-swap logic can't handle a directory
-  that's a git clone rather than a symlink.
-
-**Explicitly out of scope:**
-
-- `developer`/`server` profiles (see the scoping decision above).
-- `glb export` / `glb diff` / `glb repair` awareness of the Neovim
-  config — same call GWB made. Those operate on packages + dotfiles;
-  `nvim-config` is neither, and it has its own `git` history for
-  tracking changes.
-- Bootstrapping LazyVim itself if `nvim-config` is unreachable — the
-  clone either works or it doesn't, and a failed clone is a logged
-  warning, not a fallback path.
-
-## How it's built
-
-`glb_install_nvim_config <profile_dir> [--dry-run]` in `lib/profile.sh`:
-
-1. `return 0` immediately if `<profile_dir>/nvim-config.txt` is absent.
-2. Resolve the repo URL: `GLB_NVIM_CONFIG_REPO` if set, else the first
-   non-blank, non-`#` line of `nvim-config.txt` (read in pure bash, no
-   `grep`/`head`, so the nvim-absent path needs no external commands).
-3. `return 0` (with a dry-run note) if `nvim` isn't on `PATH`; warn and
-   `return 0` if `git` isn't.
-4. Decide "is this already our clone?" via `git -C "$config_dir" remote
-   get-url origin` matching the resolved URL.
-5. Own clone → `git pull --ff-only --quiet` (a failed pull is a warning,
-   not an error — the machine keeps working). Not our clone → back up
-   or clear `~/.config/nvim` per the rule above, then
-   `git clone --quiet`, and confirm `init.lua` landed.
-
-Tests: `tests/nvim_config.bats` (14 tests — the gate, clone, pull,
-backup, no-clobber, env override, every dry-run message, the
-nvim-absent branch, and the undo round-trip), with `git`/`nvim` stubbed.
-`tests/dispatcher.bats`'s shared `git` stub now drops an `init.lua` on
-`git clone <dest>` so the real-`default`-profile end-to-end tests pass
-cleanly through the new step.
-
-Verified for real on the Pop!_OS Cosmic laptop, 2026-08-30: fresh clone
-+ one-time backup, an idempotent second run (`git pull`, backup
-untouched), every dry-run message, the `GLB_NVIM_CONFIG_REPO` override,
-and a full `--undo` round-trip restoring the original directory.
+`glb_install_nvim_config <profile_dir> [--dry-run]` in `lib/profile.sh`
+resolved a repo URL from `nvim-config.txt` (or `GLB_NVIM_CONFIG_REPO`),
+self-gated on `nvim`+`git` being present, and either `git pull
+--ff-only`ed an existing clone or backed up/cleared `~/.config/nvim`
+and `git clone`d fresh, wired into `glb_apply_profile`/
+`glb_apply_manifest`/`glb_apply_snapshot` and explicitly special-cased
+in `glb_undo_restore` (a directory clone, not a symlink, needed
+handling before the generic backup-swap loop). Verified for real on the
+Pop!_OS Cosmic laptop the same day it was built — fresh clone, backup,
+idempotent pull, dry-run messages, the env override, and a full
+`--undo` round-trip all confirmed working, right before the design
+changed.

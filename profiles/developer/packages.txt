@@ -29,7 +29,8 @@ unzip              # needed for the font extras.txt entry
 # CachyOS (2026-08-10): developer originally shipped only Fresh (via
 # extras.txt) as its editor, so `nvim` didn't run at all here even
 # though it's one of default's packages. Added neovim alongside Fresh
-# rather than replacing it, matching default's own pairing.
+# rather than replacing it, matching default's own pairing. LazyVim
+# config vendored in dotfiles/.config/nvim (real LazyVim/starter, public).
 neovim
 
 # Containers — Podman chosen over Docker: daemonless/rootless fits a

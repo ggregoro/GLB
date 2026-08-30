@@ -32,6 +32,10 @@ replace it. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for why.
   ships as a curl-install script, a Flatpak app, or a font archive.
 - **Dotfile management** — symlinks a profile's dotfiles into `$HOME`,
   backing up anything already there first.
+- **Neovim + LazyVim, built in** — every profile vendors the real,
+  public [LazyVim/starter](https://github.com/LazyVim/starter) config,
+  set up automatically alongside every other opinionated default. No
+  external repo or credentials required.
 - **Sudo-gated install pause/resume** — if a package needs a password GLB
   can't supply (no TTY), it pauses, prints the exact command to run
   yourself, and continues once you confirm.

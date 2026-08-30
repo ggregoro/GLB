@@ -451,10 +451,13 @@ time, but the project itself is considered essentially done.
 
 ### Post-1.0 add-ons
 
-- **Neovim + LazyVim config (2026-08-30) ✅** — `glb restore` clones a
-  Neovim config repo for a profile that opts in via `nvim-config.txt`;
-  only `default` does, pointing at Greg's private LazyVim setup. Mirrors
-  GWB's equivalent. See `docs/design/nvim-lazyvim.md`.
+- **Neovim + LazyVim config (2026-08-30) ✅** — every profile
+  (`default`/`developer`/`server`) now vendors the real, public
+  [LazyVim/starter](https://github.com/LazyVim/starter) template as a
+  normal tracked dotfile, no external repo or credentials required.
+  Revised the same day from an initial private-repo-clone design once
+  it became clear a public project's built-in feature shouldn't depend
+  on Greg's own personal repo access. See `docs/design/nvim-lazyvim.md`.
 
 ---
 

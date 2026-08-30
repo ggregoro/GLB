@@ -979,6 +979,95 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Neovim + LazyVim redesigned from a private-repo clone to a public,
+  vendored config, built into all three profiles (2026-08-30, cloud
+  session, same day as the CachyOS fallback-path confirmation directly
+  below).** Prompted directly by that fallback-path test: Greg pushed
+  back hard on the premise itself — "Why would this machine need an SSH
+  key. GLB is a public repo that should be able to run on any Linux
+  distro" — and, once the direction was confirmed via
+  `AskUserQuestion` ("Public, self-contained LazyVim"), extended it
+  further: "Neovim along with Lazy Vim should be built in for all
+  profiles on GLB so it installs along with all of the other
+  opinionated features of GLB." This **reverses** the design built
+  earlier the same day (see the entry further down this file and
+  `docs/design/nvim-lazyvim.md`'s original section) — that version
+  deliberately chose "true parity" (clone Greg's actual private
+  `nvim-config` repo) over a public starter, `default`-only. Both
+  choices got overturned within hours of shipping, once real testing
+  on a machine that wasn't Greg's own surfaced the actual consequence.
+  - **What changed:** every profile now vendors the real, official
+    [LazyVim/starter](https://github.com/LazyVim/starter) template
+    (fetched via `git clone --depth 1` from the real upstream repo,
+    not hand-typed, matching this project's usual discipline for
+    vendored third-party content) as a normal tracked dotfile —
+    `profiles/<name>/dotfiles/.config/nvim/{init.lua,.neoconf.json,
+    stylua.toml,lua/config/{autocmds,keymaps,lazy,options}.lua,
+    lua/plugins/example.lua}` — byte-verified identical to upstream via
+    `diff -r` in all three profiles. `server` also gained `neovim` in
+    `packages.txt` (it never had it before — only `default`/`developer`
+    did).
+  - **Why per-file symlinks work correctly for a tool that writes back
+    into its own config directory**: LazyVim's `lazy.nvim` writes
+    `lazy-lock.json` into `~/.config/nvim/` on first launch (plugins
+    themselves install to `~/.local/share/nvim/lazy/`, untouched by
+    any of this). Since `glb_apply_profile_dotfiles`'s existing
+    per-file walk creates `~/.config/nvim/` as a real directory holding
+    individually-symlinked static files (confirmed directly: `ls -la`
+    after a sandboxed restore shows `~/.config/nvim/` as a real dir,
+    each `.lua`/`.json`/`.toml` file inside it a symlink back into the
+    GLB checkout), a later `lazy-lock.json` write lands as a plain,
+    independent file — never touching GLB's own git tree. This is
+    exactly the failure mode that made a *symlinked directory* (or the
+    private-repo `git clone` into `~/.config/nvim` directly) the wrong
+    shape; the fix wasn't a new mechanism, it was recognizing the
+    *existing* per-file dotfile machinery already avoided the problem.
+  - **Removed entirely, not just deprecated**: `glb_install_nvim_config`
+    (`lib/profile.sh`, ~115 lines) and its call sites in
+    `glb_apply_profile`/`glb_apply_manifest`
+    (`lib/profile.sh`)/`glb_apply_snapshot` (`lib/export.sh`);
+    `profiles/default/nvim-config.txt`; the `GLB_NVIM_CONFIG_REPO`
+    override; the Neovim-specific special-casing at the top of
+    `glb_undo_restore` (no longer needed — once nvim-config is just
+    individually-symlinked dotfiles, the *existing* generic
+    backup-restore loop already covers it, no special-case required);
+    and `tests/nvim_config.bats` (14 tests, no longer applicable — the
+    mechanism they tested doesn't exist anymore). Net effect is less
+    code than before, not more: the whole custom git-clone-a-second-repo
+    mechanism is gone, replaced by nothing but the vendored files
+    themselves plus infrastructure that already existed.
+  - **Test fallout, all fixed**: 8 occurrences of `stub_command git 'if
+    [ "$1" = clone ]; then d="${@: -1}"; mkdir -p "$d"; : >
+    "$d/init.lua"; fi; exit 0'` in `tests/dispatcher.bats` (originally
+    there to fake the private-repo clone landing an `init.lua`) were no
+    longer meaningful — simplified to plain `stub_command git 'exit
+    0'`, since the only remaining real `git clone` call during a
+    restore is zsh plugin vendoring, which just needs to succeed, not
+    produce a specific file. **Also fixed while in this file, a
+    pre-existing gap found and already documented earlier the same
+    session**: "glb restore applies the real server profile end to
+    end" was missing a `snap` stub (the `yazi`-via-snap extras method
+    added by other work has no `snap` binary in the sandbox), confirmed
+    failing identically on unmodified `main` before this fix — added
+    the same `stub_command snap 'case "$1" in list) exit 1 ;;
+    install) exit 0 ;; esac'` the `default` test already used. 223/227
+    bats pass (same 4 pre-existing root-sandbox permission failures);
+    all three real-profile end-to-end tests (`default`/`developer`/
+    `server`) pass cleanly, and a manual sandboxed restore independently
+    confirmed all 8 vendored `.config/nvim/*` files symlink correctly.
+  - **Docs updated**: `docs/design/nvim-lazyvim.md` (kept the original
+    design as a marked-superseded historical record rather than
+    deleting it — same convention as the WezTerm removal history
+    elsewhere in this file), `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`,
+    `README.md` (added a new Features bullet — this wasn't advertised
+    there before), `CHANGELOG.md`'s `[Unreleased]` entry rewritten in
+    place rather than appended-to, since the superseded version never
+    shipped in a numbered release.
+  - **Not yet re-verified for real** — built and bats-tested from the
+    repo alone this round; the next `glb restore` on any machine
+    (including the CachyOS VM that prompted this) should confirm `nvim`
+    launches straight into a working, no-SSH-key-needed LazyVim setup,
+    on the first try, with no "clone failed" message ever appearing.
 - **Neovim-config's "not Greg" fallback path confirmed for real on
   pacman/CachyOS (2026-08-30, cloud session, real VM).** Greg switched
   the CachyOS VM from `developer` back to `default` (`glb restore
