@@ -203,6 +203,7 @@ glb_apply_snapshot() {
     glb_install_zsh_plugins "$dry_run" || status=1
     glb_install_self_symlink "$dry_run" || status=1
     glb_install_completions "$dry_run" || status=1
+    glb_install_nvim_config "$snapshot_dir" "$dry_run" || status=1
     glb_apply_profile_dotfiles "$snapshot_dir" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then

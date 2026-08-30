@@ -13,7 +13,7 @@ git
 zsh
 fish
 tmux
-neovim
+neovim     # LazyVim config is cloned into ~/.config/nvim - see nvim-config.txt
 curl
 ripgrep
 fzf

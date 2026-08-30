@@ -180,8 +180,126 @@ glb_apply_profile_dotfiles() {
 }
 
 # ------------------------------------------------------------
+# Clone (or pull) a profile's Neovim config repo into ~/.config/nvim.
+#
+# Unlike dotfiles/, which GLB vendors and symlinks, a Neovim setup like
+# LazyVim is an actively-changing personal config that lives in its own
+# git repo - vendoring a snapshot would go stale the moment it's edited.
+# So this treats that repo as the living source of truth: clone it fresh
+# the first time, `git pull --ff-only` on every restore after.
+#
+# Opt-in per profile via profiles/<name>/nvim-config.txt - one line, the
+# repo's clone URL (blank lines and '#' comments ignored, same as
+# packages.txt). No file -> this is a no-op. GLB_NVIM_CONFIG_REPO in the
+# environment overrides the URL from the file (mirrors GWB's
+# GWB_NVIM_CONFIG_REPO). Self-gates on nvim + git being present, so a
+# restore where the neovim package install was skipped (no TTY for sudo,
+# say) doesn't then fail here.
+#
+# Mirrors GWB's Install-GwbNvimConfig - see docs/design/nvim-lazyvim.md.
+# ------------------------------------------------------------
+
+glb_install_nvim_config() {
+    local profile_dir="$1"
+    local dry_run="${2:-}"
+    local repo_file="$profile_dir/nvim-config.txt"
+
+    [[ -f "$repo_file" ]] || return 0
+
+    local repo_url="${GLB_NVIM_CONFIG_REPO:-}"
+    if [[ -z "$repo_url" ]]; then
+        local line
+        while IFS= read -r line || [[ -n "$line" ]]; do
+            line="${line%%#*}"
+            line="${line#"${line%%[![:space:]]*}"}"
+            line="${line%"${line##*[![:space:]]}"}"
+            [[ -n "$line" ]] && { repo_url="$line"; break; }
+        done < "$repo_file"
+    fi
+
+    if [[ -z "$repo_url" ]]; then
+        glb_log_warn "nvim-config.txt has no repo URL, skipping Neovim config."
+        return 0
+    fi
+
+    if ! glb_command_exists nvim; then
+        [[ "$dry_run" == "--dry-run" ]] && \
+            glb_log_info "Would configure Neovim, but nvim isn't installed - skipping"
+        return 0
+    fi
+
+    if ! glb_command_exists git; then
+        glb_log_warn "git not found, cannot set up Neovim config."
+        return 0
+    fi
+
+    local config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+    local backup="$config_dir.glb-backup"
+    local is_own_clone=""
+    if [[ -e "$config_dir/.git" ]] && \
+       [[ "$(git -C "$config_dir" remote get-url origin 2>/dev/null)" == "$repo_url" ]]; then
+        is_own_clone=1
+    fi
+
+    if [[ "$dry_run" == "--dry-run" ]]; then
+        if [[ -n "$is_own_clone" ]]; then
+            glb_log_info "Would pull latest nvim-config into ~/.config/nvim"
+        elif [[ -e "$config_dir" || -L "$config_dir" ]]; then
+            if [[ -e "$backup" || -L "$backup" ]]; then
+                glb_log_info "Would replace ~/.config/nvim with a fresh nvim-config clone (existing ~/.config/nvim.glb-backup kept as-is)"
+            else
+                glb_log_info "Would back up ~/.config/nvim -> ~/.config/nvim.glb-backup, then clone nvim-config"
+            fi
+        else
+            glb_log_info "Would clone nvim-config into ~/.config/nvim"
+        fi
+        return 0
+    fi
+
+    if [[ -n "$is_own_clone" ]]; then
+        if git -C "$config_dir" pull --ff-only --quiet; then
+            glb_log_success "nvim-config updated: ~/.config/nvim"
+        else
+            glb_log_warn "nvim-config pull failed (leaving ~/.config/nvim as-is)"
+        fi
+        return 0
+    fi
+
+    # Preserve a real pre-existing config exactly once - same
+    # backup-on-first-touch rule glb_apply_profile_dotfiles follows -
+    # before this takes the directory over as its own clone. `git clone`
+    # needs an empty target, so it's a move, not a copy.
+    if [[ -e "$config_dir" || -L "$config_dir" ]]; then
+        if [[ ! -e "$backup" && ! -L "$backup" ]]; then
+            glb_log_warn "Backing up existing ~/.config/nvim -> ~/.config/nvim.glb-backup"
+            if ! mv "$config_dir" "$backup"; then
+                glb_log_error "Failed to back up ~/.config/nvim"
+                return 1
+            fi
+        elif ! rm -rf "$config_dir"; then
+            glb_log_error "Failed to clear ~/.config/nvim"
+            return 1
+        fi
+    fi
+
+    if ! glb_create_directory "$(dirname "$config_dir")"; then
+        glb_log_error "Failed to create ~/.config for the Neovim clone"
+        return 1
+    fi
+
+    if git clone --quiet "$repo_url" "$config_dir" && [[ -f "$config_dir/init.lua" ]]; then
+        glb_log_success "nvim-config cloned: ~/.config/nvim"
+    else
+        glb_log_error "Failed to clone nvim-config to ~/.config/nvim - check access to $repo_url"
+        return 1
+    fi
+}
+
+# ------------------------------------------------------------
 # Undo a restore: walk $HOME for *.glb-backup files left behind by
-# glb_apply_profile_dotfiles and swap each one back into place.
+# glb_apply_profile_dotfiles and swap each one back into place. The
+# Neovim config (a directory clone, not a symlink) is handled first,
+# explicitly, since the generic symlink-swap logic below can't.
 # ------------------------------------------------------------
 
 glb_undo_restore() {
@@ -190,9 +308,24 @@ glb_undo_restore() {
     local skipped=0
     local failed=()
 
+    local nvim_config="${XDG_CONFIG_HOME:-$HOME/.config}/nvim"
+    local nvim_backup="$nvim_config.glb-backup"
+    if [[ -d "$nvim_backup" ]]; then
+        [[ -e "$nvim_config" || -L "$nvim_config" ]] && rm -rf "$nvim_config"
+        if mv "$nvim_backup" "$nvim_config"; then
+            glb_log_success "Restored ~/.config/nvim from backup"
+            restored=$((restored + 1))
+        else
+            glb_log_error "Failed to restore ~/.config/nvim"
+            failed+=(".config/nvim")
+        fi
+    fi
+
     while IFS= read -r -d '' backup; do
         dest="${backup%.glb-backup}"
         rel="${dest#"$HOME"/}"
+
+        [[ "$backup" == "$nvim_backup" ]] && continue
 
         if [[ -e "$dest" || -L "$dest" ]]; then
             if [[ ! -L "$dest" ]]; then
@@ -262,6 +395,7 @@ glb_apply_profile() {
     glb_install_zsh_plugins "$dry_run" || status=1
     glb_install_self_symlink "$dry_run" || status=1
     glb_install_completions "$dry_run" || status=1
+    glb_install_nvim_config "$profile_dir" "$dry_run" || status=1
     glb_apply_profile_dotfiles "$profile_dir" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then
@@ -313,6 +447,7 @@ glb_apply_manifest() {
     glb_install_zsh_plugins "$dry_run" || status=1
     glb_install_self_symlink "$dry_run" || status=1
     glb_install_completions "$dry_run" || status=1
+    glb_install_nvim_config "$path" "$dry_run" || status=1
     glb_apply_profile_dotfiles "$path" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then

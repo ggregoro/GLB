@@ -1,0 +1,17 @@
+# GLB profile: default - Neovim config repo
+#
+# One line: the git clone URL for the Neovim config GLB should set up in
+# ~/.config/nvim. Cloned on first restore, `git pull --ff-only`ed on
+# every restore after. Blank lines and '#' comments are ignored.
+#
+# This is Greg's own LazyVim setup (github.com/ggregoro/nvim-config, a
+# private repo), treated as the living source of truth rather than
+# vendored into GLB - his edits there just need a `git push`, no GLB
+# change to pick them up. A machine without access to this repo (i.e.
+# anyone who isn't Greg) gets a clean "clone failed" message and an
+# otherwise-normal restore; nvim still installs, it's just unconfigured.
+# Set GLB_NVIM_CONFIG_REPO in the environment to point at a different
+# repo. Mirrors GWB's Install-GwbNvimConfig - see
+# docs/design/nvim-lazyvim.md.
+
+git@github.com:ggregoro/nvim-config.git
