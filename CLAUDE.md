@@ -979,6 +979,67 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Neovim + LazyVim config added to `default` (2026-08-30, Pop!_OS
+  Cosmic laptop) — parity with GWB's own 2026-08-30 addition.** GLB has
+  installed the `neovim` package in `default` forever but never
+  configured it. Now `glb restore` sets up a profile's Neovim config if
+  the profile opts in via a new `profiles/<name>/nvim-config.txt` (one
+  line: a git clone URL; `#`/blank lines ignored). Only `profiles/
+  default/` ships one, pointing at Greg's own private LazyVim repo
+  `git@github.com:ggregoro/nvim-config.git`.
+  - **Two decisions locked via `AskUserQuestion`**: (1) *true parity* —
+    clone the real private `nvim-config`, not the public
+    `LazyVim/starter` and not an env-var-only stub. Non-Greg users get a
+    clean "clone failed" log and an otherwise-normal restore (`nvim`
+    still installs, just unconfigured); `GLB_NVIM_CONFIG_REPO` overrides
+    the URL. (2) *`default` only* — not `developer`/`server`, matching
+    where the `neovim` package already lives.
+  - **`glb_install_nvim_config` (`lib/profile.sh`)**, mirrors GWB's
+    `Install-GwbNvimConfig`: self-gates on `nvim` + `git` present;
+    no-ops with no `nvim-config.txt`; clones into `~/.config/nvim` (uses
+    `${XDG_CONFIG_HOME:-$HOME/.config}`); if that dir is already a clone
+    of the resolved URL (`git -C … remote get-url origin`), `git pull
+    --ff-only` instead. Backup-on-first-touch to `~/.config/
+    nvim.glb-backup` (once — a later run with a backup already present
+    re-clones over the dir rather than clobbering the backup, same rule
+    as `glb_apply_profile_dotfiles`). Wired into `glb_apply_profile`,
+    `glb_apply_manifest`, and `glb_apply_snapshot` (snapshots never
+    carry an `nvim-config.txt`, so it no-ops there). `glb_undo_restore`
+    gained an explicit branch to restore `~/.config/nvim` from its
+    backup *before* the generic `$HOME`-walk — the generic symlink-swap
+    can't handle a directory that's a git clone, not a symlink.
+  - **`tests/nvim_config.bats`** — 14 new tests (gate, clone, pull,
+    backup, no-clobber, `GLB_NVIM_CONFIG_REPO` override, every dry-run
+    message, the nvim-absent branch, undo round-trip). `tests/
+    dispatcher.bats`'s shared `git` stub now drops an `init.lua` on
+    `git clone <dest>` so the real-`default`-profile end-to-end tests
+    pass through the new step. **Full suite 237/241** — the 4 failures
+    are the pre-existing `fresh`/`starship`-genuinely-on-PATH
+    test-isolation gap (tests 38/39/88/116), confirmed unchanged by
+    this work.
+  - **Verified for real on the Pop!_OS Cosmic laptop**: fresh clone +
+    one-time backup, an idempotent second run (`git pull`, backup
+    untouched), every dry-run message, the `GLB_NVIM_CONFIG_REPO`
+    override, and a full `--undo` round-trip restoring the original
+    directory — all confirmed by running `glb_install_nvim_config` /
+    `glb_undo_restore` directly against `profiles/default` (not a full
+    `glb restore`, same isolation approach GWB's yazi verification used).
+    One incidental note: running `glb_undo_restore` for real also
+    restored a stray `~/.bashrc.glb-backup` left by a prior restore on
+    that laptop — a reminder that `--undo` is a whole-`$HOME` operation
+    and shouldn't be run for verification on a machine with real GLB
+    state; the bats coverage is the right place for that.
+  - Docs: `docs/design/nvim-lazyvim.md` (new), `CHANGELOG.md`
+    `[Unreleased]`, `docs/ARCHITECTURE.md`, `docs/ROADMAP.md`
+    (new "Post-1.0 add-ons" subsection). Built on branch
+    `feat/nvim-lazyvim`, merged to `main`.
+  - **Not yet done**: verified only on the one laptop; a real
+    `glb restore default` end-to-end (packages + this step together) on
+    a fresh machine, and confirming `nvim` actually launches into a
+    working LazyVim (plugins bootstrapping on first run), still pending
+    — same "needs a real fresh-machine run" caveat GWB's own
+    `docs/design/nvim-lazyvim.md` carries.
+
 - **pacman's `update` alias switched from `sudo pacman -Syu` to `yay
   -Syu` (2026-08-19, Dell laptop), fixing a real gap Greg caught via
   `cosmic-applet-arch`.** That COSMIC panel applet flags pacman and

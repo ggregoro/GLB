@@ -449,6 +449,13 @@ fresh Arch Linux Cosmic install on the Dell laptop) ran end-to-end
 exactly as designed. Small add-ons are still expected from time to
 time, but the project itself is considered essentially done.
 
+### Post-1.0 add-ons
+
+- **Neovim + LazyVim config (2026-08-30) ✅** — `glb restore` clones a
+  Neovim config repo for a profile that opts in via `nvim-config.txt`;
+  only `default` does, pointing at Greg's private LazyVim setup. Mirrors
+  GWB's equivalent. See `docs/design/nvim-lazyvim.md`.
+
 ---
 
 # Long-Term Vision

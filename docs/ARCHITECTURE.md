@@ -56,7 +56,7 @@ to clone a private one.
 | `detect.sh` | Detects the distro, distro version, package manager (apt/dnf/pacman/zypper), and current shell. |
 | `package.sh` | Package management abstraction: install/remove/list, per-distro name resolution (`_GLB_PACKAGE_OVERRIDES`) and its reverse for `glb export`, and the sudo-gated manual-step pause/resume. |
 | `extras.sh` | Installs software outside the package-manager model — curl-install scripts, Flatpak apps, and Nerd Font archives — driven by a profile's `extras.txt`. |
-| `profile.sh` | Applies a profile: packages, dotfiles (symlink + backup), the interactive picker (`glb restore` with no profile name), `--undo` rollback, and `--from-manifest <path>` for applying a profile-shaped directory from anywhere on disk. |
+| `profile.sh` | Applies a profile: packages, dotfiles (symlink + backup), a Neovim config repo cloned/pulled into `~/.config/nvim` if the profile opts in via `nvim-config.txt`, the interactive picker (`glb restore` with no profile name), `--undo` rollback, and `--from-manifest <path>` for applying a profile-shaped directory from anywhere on disk. |
 | `prompt.sh` | Installs and configures the Starship prompt (`glb prompt`), including the update path. |
 | `plugins.sh` | Vendors a curated set of zsh plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`) by git-cloning them directly — framework-free, no Oh My Zsh/Fisher dependency. |
 | `completions.sh` | Symlinks `glb` itself onto `PATH` and installs its bash/zsh/fish completion scripts. |
@@ -80,9 +80,15 @@ A profile is a directory containing:
   first).
 - **`description.txt`** *(optional)* — one line shown by the interactive
   picker.
+- **`nvim-config.txt`** *(optional)* — one line, a git clone URL. If
+  present, `glb restore` clones that repo into `~/.config/nvim` (and
+  `git pull --ff-only`s it on later restores). Only `default` ships one,
+  pointing at Greg's private LazyVim setup; see
+  `docs/design/nvim-lazyvim.md`. `GLB_NVIM_CONFIG_REPO` overrides the URL.
 
 `glb restore <profile>` runs, in order: packages → extras → Starship →
-zsh plugins → self-symlink + completions → dotfiles. `glb export` and
+zsh plugins → self-symlink + completions → Neovim config → dotfiles.
+`glb export` and
 `glb diff`/`glb repair` all operate on this same shape, so a snapshot
 captured by `glb export` can be diffed against or restored from exactly
 like a profile.

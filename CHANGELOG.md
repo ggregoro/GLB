@@ -12,8 +12,19 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
-Nothing yet — small add-ons are expected from time to time, but there's
-no unreleased work as of the `1.0.0` cut below.
+### Added
+- `glb restore` now sets up Neovim's config for a profile that opts in
+  via `profiles/<name>/nvim-config.txt` (one line: a git clone URL).
+  Only the `default` profile ships one, pointing at Greg's own LazyVim
+  setup (`github.com/ggregoro/nvim-config`, private) — cloned into
+  `~/.config/nvim` on first restore, `git pull --ff-only`ed on every
+  restore after. `GLB_NVIM_CONFIG_REPO` overrides the URL; a machine
+  without access to the repo gets a clean "clone failed" message and an
+  otherwise-normal restore (`nvim` still installs, just unconfigured).
+  Backup-on-first-touch (`~/.config/nvim.glb-backup`) and
+  `glb restore --undo` both cover it. Mirrors GWB's
+  `Install-GwbNvimConfig`. See `docs/design/nvim-lazyvim.md`.
+- `tests/nvim_config.bats` — 14 tests for the new `glb_install_nvim_config`.
 
 ---
 
