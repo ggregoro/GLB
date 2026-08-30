@@ -3851,6 +3851,67 @@ branches on it.
 - This file is read by Claude Code at the start of every session in this
   repo — update it as decisions get made so context isn't lost between
   sessions.
+
+- **NEXT SESSION — pick up here: verify Neovim + LazyVim end-to-end on a
+  fresh Pop!_OS VM (set up 2026-08-30, Greg will run it).** The
+  Neovim/LazyVim feature shipped 2026-08-30 (`57642bb`/`1e975db` on
+  `main`, see the Roadmap entry above) but has only been verified
+  piecewise — running `glb_install_nvim_config`/`glb_undo_restore`
+  directly against `profiles/default` on the Pop!_OS Cosmic *laptop*.
+  The real fresh-machine run is still outstanding. This also doubles as
+  the long-outstanding "a real `glb restore default` end-to-end on a
+  genuinely fresh machine, not a patched-up VM" check GLB's history
+  keeps flagging.
+  - **Prerequisite — SSH access to the private `nvim-config` repo must
+    be set up on the VM first**, or the LazyVim half can't be tested.
+    `profiles/default/nvim-config.txt` points at
+    `git@github.com:ggregoro/nvim-config.git` (private). Without a
+    working key the restore still *succeeds overall* but logs
+    `Failed to clone nvim-config to ~/.config/nvim - check access ...`
+    and `nvim` is left unconfigured — that's the by-design "not Greg"
+    path, not the thing to test. Playbook (same as every other fresh-VM
+    entry in this file): `ssh-keygen -t ed25519`, add the pubkey at
+    github.com/settings/keys, confirm with `ssh -T git@github.com`
+    (expect "Hi ggregoro! ..."). `GLB_NVIM_CONFIG_REPO` can point the
+    step at a different repo if ever needed.
+  - **Get GLB onto the VM**: `git clone
+    https://github.com/ggregoro/GLB.git` (public, no creds) or the
+    `install.sh` one-liner (clones to `~/.local/share/glb`).
+  - **Run `glb restore default` for real** (real TTY + real sudo on a VM
+    — none of the no-TTY/`pam_faillock` limitations that hit cloud
+    sessions). Watch for, in order:
+    1. `neovim` installs via apt.
+    2. `nvim-config cloned: ~/.config/nvim` (a success line, not a
+       `Failed to clone`). On a fresh Pop!_OS install there is no
+       pre-existing `~/.config/nvim`, so **no** `~/.config/nvim.glb-backup`
+       should be created.
+    3. `git -C ~/.config/nvim remote get-url origin` → the nvim-config
+       URL; `git -C ~/.config/nvim log --oneline -1` → `29bcb66 My
+       custom LazyVim setup`.
+  - **Launch `nvim`** — first launch bootstraps lazy.nvim itself + every
+    plugin pinned in `lazy-lock.json`. Let it finish, `:Lazy` shows them
+    installed with no errors, `:q`, relaunch → clean startup into
+    LazyVim. This is the actual "does it work" check the piecewise
+    verification couldn't do.
+  - **Idempotency**: a second `glb restore default` — the nvim step
+    should print `nvim-config updated: ~/.config/nvim` (a `git pull`),
+    NOT re-clone or re-backup. `glb restore default --dry-run` after
+    that → `Would pull latest nvim-config into ~/.config/nvim`.
+  - **`glb restore --undo`** on the fresh VM won't touch `~/.config/nvim`
+    (no `.glb-backup` exists — nothing pre-existed to restore). That's
+    expected; the backup/undo path is only exercised when there was a
+    real pre-existing config, and is covered by `tests/nvim_config.bats`.
+  - **bats suite on the VM** (`sudo apt install -y bats`, or the
+    scratchpad `bats-core` clone): expect **237/241** once a real
+    restore has run — the 4 failures are the documented
+    `fresh`/`starship`-genuinely-on-PATH test-isolation gap
+    (tests 38/39/88/116), not a regression. On a truly untouched VM
+    *before* any restore it may be higher.
+  - When done, update this file (close out the Roadmap entry's "Still
+    pending" note) and the Claude memory repo's `project_glb.md` (see
+    [[reference-memory-repo]] — its "real fresh-machine `glb restore
+    default` end-to-end still pending" line).
+
 - **Session wrap-up (2026-08-25, cloud session, fresh Linux Mint VM) —
   Greg is stopping here on this VM; `default` only, no need to test
   `developer`/`server` on this machine.** Full session, in order:
