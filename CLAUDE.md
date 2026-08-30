@@ -979,6 +979,29 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Neovim-config's "not Greg" fallback path confirmed for real on
+  pacman/CachyOS (2026-08-30, cloud session, real VM).** Greg switched
+  the CachyOS VM from `developer` back to `default` (`glb restore
+  default`) — this VM has no SSH key registered for the private
+  `nvim-config` repo, so `git clone git@github.com:ggregoro/
+  nvim-config.git` failed with `Permission denied (publickey)`.
+  `glb_install_nvim_config` handled it exactly as designed: clean
+  `[ERROR] Failed to clone nvim-config to ~/.config/nvim - check access
+  ...` message, `nvim` left unconfigured, and every other step still
+  completed correctly (packages already installed, self-symlink/
+  completions already linked, all dotfiles including the newer
+  `yazi`/`ranger` configs linked or correctly backed-up-then-relinked,
+  `.gitconfig` linked). Final line `[ERROR] Profile applied with
+  errors: default` is the correct exit for exactly one non-fatal
+  failure, not a broken restore. First real confirmation of this
+  fallback path outside of `tests/nvim_config.bats` and outside apt —
+  previously only exercised on the Dell/Pop!_OS laptop, where Greg's
+  own SSH access makes the *success* path the one that's been tested.
+  **Not yet tested on this VM: the success path itself** — would need
+  an SSH key added to this CachyOS VM for `nvim-config` specifically to
+  confirm the actual LazyVim clone+bootstrap works on pacman too, not
+  just the graceful-failure branch. Optional follow-up, not blocking —
+  the fallback path being correct is itself real, useful signal.
 - **Neovim + LazyVim config added to `default` (2026-08-30, Pop!_OS
   Cosmic laptop) — parity with GWB's own 2026-08-30 addition.** GLB has
   installed the `neovim` package in `default` forever but never
