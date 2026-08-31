@@ -8,12 +8,13 @@
 	path = ~/.gitconfig.local
 
 # git-delta (installed via packages.txt) - a syntax-highlighting diff
-# pager. `delta || less` so a machine where the package wasn't
-# installed still pages with plain less instead of erroring.
+# pager. The `command -v` guard means a machine where the package
+# wasn't installed yet (this file is a live symlink) silently pages
+# with plain less, no "delta: not found" noise on every git diff.
 [core]
-	pager = delta || less
+	pager = command -v delta >/dev/null 2>&1 && delta || less
 [interactive]
-	diffFilter = delta --color-only || cat
+	diffFilter = command -v delta >/dev/null 2>&1 && delta --color-only || cat
 [delta]
 	navigate = true
 	line-numbers = true
