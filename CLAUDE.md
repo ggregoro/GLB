@@ -987,6 +987,30 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Version: still `1.0.0`; cutting `1.1.0` is the open editorial call
+  (Greg raised it 2026-08-31).** `CHANGELOG.md`'s `## [1.0.0] -
+  2026-08-18` entry IS cut (with its own intro + `### Added`);
+  `## [Unreleased]` now holds 5 bullets — everything since 2026-08-18:
+  Neovim/LazyVim in all profiles, the no-GUI-rule drop + Ghostty
+  (config + launcher + `term=`), Yazi git-status signs,
+  `wl-clipboard`/`git-delta`/`atuin`, and (docs) `fresh-vm-
+  verification.md`. All additive, nothing breaking -> a **minor** bump
+  (`1.1.0`), not `2.0.0`.
+  - **Recommended trigger:** cut `1.1.0` once the two open apt bugs are
+    fixed + merged — Neovim 0.9.5 too old for LazyVim (entry below) and
+    `claude/atuin-snap-config-dir` (held pending a pacman/dnf/zypper
+    shell test) — and there's been a quick non-apt sanity pass (needed
+    for the atuin merge anyway). `default` is already fresh-VM-verified
+    on apt. Cutting `1.1.0` now for what's verified and pushing the two
+    fixes to `1.1.1` is the alternative, but waiting fits GLB's
+    "verify for real" ethos better. Greg's call on timing.
+  - **Mechanics when it's time:** `VERSION` `1.0.0` -> `1.1.0`; rename
+    `## [Unreleased]` -> `## [1.1.0] - <date>` (keep the bullets, add a
+    one-line intro like `[1.0.0]` has), insert a fresh empty
+    `## [Unreleased]` above it; update `docs/ROADMAP.md` (the "Post-1.0
+    add-ons" list) and `docs/PROJECT.md` Release Strategy;
+    `docs/DOCS_CHANGELOG.md` note.
+
 - **`default`'s Neovim is too old for the LazyVim it ships — found on
   the fresh Pop!_OS Cosmic VM (2026-08-31), fix planned not built.**
   GLB installs `neovim` from the system package manager. apt (Pop!_OS
