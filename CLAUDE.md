@@ -4268,18 +4268,31 @@ branches on it.
   - **Yazi git-status signs — theme.toml deployed; [Greg to confirm
     the visual: green check on tracked files / `?` on the untracked
     `plugins/` dir, inside `~/.local/share/glb`].**
-  - **atuin strict snap errors on every interactive shell (parked
-    2026-08-31, not yet fixed).** On this clean VM `~/.config/atuin`
-    doesn't exist and the strict-confinement snap can't create it
-    (`snap connections atuin` has no plug for it) — every new shell
-    prints `Error: could not load client settings ... could not create
-    dir "/home/grego/.config/atuin": Permission denied`. GLB's
-    existing notes call this a "caveat"; on a genuinely fresh machine
-    it's a hard error on shell startup. Likely fix: point
-    `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under `~/snap/atuin/` (or add
-    an `atuin:dot-config-atuin` personal-files plug) in the shell
-    init, rather than leaving it to default. Parked for a follow-up
-    session.
+  - **atuin strict snap errors on every interactive shell — FIXED on
+    branch `claude/atuin-snap-config-dir` (`7053a33`, pushed, NOT
+    merged).** On this clean VM `~/.config/atuin` doesn't exist and the
+    strict-confinement snap can't create it (`snap connections atuin`
+    has no plug for it; the `home` interface doesn't cover hidden dirs)
+    — every new shell (Ghostty, cosmic-term, all of them) printed
+    `Error: could not load client settings ... could not create dir
+    "/home/grego/.config/atuin": Permission denied`. GLB's existing
+    notes called this a "caveat"; on a genuinely fresh machine it's a
+    hard error on shell startup. **Fix:** `default`'s
+    `.bashrc`/`.zshrc`/`config.fish` export
+    `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under `~/snap/atuin/current/`
+    before `atuin init`, guarded by `case "$(command -v atuin)" in
+    */snap/*)` (fish: `string match -q '*/snap/*'`) so native `atuin`
+    on pacman/dnf/zypper is untouched; respects a pre-set `ATUIN_*_DIR`.
+    `extras.txt` comment + `CHANGELOG.md` `### Fixed` updated. Verified
+    on the VM (bash/zsh/fish all start silent, vars set, `atuin status`
+    clean, DB already at `~/snap/atuin/current/.local/share/atuin/`).
+    **Held from `main` pending a shell re-test on a pacman/dnf/zypper
+    box** (confirm the guard does NOT match `/usr/bin/atuin` and
+    `~/.config/atuin` stays the default there) — **those VMs don't
+    exist yet; new VMs needed, deferred by Greg 2026-08-31.** Immediate
+    machine-local mitigation on this VM:
+    `~/.config/environment.d/atuin.conf` with the same two vars
+    (independent of the dotfile fix; takes effect next login).
   - **LazyVim vendored config — 8 files symlinked; `lazy-lock.json`
     writes to `~/.config/nvim/` as a real file (GLB repo tree stays
     clean, only untracked `plugins/` = vendored zsh plugins). BUT
@@ -4300,21 +4313,43 @@ branches on it.
     genuinely on PATH.
   - **`developer` / `server` dry-runs — resolve clean; `server` lists
     `neovim`** (the rework's `neovim`-in-`server` addition confirmed).
-  - **Still pending on the VM:** the interactive GUI eyeballs (Yazi
-    image preview via `/usr/share/backgrounds/pop/`, Yazi git signs,
-    atuin Ctrl-R, Yazi-yank -> `wl-paste`), the Super+E manual bind,
-    and the Part 5 idempotency re-run (`glb restore default` a second
-    time -> all "Already installed"/"Already linked").
-  - **This VM has no git identity / push credentials** (clean
-    end-user sim). These CLAUDE.md edits were drafted on the VM
-    (`~/glb-vm-findings-2026-08-31.md` has a portable copy) and need
-    `gh auth login` there or relaying to a dev checkout to land, plus
-    a mirror into the `claude-memory` repo's `project_glb.md`.
-  - **NEXT SESSION — pick up here:** build the Neovim-too-old fix +
+  - **Interactive checks confirmed by Greg (screenshots):** Ghostty
+    opens under `LIBGL_ALWAYS_SOFTWARE=1` with no EGL/ZINK spam
+    (Path A); Yazi runs inside it with transparency/blur/Nerd-Font all
+    rendering; cosmic-term font set to JetBrainsMono Nerd Font (glyphs
+    render); LazyVim dashboard loads clean after the Neovim upgrade
+    (32 plugins, `4/32` lazy-loaded, ~40ms).
+  - **Still pending on the VM (not blocking):** Yazi image-preview
+    eyeball (`/usr/share/backgrounds/pop/`), Yazi git-sign eyeball
+    (inside `~/.local/share/glb`), Yazi-yank -> `wl-paste`, atuin
+    Ctrl-R in a fresh shell (after next login, once the atuin
+    mitigation is active), the Super+E COSMIC shortcut bind, and the
+    Part 5 idempotency re-run (`glb restore default` a 2nd time -> all
+    "Already installed"/"Already linked"). Optionally: VirtualBox 3D
+    accel + Guest Additions if hardware GL is ever wanted.
+  - **Machine-local changes made on this VM** (not GLB, won't outlive
+    the VM): Neovim 0.12.5 official tarball -> `/opt/nvim-linux-x86_64`
+    + `/usr/local/bin/nvim` symlink (apt `neovim` 0.9.5 left registered
+    so `dpkg -s` idempotency holds); `fastfetch` 2.67.1 via the
+    project's GitHub-release `.deb`; `~/.config/environment.d/atuin.conf`
+    (atuin mitigation); `~/.gitconfig.local` with Greg's identity +
+    the `gh` credential-helper block (moved there out of the tracked
+    `.gitconfig` symlink `gh auth login` had polluted); `gh` installed
+    + web-authed (keyring); `git config --local credential.helper` in
+    `~/.local/share/glb/.git/config`.
+  - **Pushed from this VM:** `main` fast-forwarded to `9a4ba96` (this
+    entry + the Roadmap fix-plan entry). Branch
+    `claude/atuin-snap-config-dir` (`7053a33`) pushed, held. Branch
+    `claude/vm-verify-2026-08-31-neovim-fix-notes` was the source of
+    `9a4ba96` (can be deleted). Also mirrored into `claude-memory`'s
+    `project_glb.md`.
+  - **NEXT SESSION — pick up here:** (1) build the Neovim-too-old fix +
     scope the `github-release` extras method (see the Roadmap entry
-    above). Then close the remaining "not yet real-restored" notes on
-    the Ghostty / Yazi-signs / `wl-clipboard`+`atuin`+`delta` Roadmap
-    entries with the VM results above.
+    above); (2) on a fresh pacman/dnf/zypper VM, shell-test branch
+    `claude/atuin-snap-config-dir` then merge it; (3) close the
+    remaining "not yet real-restored" notes on the Ghostty /
+    Yazi-signs / `wl-clipboard`+`atuin`+`delta` Roadmap entries with
+    the VM results above.
 
 - **[DONE 2026-08-31 — see the results entry directly above; kept for
   reference.] Full fresh-machine verification of the
