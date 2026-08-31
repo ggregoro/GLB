@@ -987,6 +987,60 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`default`'s Neovim is too old for the LazyVim it ships — found on
+  the fresh Pop!_OS Cosmic VM (2026-08-31), fix planned not built.**
+  GLB installs `neovim` from the system package manager. apt (Pop!_OS
+  24.04, Ubuntu LTS, Debian stable, Mint) ships **0.9.5**; the vendored
+  `LazyVim/starter` imports **unpinned** `LazyVim/LazyVim`, which now
+  requires **Neovim >= 0.11.2**. Net effect on every apt distro: a
+  fresh `nvim` prints `LazyVim requires Neovim >= 0.11.2` + "Press any
+  key to exit" and never loads — the LazyVim vendored-config rework is
+  broken out of the box there. Reproduced twice on the VM; installing
+  Neovim 0.12.5 from the official GitHub tarball fixed it immediately
+  (32 plugins bootstrap clean, `lazy-lock.json` writes as a real file,
+  repo tree stays clean, dashboard renders). dnf (Fedora 44) / pacman
+  (Arch) ship current Neovim so likely unaffected — not re-verified
+  this run. The 2026-08-31 laptop verification missed this because that
+  machine already had a newer-than-apt Neovim (confirm with
+  `nvim --version` there).
+  - **Fix plan (agreed with Greg 2026-08-31; lands on a branch from a
+    dev checkout, not the end-user-sim VM):**
+    1. **Neovim — reuse existing machinery:** move `neovim` from
+       `packages.txt` to `extras.txt` as `snap nvim classic`; add
+       `_GLB_SNAP_NATIVE_OVERRIDES` entries `nvim:pacman` / `nvim:dnf`
+       / `nvim:zypper` -> native `neovim`. Exact pattern
+       `yazi`/`ghostty`/`atuin` already use — snap on apt where the
+       package is stale, native package elsewhere. Snap
+       `nvim --classic` tracks stable (v0.12.5 as of this note).
+    2. **Version gate (safety net, install-source-independent):** in
+       `glb_apply_profile`'s nvim-config step, parse `nvim --version`
+       against a documented minimum (track LazyVim's floor); below it,
+       skip linking the nvim config with a clear message instead of
+       leaving a broken editor. Optionally pin `LazyVim/LazyVim` in
+       `lua/config/lazy.lua` for reproducibility (mirrors
+       `lazy-lock.json` pinning the plugins).
+    3. **fastfetch — needs a new mechanism (no official snap):** the
+       durable answer is a new **`github-release` extras method** —
+       `github <name> <owner/repo> [version|latest]` in `extras.txt`,
+       selecting the asset by arch (`x86_64`/`aarch64`) + per-distro
+       format (`.deb` on apt, `.rpm` on dnf/zypper, tarball ->
+       `/opt` + `/usr/local/bin` symlink on pacman / as a universal
+       fallback, AppImage last resort), with a version check for the
+       "already installed" test and a pin-vs-latest choice (latest
+       drifts a restore's result over time — pinning matches how GLB
+       pins zsh plugins and the LazyVim lock file). This also becomes
+       the general answer for any "packaged version missing or too
+       old" case. Costs to weigh before building: GLB owns the
+       asset-selection logic (fragile to release-asset renames);
+       glibc/musl/arch edge cases (Neovim's tarball needs a recent
+       glibc — older distros need the AppImage or `-musl` build);
+       "latest" drift unless pinned. Scope it in its own
+       `docs/design/github-release-extras.md` first.
+  - Until built: fastfetch stays a documented manual step on apt
+    (GitHub-release `.deb`, e.g. `fastfetch-linux-amd64.deb`; Mint's
+    preinstalled `neofetch` covers the niche there), and Neovim needs
+    a manual upgrade to >= 0.11.2 on apt distros before LazyVim works.
+
 - **`wl-clipboard` + `git-delta` + `atuin` added to `default`
   (2026-08-31, Pop!_OS Cosmic laptop).** Greg's pick from a "now that
   GUI apps are allowed, what did we overlook" brainstorm — all three
@@ -4173,7 +4227,97 @@ branches on it.
   repo — update it as decisions get made so context isn't lost between
   sessions.
 
-- **NEXT SESSION — pick up here: full fresh-machine verification of the
+- **Fresh Pop!_OS Cosmic VM verification of the 2026-08-30/31 batch —
+  DONE 2026-08-31 (this supersedes the "NEXT SESSION — pick up here"
+  block below, now historical).** Real end-user install on a genuinely
+  clean Pop!_OS 24.04 Cosmic VM: `install.sh` one-liner ->
+  `~/.local/share/glb`, real `glb restore default`. Results:
+  - **Ghostty — GLB integration verified; VM has no GPU accel.**
+    `snap ghostty classic` installed fresh; `/snap` classic-confinement
+    symlink auto-created on Pop!_OS (no manual step, unlike Fedora).
+    `ghostty +show-config` loads clean, and the opinionated config
+    renders correctly: `#0d0e12` background, opacity 0.85, blur on,
+    JetBrainsMono Nerd Font glyphs (no tofu), `term = xterm-256color`.
+    Yazi launches inside Ghostty via the `yazi.desktop` COSMIC app-grid
+    entry and renders (image preview via the Kitty graphics protocol is
+    CPU-side, works without a GPU). **This VirtualBox VM has "Enable 3D
+    Acceleration" OFF** (`vmwgfx` kernel module loads but has no 3D
+    context; Guest Additions `virtualbox-guest-utils`/`-x11` not
+    installed), so Ghostty logs `MESA-LOADER: failed to retrieve device
+    information` / `ZINK: vkCreateInstance failed` / `egl: failed to
+    create dri2 screen` on startup, then falls back to `llvmpipe`
+    software rendering and works fine (Ghostty is more resilient here
+    than WezTerm was — see the 2026-08-08 EndeavourOS WezTerm entry for
+    the same VMSVGA-no-3D failure that stopped WezTerm cold).
+    `LIBGL_ALWAYS_SOFTWARE=1 ghostty` skips the failing probe for a
+    clean start. **This is a VirtualBox limitation, not a GLB bug** —
+    GLB's Ghostty integration (install, config, launcher) is correct.
+    No standalone Ghostty launcher appeared in the COSMIC app grid —
+    the snap does ship `ghostty_ghostty.desktop`, COSMIC's app-library
+    cache just didn't surface it immediately (a re-login refreshes it);
+    not a GLB concern.
+  - **`wl-clipboard` / `git-delta` / `atuin` — verified.**
+    `echo x | wl-copy && wl-paste` round-trips (real Wayland session).
+    `delta` wired into `~/.gitconfig` (`core.pager` with `|| less`
+    guard, `interactive.diffFilter` with `|| cat` guard, navigate,
+    line-numbers, `merge.conflictStyle = zdiff3`) and renders a real
+    `git diff`. `atuin` = `/snap/bin/atuin` (strict snap on apt),
+    init in all three shell dotfiles after the fzf block,
+    `--disable-up-arrow`; DB not created until the first interactive
+    shell.
+  - **Yazi git-status signs — theme.toml deployed; [Greg to confirm
+    the visual: green check on tracked files / `?` on the untracked
+    `plugins/` dir, inside `~/.local/share/glb`].**
+  - **atuin strict snap errors on every interactive shell (parked
+    2026-08-31, not yet fixed).** On this clean VM `~/.config/atuin`
+    doesn't exist and the strict-confinement snap can't create it
+    (`snap connections atuin` has no plug for it) — every new shell
+    prints `Error: could not load client settings ... could not create
+    dir "/home/grego/.config/atuin": Permission denied`. GLB's
+    existing notes call this a "caveat"; on a genuinely fresh machine
+    it's a hard error on shell startup. Likely fix: point
+    `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under `~/snap/atuin/` (or add
+    an `atuin:dot-config-atuin` personal-files plug) in the shell
+    init, rather than leaving it to default. Parked for a follow-up
+    session.
+  - **LazyVim vendored config — 8 files symlinked; `lazy-lock.json`
+    writes to `~/.config/nvim/` as a real file (GLB repo tree stays
+    clean, only untracked `plugins/` = vendored zsh plugins). BUT
+    broken out of the box on apt — see the dedicated Roadmap entry
+    above (`neovim` 0.9.5 vs LazyVim's `>= 0.11.2` floor).** Worked
+    on this VM only after a manual Neovim 0.12.5 tarball install.
+  - **fastfetch — not in apt's index on Pop!_OS (reconfirmed);
+    installed manually via the project's GitHub-release
+    `fastfetch-linux-amd64.deb` (2.67.1).** Documented manual step
+    until the `github-release` extras method exists (Roadmap above).
+  - **`fresh` — installed for real** (`~/.local/bin/fresh` ->
+    `~/.local/share/fresh-editor/fresh`, `fresh 0.4.10`), opened and
+    used by Greg.
+  - **bats — 227/227 on this VM** (via scratchpad `bats-core`, no
+    `bats` package). The 4 `fresh`/`starship`/`yazi`-on-real-PATH
+    isolation failures flagged in prior notes did **not** recur here
+    even with `starship` (`/usr/local/bin`) and `yazi` (`/snap/bin`)
+    genuinely on PATH.
+  - **`developer` / `server` dry-runs — resolve clean; `server` lists
+    `neovim`** (the rework's `neovim`-in-`server` addition confirmed).
+  - **Still pending on the VM:** the interactive GUI eyeballs (Yazi
+    image preview via `/usr/share/backgrounds/pop/`, Yazi git signs,
+    atuin Ctrl-R, Yazi-yank -> `wl-paste`), the Super+E manual bind,
+    and the Part 5 idempotency re-run (`glb restore default` a second
+    time -> all "Already installed"/"Already linked").
+  - **This VM has no git identity / push credentials** (clean
+    end-user sim). These CLAUDE.md edits were drafted on the VM
+    (`~/glb-vm-findings-2026-08-31.md` has a portable copy) and need
+    `gh auth login` there or relaying to a dev checkout to land, plus
+    a mirror into the `claude-memory` repo's `project_glb.md`.
+  - **NEXT SESSION — pick up here:** build the Neovim-too-old fix +
+    scope the `github-release` extras method (see the Roadmap entry
+    above). Then close the remaining "not yet real-restored" notes on
+    the Ghostty / Yazi-signs / `wl-clipboard`+`atuin`+`delta` Roadmap
+    entries with the VM results above.
+
+- **[DONE 2026-08-31 — see the results entry directly above; kept for
+  reference.] Full fresh-machine verification of the
   2026-08-30/31 batch on a fresh Pop!_OS Cosmic VM (Greg's plan,
   2026-08-31).** Everything from that stretch is on `main` and none of
   it has had a real from-clean install: the LazyVim vendored-config
