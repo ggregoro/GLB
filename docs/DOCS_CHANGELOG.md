@@ -12,6 +12,15 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- Added `fresh-vm-verification.md` — the repeatable checklist for
+  installing GLB on a genuinely clean VM (as a new user) and confirming
+  `glb restore default` works end to end. Includes the VirtualBox 3D-
+  acceleration + Guest-Additions prep step Ghostty needs (with the
+  MESA/ZINK/`dri2` symptom and the `LIBGL_ALWAYS_SOFTWARE=1` workaround
+  — a VM limitation, not a GLB bug), per-piece verification (Ghostty,
+  Yazi image preview + git signs, `atuin`, `git-delta`, `wl-clipboard`,
+  LazyVim), and idempotency + bats. Grew out of the 2026-08-31 fresh
+  Pop!_OS Cosmic VM run.
 - Added `PHILOSOPHY.md` to document the guiding principles of GLB.
 - Added `ROADMAP.md` outlining the long-term direction of the project.
 

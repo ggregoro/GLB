@@ -4187,6 +4187,13 @@ branches on it.
 
 ## Testing
 
+- **`docs/fresh-vm-verification.md`** (added 2026-08-31) — the
+  repeatable "install GLB on a clean VM as a new user, confirm `glb
+  restore default` works" checklist: VM prep (incl. the VirtualBox 3D-
+  accel + Guest-Additions step that Ghostty needs, with the EGL/ZINK
+  symptom and `LIBGL_ALWAYS_SOFTWARE=1` workaround), install.sh,
+  per-piece verification, idempotency + bats. Run history/results stay
+  in this file's Working notes.
 - **`bats` is not installed on the EndeavourOS VM** (2026-08-08), same
   no-TTY-for-sudo-install limitation as every other machine — ran via
   the same locally-cloned `bats-core` workaround. 197/202 tests pass
