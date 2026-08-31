@@ -1077,9 +1077,19 @@ branches on it.
   - Verified: `bash -n`/`zsh -n`/`fish -n` clean on all three dotfiles;
     `.gitconfig` parses; bats 223/227 (same 4 pre-existing); `glb
     restore default --dry-run` shows `Would install: wl-clipboard` /
-    `git-delta` / `atuin (via snap)`, no errors. **Not yet
-    real-restored** — needs `glb restore default` in a real terminal
-    (sudo for the two apt packages, `snap install atuin`).
+    `git-delta` / `atuin (via snap)`, no errors.
+  - **Real-restored & verified on the fresh Pop!_OS Cosmic VM
+    (2026-08-31 — see the Working-notes entry).** `wl-clipboard`:
+    `wl-copy`/`wl-paste` round-trip on a real Wayland session.
+    `git-delta`: installed, wired into `~/.gitconfig` with the
+    `|| less`/`|| cat` guards, renders a real `git diff`. `atuin`:
+    `/snap/bin/atuin` (strict), Ctrl-R full-screen search confirmed
+    working in a real shell. **One real bug found on the strict atuin
+    snap** — it can't write `~/.config/atuin` and errored on every
+    interactive shell start; fixed on branch
+    `claude/atuin-snap-config-dir` (redirect `ATUIN_*_DIR` under
+    `~/snap/atuin/`, guarded to snap-only), held pending a
+    pacman/dnf/zypper re-test.
 
 - **Yazi git-status signs made ranger-like (2026-08-30, Pop!_OS Cosmic
   laptop).** Greg noticed Yazi wasn't showing per-file git status the
@@ -1108,8 +1118,13 @@ branches on it.
   - Verified: TOML parses; `yazi --debug` loads it with no theme/parse
     error in `~/.local/state/yazi/yazi.log` (only the expected
     non-tty `/dev/tty` errors from the sandbox). Deployed live on the
-    laptop. Not yet eyeballed in a real Yazi window by Greg as of this
-    note. Branch `feat/yazi-git-signs`.
+    laptop. Branch `feat/yazi-git-signs`.
+  - **Eyeballed for real on the fresh Pop!_OS Cosmic VM (2026-08-31),
+    from clean, inside `~/.local/share/glb`:** green `✓` on every
+    tracked file/dir, magenta `?` on the untracked `plugins/` dir, at
+    the right edge of the active column; nothing in `~` (not a repo).
+    Renders correctly in both Ghostty and cosmic-term (plain-text
+    signs, no Nerd Font needed). Matches the intended ranger-like look.
 
 - **The "no GUI applications, terminal emulators included" rule was
   dropped from both GLB and GWB, and Ghostty added to `default`
@@ -1212,12 +1227,22 @@ branches on it.
     loads clean with no warnings; `glb restore default --dry-run` on
     the laptop picks up the `ghostty` extra and both new dotfiles
     correctly.
-  - **Not yet done:** a real (non-dry-run) `glb restore default` that
-    installs Ghostty from scratch on a machine that doesn't already
-    have it, on any of the four package managers; and confirming the
-    native `ghostty:pacman`/`ghostty:zypper` routes install cleanly on
-    real Arch/openSUSE. Branch not merged to `main` or pushed yet as of
-    this note.
+  - **Real from-clean install verified on the fresh Pop!_OS Cosmic VM
+    (2026-08-31 — see the Working-notes entry).** `snap ghostty
+    classic` installed from nothing; `/snap` classic-confinement
+    symlink auto-created on Pop!_OS (no manual step, unlike Fedora);
+    `ghostty +show-config` clean; the opinionated config renders
+    (screenshot-confirmed `#0d0e12` + opacity + blur + Nerd Font);
+    Yazi runs inside Ghostty via the `yazi.desktop` app-grid entry and
+    **image preview renders a real photo** (Kitty graphics protocol —
+    `term = xterm-256color` in the config does NOT break Yazi's
+    graphics detection). The VM has "Enable 3D Acceleration" OFF so
+    Ghostty falls back to `llvmpipe` software rendering and works fine
+    (`LIBGL_ALWAYS_SOFTWARE=1 ghostty` for a clean start) — a
+    VirtualBox limitation, not a GLB bug; Ghostty is more resilient
+    here than WezTerm was on the same VMSVGA-no-3D setup. Still
+    unverified: the native `ghostty:pacman`/`ghostty:zypper` routes on
+    real Arch/openSUSE.
 
 - **Neovim + LazyVim redesigned from a private-repo clone to a public,
   vendored config, built into all three profiles (2026-08-30, cloud
@@ -1303,11 +1328,19 @@ branches on it.
     there before), `CHANGELOG.md`'s `[Unreleased]` entry rewritten in
     place rather than appended-to, since the superseded version never
     shipped in a numbered release.
-  - **Not yet re-verified for real** — built and bats-tested from the
-    repo alone this round; the next `glb restore` on any machine
-    (including the CachyOS VM that prompted this) should confirm `nvim`
-    launches straight into a working, no-SSH-key-needed LazyVim setup,
-    on the first try, with no "clone failed" message ever appearing.
+  - **Re-verified for real on the fresh Pop!_OS Cosmic VM (2026-08-31)
+    — and surfaced a real bug.** The vendored config deploys correctly
+    (8 files symlinked, no SSH key, `lazy-lock.json` writes as a real
+    file so the GLB repo tree stays clean). **But `nvim` won't load
+    it on apt distros:** GLB installs `neovim` from apt (Pop!_OS 24.04
+    = 0.9.5) and the unpinned upstream `LazyVim` now requires
+    `>= 0.11.2`, so a fresh `nvim` prints `LazyVim requires Neovim
+    >= 0.11.2` and exits. Only worked after a manual Neovim 0.12.5
+    tarball install (then 32 plugins bootstrap, dashboard renders).
+    See the dedicated "Neovim too old for the LazyVim it ships"
+    Roadmap entry above for the finding + fix plan (`snap nvim
+    classic` + native overrides + a version gate). Fedora/Arch ship
+    current Neovim so likely fine there — not re-verified this run.
 - **Neovim-config's "not Greg" fallback path confirmed for real on
   pacman/CachyOS (2026-08-30, cloud session, real VM).** Greg switched
   the CachyOS VM from `developer` back to `default` (`glb restore
@@ -4318,15 +4351,22 @@ branches on it.
     (Path A); Yazi runs inside it with transparency/blur/Nerd-Font all
     rendering; cosmic-term font set to JetBrainsMono Nerd Font (glyphs
     render); LazyVim dashboard loads clean after the Neovim upgrade
-    (32 plugins, `4/32` lazy-loaded, ~40ms).
-  - **Still pending on the VM (not blocking):** Yazi image-preview
-    eyeball (`/usr/share/backgrounds/pop/`), Yazi git-sign eyeball
-    (inside `~/.local/share/glb`), Yazi-yank -> `wl-paste`, atuin
-    Ctrl-R in a fresh shell (after next login, once the atuin
-    mitigation is active), the Super+E COSMIC shortcut bind, and the
-    Part 5 idempotency re-run (`glb restore default` a 2nd time -> all
-    "Already installed"/"Already linked"). Optionally: VirtualBox 3D
-    accel + Guest Additions if hardware GL is ever wanted.
+    (32 plugins, `4/32` lazy-loaded, ~40ms); **Yazi image preview
+    renders a real photo** in Ghostty (`~/Pictures/*.jpg` — confirms
+    `term = xterm-256color` doesn't break graphics detection); **Yazi
+    git-status signs work** (green `✓` on tracked, magenta `?` on
+    untracked `plugins/`, inside `~/.local/share/glb`); **atuin Ctrl-R
+    full-screen search works** in a real shell (27 cmds with
+    timing/metadata) after the `environment.d` mitigation.
+  - **Still pending on the VM (not blocking, none GLB-affecting):**
+    the **Part 5 idempotency re-run** (`glb restore default` a 2nd
+    time -> all "Already installed"/"Already linked", exit 0 — the one
+    remaining checklist item); the **Super+E** COSMIC custom-shortcut
+    bind (documented manual step, GLB never automates it); the
+    **Yazi-yank -> `wl-paste`** sub-test (Yazi 26.x may not wire
+    yank-to-system-clipboard by default — not a defect if it doesn't).
+    Optionally: VirtualBox 3D accel + Guest Additions if hardware GL is
+    ever wanted.
   - **Machine-local changes made on this VM** (not GLB, won't outlive
     the VM): Neovim 0.12.5 official tarball -> `/opt/nvim-linux-x86_64`
     + `/usr/local/bin/nvim` symlink (apt `neovim` 0.9.5 left registered
