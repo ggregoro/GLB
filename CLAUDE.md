@@ -4252,6 +4252,66 @@ branches on it.
     delta, LazyVim rework) and update the memory repo's
     `project_glb.md` (see [[reference-memory-repo]]).
 
+- **Session wrap-up (2026-08-30 → 2026-08-31, Pop!_OS Cosmic laptop) —
+  a long "opinionated ricing" session; everything is on `main`
+  (`c686d7b`), both this laptop's checkouts (`~/Projects/GLB` and the
+  `install.sh` one at `~/.local/share/glb`) are in sync and clean.
+  Greg starts a fresh Pop!_OS Cosmic VM tomorrow (2026-09-01) to
+  verify the whole batch from clean, and will open Claude Code inside
+  that VM.** What landed, all merged to `main`:
+  - **The "no GUI applications, terminal emulators included" rule was
+    dropped** from both GLB and GWB. New boundary: *curated &
+    opinionated, install-not-vendor-manage*. `docs/PHILOSOPHY.md` § is
+    now "Terminal-First, Not Terminal-Only"; `PROJECT.md` Non-Goals
+    "Not a general software center". New `docs/design/ghostty-yazi.md`.
+    (Full detail in the Roadmap entry above; historical dated CLAUDE.md
+    entries left untouched.)
+  - **Ghostty** in `default` — `snap ghostty classic` (native `ghostty`
+    on pacman/zypper via `_GLB_SNAP_NATIVE_OVERRIDES`), a portable
+    `dotfiles/.local/share/applications/yazi.desktop` launcher, and an
+    opinionated `dotfiles/.config/ghostty/config` (TokyoNight,
+    `background = 0d0e12`, opacity 0.85, blur, JetBrainsMono Nerd Font,
+    `term = xterm-256color`). Not the default terminal; Super+E is a
+    documented per-DE manual step. Gotcha learned: `ghostty
+    +show-config` does NOT reject unknown keys — the running GUI is the
+    real validator.
+  - **Yazi git-status signs** — `dotfiles/.config/yazi/theme.toml`
+    `[git]` block: `clean_sign = "✓"` (green) + `M`/`A`/`?`/`D`/`U`
+    letters. Yazi has zero native VCS awareness; it's all the vendored
+    `yazi-rs/plugins:git` plugin, whose defaults show nothing for clean
+    files and use Nerd Font glyphs. Sign renders in the linemode
+    (right edge), only in the active column, only inside a repo.
+  - **`wl-clipboard`** + **`git-delta`** (`packages.txt`; delta wired
+    into `.gitconfig` with a `command -v delta … && delta || less`
+    guard) + **`atuin`** (`extras.txt` → `snap atuin` strict; native
+    override for pacman/dnf/zypper; init after the fzf block in all
+    three shell dotfiles, `--disable-up-arrow`).
+  - Docs: `README.md` gained a **"Terminal Font"** section (GLB
+    installs JetBrainsMono Nerd Font system-wide, but each terminal
+    emulator sets its own font — end users must point their terminal
+    at it). The **"NEXT SESSION — pick up here"** block above was
+    fully rewritten for the fresh-VM run (the old one was about the
+    dead private-`nvim-config` design).
+  - **Verified end-to-end on this laptop** (real `glb restore default`,
+    2026-08-31): all three new configs symlinked and surviving a
+    restore, Ghostty renders + Yazi image preview works + git signs
+    show, LazyVim vendored config deployed, `neovim` installed. bats
+    223/227 (the 4 are the `fresh`/`starship`/`yazi`-on-real-PATH
+    isolation gap). **NOT yet verified from a genuinely clean machine
+    — that's tomorrow's VM run.** Each Roadmap entry above carries a
+    "not yet real-restored" note to close out then.
+  - **GWB**: branch `claude/drop-no-gui-rule` pushed (scope-doc change
+    + the same Yazi `theme.toml` in all three profiles' `yazi-config/`;
+    no Ghostty — no native Windows build). PR not opened; Pester +
+    Windows eyeball pending. That's a Windows-machine task, tracked in
+    GWB's own `CLAUDE.md` and the `claude-memory` repo.
+  - **For the VM's Claude Code session**: working in the GLB repo
+    auto-loads this file, so the "NEXT SESSION — pick up here" block
+    above is the script. For the wider cross-project picture, clone
+    `https://github.com/ggregoro/claude-memory.git` and read
+    `project_glb.md` / `MEMORY.md` (the Linux side has no auto-pull
+    hook yet — see that repo's `reference_memory_repo.md`).
+
 - **Session wrap-up (2026-08-25, cloud session, fresh Linux Mint VM) —
   Greg is stopping here on this VM; `default` only, no need to test
   `developer`/`server` on this machine.** Full session, in order:
