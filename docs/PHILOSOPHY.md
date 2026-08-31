@@ -115,13 +115,23 @@ cosmic-term there is *no* working image preview without a terminal that
 draws the images itself. Ghostty (Kitty graphics protocol) is that
 terminal.
 
-The "install, don't vendor-manage" restraint is applied deliberately —
-this is the WezTerm lesson, not an exception to it:
+GLB is **opinionated** about Ghostty — it ships a package, a launcher,
+and a small config — while still staying on the right side of "install,
+don't vendor-manage":
 
-- GLB installs the Ghostty package and ships **one** launcher line
-  (`ghostty --class=com.yazi.Yazi -e yazi`, an app-menu entry that runs
-  Yazi inside it). It does **not** set Ghostty as the default terminal,
-  rebind the terminal shortcut, or ship a Ghostty config.
+- The config (`dotfiles/.config/ghostty/config`) is deliberately small
+  and about *appearance*, not behavior: a dark background, slight
+  transparency and blur, the Tokyo Night palette GLB's Starship prompt
+  already uses, and JetBrainsMono Nerd Font. It's the same kind of
+  curated default as `starship.toml` — a look, not a maze of
+  keybindings and window-manager workarounds. That's the WezTerm line:
+  WezTerm became a time sink because GLB was chasing its config across
+  Flatpak-sandbox and compositor bugs, not because a config file
+  existed.
+- GLB does **not** set Ghostty as the default terminal or rebind the
+  terminal shortcut. It's installed and launched on demand, via an
+  app-menu entry (`ghostty --class=com.yazi.Yazi -e yazi`) that runs
+  Yazi inside it.
 - Binding a key to that launcher is left to the user — COSMIC, KDE, and
   GNOME each do custom keyboard shortcuts differently and none
   portably, so GLB documents the one-liner rather than automating three

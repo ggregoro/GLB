@@ -42,7 +42,11 @@ This project follows a simple versioning approach:
   never set as the default terminal; a portable `yazi.desktop` launcher
   (`dotfiles/.local/share/applications/`) runs Yazi inside it on
   demand. Binding a key to that launcher is a documented per-desktop
-  manual step, not automated. See `docs/design/ghostty-yazi.md`.
+  manual step, not automated. Ships a small, opinionated appearance
+  config (`dotfiles/.config/ghostty/config`): Tokyo Night palette
+  matching the Starship prompt, `background = 0d0e12`,
+  `background-opacity = 0.85`, blur on, JetBrainsMono Nerd Font. See
+  `docs/design/ghostty-yazi.md`.
 
 ---
 

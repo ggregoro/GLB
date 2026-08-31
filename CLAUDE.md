@@ -1046,6 +1046,18 @@ branches on it.
       symlink walk handles it with no code change. `Exec=ghostty
       --class=com.yazi.Yazi -e yazi` (bare names, resolves snap or
       native).
+    - `profiles/default/dotfiles/.config/ghostty/config` — a small,
+      opinionated appearance config (Greg's spec): `theme = TokyoNight`
+      (matches the Starship preset), `background = 0d0e12`,
+      `background-opacity = 0.85`, `background-blur = true`,
+      JetBrainsMono Nerd Font 12, 8px padding, `confirm-close-surface =
+      false`. `background-opacity-cell-colors` was tried and removed —
+      Ghostty 1.3.1's GUI rejects it as an unknown field (a "reload or
+      ignore" dialog Greg hit live), and `ghostty +show-config` does
+      **not** flag it, so the running GUI is the real config validator,
+      not the CLI. Deliberate scope call: GLB *is* opinionated about
+      Ghostty's look (like `starship.toml`), but not its behavior — no
+      keybindings, no compositor workarounds; that's the WezTerm line.
     - Super+E is documented as a per-DE manual step, **not** automated
       — COSMIC/KDE/GNOME each do custom shortcuts differently, none
       portably; same "document the gap" posture as lazygit/dnf.
@@ -1070,8 +1082,10 @@ branches on it.
   - **Verified:** full bats suite 223/227 (the 4 failures are the
     pre-existing `fresh`/`starship`-on-PATH test-isolation gap, tests
     38/39/88/116, confirmed identical on unmodified HEAD via `git
-    stash`); `glb restore default --dry-run` on the laptop picks up the
-    `ghostty` extra and the `yazi.desktop` dotfile correctly.
+    stash`); `ghostty +show-config` against the shipped Ghostty config
+    loads clean with no warnings; `glb restore default --dry-run` on
+    the laptop picks up the `ghostty` extra and both new dotfiles
+    correctly.
   - **Not yet done:** a real (non-dry-run) `glb restore default` that
     installs Ghostty from scratch on a machine that doesn't already
     have it, on any of the four package managers; and confirming the

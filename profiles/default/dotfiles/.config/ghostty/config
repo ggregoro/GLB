@@ -1,0 +1,28 @@
+# GLB — Ghostty configuration
+#
+# Ghostty is installed by the `default` profile as the graphics-capable
+# terminal Yazi's image preview needs where a distro's default provides
+# none (see docs/design/ghostty-yazi.md). This is an opinionated,
+# deliberately small config — dark, slightly transparent, matching the
+# Tokyo Night look GLB's Starship prompt already uses. It applies to
+# every Ghostty window; GLB installs Ghostty for this purpose, so that's
+# intended. Edit through the symlink for a one-off tweak, or use
+# `glb restore --from-manifest` with your own copy for a durable change.
+
+# --- appearance ---
+theme                   = TokyoNight
+background              = 0d0e12
+background-opacity      = 0.85
+background-blur         = true
+
+# --- font ---
+font-family             = "JetBrainsMono Nerd Font"
+font-size               = 12
+
+# --- window ---
+window-padding-x        = 8
+window-padding-y        = 8
+window-decoration       = auto
+confirm-close-surface   = false
+mouse-hide-while-typing = true
+cursor-style            = block

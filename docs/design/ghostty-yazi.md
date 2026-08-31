@@ -94,6 +94,21 @@ Ghostty is the first pick under that stance, and it's a clean fit:
   one entry works on COSMIC, KDE, GNOME, and Xfce alike. It's the first
   `.local/share/` dotfile GLB ships; `glb_apply_profile_dotfiles`'s
   existing per-file `find` walk picks it up with no code change.
+- **A small, opinionated appearance config**,
+  `profiles/default/dotfiles/.config/ghostty/config`, shipped like
+  `starship.toml`. It sets a *look*, not behavior: `theme = TokyoNight`
+  (matching GLB's Starship preset), `background = 0d0e12`,
+  `background-opacity = 0.85`, `background-blur = true`, JetBrainsMono
+  Nerd Font at size 12, 8px padding, and `confirm-close-surface =
+  false` so quitting Yazi with `q` closes the window cleanly. Kept to
+  keys present in Ghostty 1.3.x (the current snap/`extra`/`repo-oss`
+  builds) — `background-opacity-cell-colors` was tried and removed
+  because 1.3.1's GUI rejects it as an unknown field (`ghostty
+  +show-config` does *not* catch that; the GUI is the real validator).
+  Without it, only cells that don't set an explicit background go
+  transparent — fine for Yazi's default theme, which mostly inherits
+  the terminal background. It applies to every Ghostty window; GLB
+  installs Ghostty for this purpose, so that's intended.
 
 **Explicitly out of scope:**
 
@@ -101,8 +116,12 @@ Ghostty is the first pick under that stance, and it's a clean fit:
   terminal keyboard shortcut. GLB's shell/prompt setup stays
   terminal-agnostic; cosmic-term (or whatever the user has) remains
   their default.
-- **A Ghostty config dotfile.** Deliberately none — this is exactly the
-  WezTerm mistake. Ghostty's own defaults are fine for running Yazi.
+- **Deep Ghostty configuration.** The shipped config is a short
+  appearance block (colors, opacity, font, padding). Keybindings,
+  window-manager integration, shell-integration tuning, per-app config
+  — the WezTerm-style maze — stay out. If a config change starts
+  needing per-compositor workarounds, that's the signal it's gone too
+  far.
 - **Automating the keyboard shortcut.** Binding a key to `ghostty
   --class=com.yazi.Yazi -e yazi` is a one-time, per-machine step, and
   COSMIC (a RON file), KDE (`kglobalshortcutsrc`), and GNOME
@@ -126,16 +145,19 @@ Nothing new — this rides entirely on mechanisms that already existed:
    for the current package manager.
 2. `lib/extras.sh`'s `_GLB_SNAP_NATIVE_OVERRIDES` gains
    `[ghostty:pacman]` and `[ghostty:zypper]`.
-3. `profiles/default/dotfiles/.local/share/applications/yazi.desktop` is
-   a plain tracked file; the existing dotfile symlink/backup walk
-   installs it like any other.
+3. `profiles/default/dotfiles/.local/share/applications/yazi.desktop`
+   and `profiles/default/dotfiles/.config/ghostty/config` are plain
+   tracked files; the existing dotfile symlink/backup walk installs
+   them like any other.
 
 No new function, no new command, no new test file. The change is
 verified by the existing bats suite (223/227 — the 4 failures are the
 pre-existing `fresh`/`starship`-on-PATH test-isolation gap, tests
-38/39/88/116, confirmed unchanged via `git stash`) plus a `glb restore
-default --dry-run` on the Pop!_OS Cosmic laptop that picks up both the
-`ghostty` extra and the `yazi.desktop` dotfile correctly.
+38/39/88/116, confirmed unchanged via `git stash`), `ghostty
++show-config` against the shipped Ghostty config (loads clean, theme
+name valid, no warnings), and a `glb restore default --dry-run` on the
+Pop!_OS Cosmic laptop that picks up the `ghostty` extra and both new
+dotfiles correctly.
 
 **Not yet verified:** a real (non-dry-run) `glb restore default` that
 installs Ghostty from scratch on a machine that doesn't already have it,
