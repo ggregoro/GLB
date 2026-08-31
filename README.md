@@ -121,6 +121,26 @@ All profiles share the same underlying shell setup (bash/zsh/fish with
 per-shell distinct prompts) and differ in their package lists, extras, and
 profile-specific dotfiles.
 
+## Terminal Font
+
+GLB installs the **JetBrains Mono Nerd Font** system-wide — it's needed
+for `eza --icons`, Starship's prompt symbols, and Yazi's icons and
+git-status signs. But a terminal emulator picks its *own* font, and GLB
+deliberately doesn't touch that (see
+[`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md)). After restoring, set your
+terminal's font to **JetBrainsMono Nerd Font** or icons and glyphs will
+render as empty boxes:
+
+- **COSMIC Terminal** — menu (☰) → *Settings* → *Font*
+- **GNOME Terminal / Console** — *Preferences* → your profile → *Text* →
+  custom font
+- **Konsole** — *Settings* → *Edit Current Profile* → *Appearance* → *Font*
+- **Ghostty** (installed by `default`) — already configured, nothing to do
+
+If glyphs still don't show right after setting the font, fully close and
+reopen the terminal — GNOME Terminal in particular shares one background
+process that caches its font map until restarted.
+
 ## Recommended Manual Add-ons
 
 GLB deliberately keeps its curated package list minimal (see
