@@ -26,3 +26,10 @@ window-decoration       = auto
 confirm-close-surface   = false
 mouse-hide-while-typing = true
 cursor-style            = block
+
+# --- compatibility ---
+# Advertise a universally-known $TERM. Ghostty's own `xterm-ghostty`
+# terminfo isn't installed on most remote hosts, so `ssh` into a bare
+# server would otherwise hit "unknown terminal type". Costs a few
+# Ghostty-specific terminfo capabilities; safe and portable otherwise.
+term = xterm-256color

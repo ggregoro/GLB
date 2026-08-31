@@ -52,8 +52,9 @@ This project follows a simple versioning approach:
   manual step, not automated. Ships a small, opinionated appearance
   config (`dotfiles/.config/ghostty/config`): Tokyo Night palette
   matching the Starship prompt, `background = 0d0e12`,
-  `background-opacity = 0.85`, blur on, JetBrainsMono Nerd Font. See
-  `docs/design/ghostty-yazi.md`.
+  `background-opacity = 0.85`, blur on, JetBrainsMono Nerd Font, and
+  `term = xterm-256color` for SSH compatibility with hosts that lack
+  Ghostty's own terminfo. See `docs/design/ghostty-yazi.md`.
 
 ---
 

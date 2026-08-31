@@ -1081,7 +1081,9 @@ branches on it.
       (matches the Starship preset), `background = 0d0e12`,
       `background-opacity = 0.85`, `background-blur = true`,
       JetBrainsMono Nerd Font 12, 8px padding, `confirm-close-surface =
-      false`. `background-opacity-cell-colors` was tried and removed —
+      false`, `term = xterm-256color` (SSH compat — Ghostty's own
+      terminfo isn't on most remote hosts). `background-opacity-cell-colors`
+      was tried and removed —
       Ghostty 1.3.1's GUI rejects it as an unknown field (a "reload or
       ignore" dialog Greg hit live), and `ghostty +show-config` does
       **not** flag it, so the running GUI is the real config validator,

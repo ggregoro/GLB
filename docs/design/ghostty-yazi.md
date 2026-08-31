@@ -99,9 +99,12 @@ Ghostty is the first pick under that stance, and it's a clean fit:
   `starship.toml`. It sets a *look*, not behavior: `theme = TokyoNight`
   (matching GLB's Starship preset), `background = 0d0e12`,
   `background-opacity = 0.85`, `background-blur = true`, JetBrainsMono
-  Nerd Font at size 12, 8px padding, and `confirm-close-surface =
-  false` so quitting Yazi with `q` closes the window cleanly. Kept to
-  keys present in Ghostty 1.3.x (the current snap/`extra`/`repo-oss`
+  Nerd Font at size 12, 8px padding, `confirm-close-surface = false` so
+  quitting Yazi with `q` closes the window cleanly, and `term =
+  xterm-256color` (Ghostty's own `xterm-ghostty` terminfo isn't on most
+  remote hosts, so an `ssh` from a bare Ghostty `$TERM` would hit
+  "unknown terminal type"). Kept to keys present in Ghostty 1.3.x (the
+  current snap/`extra`/`repo-oss`
   builds) — `background-opacity-cell-colors` was tried and removed
   because 1.3.1's GUI rejects it as an unknown field (`ghostty
   +show-config` does *not* catch that; the GUI is the real validator).
