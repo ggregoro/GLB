@@ -4260,6 +4260,34 @@ branches on it.
   repo — update it as decisions get made so context isn't lost between
   sessions.
 
+- **Session ended 2026-08-31 (fresh Pop!_OS Cosmic VM). Everything is
+  committed + pushed — GLB `main` = `bc27b0b`, working tree clean
+  (only untracked `plugins/`); `claude-memory` `main` = `9586a91`.**
+  The full account is the "Fresh Pop!_OS Cosmic VM verification"
+  entry directly below. Short version: the whole 2026-08-30/31 batch
+  passed from clean (Ghostty, wl-clipboard/git-delta/atuin, LazyVim,
+  Yazi image preview + git signs, fresh, bats 227/227), the four
+  Roadmap "not yet real-restored" flags are closed out, and **three
+  things surfaced:**
+  1. **LazyVim broken out of the box on apt distros** — GLB installs
+     `neovim` 0.9.5, unpinned LazyVim needs `>= 0.11.2`. Fix plan in
+     the Roadmap entry "Neovim is too old for the LazyVim it ships"
+     (not built).
+  2. **fastfetch still not in apt's index** — durable fix is a new
+     `github-release` extras method (scope a design doc first).
+  3. **strict `atuin` snap errors on every shell** — FIXED on branch
+     `claude/atuin-snap-config-dir` (`7053a33`, pushed, NOT merged),
+     held pending a pacman/dnf/zypper shell re-test. Merging it later
+     hits a small `CLAUDE.md` conflict in the atuin bullet — keep
+     `main`'s version.
+  - **NEXT SESSION:** (a) build the Neovim fix (`snap nvim classic` +
+     native overrides + version gate) and scope `github-release` — on
+     a dev checkout, not the end-user-sim VM; (b) on fresh
+     pacman/dnf/zypper VMs, shell-test + merge
+     `claude/atuin-snap-config-dir`. Non-GLB leftovers on the Pop VM
+     (not blocking): Part 5 idempotency re-run, Super+E manual bind,
+     Yazi-yank sub-test.
+
 - **Fresh Pop!_OS Cosmic VM verification of the 2026-08-30/31 batch —
   DONE 2026-08-31 (this supersedes the "NEXT SESSION — pick up here"
   block below, now historical).** Real end-user install on a genuinely
