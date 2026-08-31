@@ -20,8 +20,12 @@ solves: redoing the same terminal setup from memory every time, hoping
 you remembered everything. A profile captures it once and reapplies it
 identically anywhere.
 
-GLB enhances the terminal you already have — it doesn't install or
-replace it. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for why.
+GLB is terminal-first: it enhances whatever terminal you already have
+rather than replacing it, and its focus stays the shell and CLI. GUI
+apps are added only when they're a deliberate pick that complements that
+focus (Ghostty, so Yazi's image preview works where a distro's default
+terminal can't draw one) — never a general app menu. See
+[`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for the reasoning.
 
 ## Features
 

@@ -6,10 +6,18 @@ GLB is a Bash CLI tool that makes the terminal the easiest, most
 approachable part of using Linux — a curated shell, prompt, and set of
 CLI tools, configured in one pass inside whatever terminal a distro
 already ships, instead of piecing it together by hand every time a
-distro gets reinstalled. **GLB does not install GUI applications of any
-kind, terminal emulators included** (see the "Removed entirely
-(2026-08-09)" Roadmap entry below for why) — the focus is entirely the
-terminal itself.
+distro gets reinstalled. GLB is **terminal-first**: it enhances whatever
+terminal you already have and its focus stays the shell and CLI. GUI
+applications are in scope only when they're a deliberate, opinionated
+pick that complements that mission — installed and lightly configured,
+never vendor-managed, never a general app menu. (This relaxes an earlier
+"no GUI applications, terminal emulators included" rule, dropped
+2026-08-30 — see `docs/PHILOSOPHY.md` "Terminal-First, Not
+Terminal-Only" and the 2026-08-30 Roadmap entry below. The
+WezTerm/`new-to-linux` history stays as the "install, don't
+vendor-manage" guidance that rule produced.) The first GUI pick under
+this stance is **Ghostty**, installed in `default` so Yazi's image
+preview works where a distro's default terminal can't draw one.
 
 - Repo: https://github.com/ggregoro/GLB (public — see the "Repository is
   now public" Working notes entry below)
@@ -978,6 +986,98 @@ branches on it.
   open, not a full change log.
 
 ## Roadmap / in progress
+
+- **The "no GUI applications, terminal emulators included" rule was
+  dropped from both GLB and GWB, and Ghostty added to `default`
+  (2026-08-30, Pop!_OS Cosmic laptop).** Grew directly out of a real
+  support session on Greg's own machine: Yazi's image preview was
+  failing in COSMIC Terminal with `chafa failed with status: exit
+  status: 2`. Root cause is a stack of three things, none individually
+  a GLB bug — cosmic-term supports no inline image protocol at all
+  ([pop-os/cosmic-term#438](https://github.com/pop-os/cosmic-term/issues/438),
+  open); Yazi 26.x calls `chafa --probe` (chafa ≥ 1.16.0) but Pop!_OS
+  24.04 and the chafa bundled in Yazi's own snap both ship 1.14.0; and
+  the snap forces its bundled chafa ahead of any host one. Net effect:
+  on cosmic-term there is *no* working image preview without a terminal
+  that draws the images itself.
+  - **The fix on the laptop** (not GLB): installed Ghostty (snap,
+    classic), which speaks the Kitty graphics protocol — Yazi renders
+    real images in it, no chafa involved. Left cosmic-term and the snap
+    Yazi untouched. Added a launcher-only `~/.local/share/applications/
+    yazi.desktop` (`Exec=/snap/bin/ghostty --class=com.yazi.Yazi -e
+    /snap/bin/yazi`) and a COSMIC custom shortcut, Super+E, running the
+    same command (`~/.config/cosmic/com.system76.CosmicSettings.
+    Shortcuts/v1/custom`, `Spawn(...)`). Default terminal unchanged.
+  - **Baking it in — a deliberate scope change, Greg's call, in two
+    steps the same day.** `docs/PHILOSOPHY.md` named Ghostty *by name*
+    as an example of what GLB won't install (the WezTerm/`new-to-linux`
+    lesson, 2026-08-09). Flagged that squarely before touching
+    anything. Greg first chose (via `AskUserQuestion`) to reverse it
+    narrowly, as a one-off exception — "adding Ghostty, GUI or not,
+    makes the whole project a little more powerful and useful." Then,
+    after seeing that written up, he went further: "as we move forward
+    the no GUI rule is going to limit the capabilities of the GLB and
+    GWB projects... we should remove that rule from the projects."
+    **The no-GUI prohibition is dropped from both GLB and GWB.** What
+    replaces it (chosen via `AskUserQuestion`, "curated & opinionated,
+    install-not-manage"): a GUI app is in scope when it's a deliberate,
+    opinionated pick that complements the terminal-first mission —
+    installed and lightly configured like any other tool, never
+    vendor-managed, never a general app menu. The WezTerm/`new-to-linux`
+    history stays as the "install, don't vendor-manage" guidance that
+    the old rule produced. Ghostty is the first pick under the new
+    stance and a clean fit: it makes an existing `default` feature
+    (Yazi image preview) actually work, and GLB installs the package +
+    one launcher line and manages nothing else — no Ghostty config
+    (the exact WezTerm mistake), not the default terminal, terminal
+    keybind untouched.
+  - **Built in GLB (`feat/ghostty-yazi` branch, two commits matching
+    the day's feat+docs split):**
+    - `profiles/default/extras.txt`: `snap ghostty classic`, mirroring
+      the `snap yazi classic` entry.
+    - `lib/extras.sh`: `[ghostty:pacman]="ghostty"` (Arch `extra`) and
+      `[ghostty:zypper]="ghostty"` (openSUSE `repo-oss`) in
+      `_GLB_SNAP_NATIVE_OVERRIDES` — both confirmed native. zypper gets
+      an entry (unlike yazi), so openSUSE installs Ghostty without
+      snapd. No dnf entry (Fedora ships it only via COPR); apt falls
+      through to snap with the same snapd caveats yazi carries.
+    - `profiles/default/dotfiles/.local/share/applications/yazi.desktop`
+      — first `.local/share/` dotfile GLB ships; the existing per-file
+      symlink walk handles it with no code change. `Exec=ghostty
+      --class=com.yazi.Yazi -e yazi` (bare names, resolves snap or
+      native).
+    - Super+E is documented as a per-DE manual step, **not** automated
+      — COSMIC/KDE/GNOME each do custom shortcuts differently, none
+      portably; same "document the gap" posture as lazygit/dnf.
+    - Docs: new `docs/design/ghostty-yazi.md`; `docs/PHILOSOPHY.md`'s
+      section retitled "Enhance the Terminal You Have, Don't Replace It"
+      → "Terminal-First, Not Terminal-Only" and rewritten to the
+      curated/install-not-manage stance (WezTerm/`new-to-linux` history
+      kept, reframed as guidance not prohibition); `docs/PROJECT.md`
+      Non-Goals ("Not a general software center"), `README.md`,
+      `CHANGELOG.md` `[Unreleased]`, `docs/ROADMAP.md` (Post-1.0 +
+      old-title refs), and this file's header paragraph all updated.
+      The historical 2026-08-09 "tempted to add a terminal emulator"
+      note is left untouched as an accurate record of the time.
+    - **GWB:** the same rule lived in GWB's `docs/PHILOSOPHY.md:49`,
+      `docs/PROJECT.md:96`, `docs/ROADMAP.md`, `docs/troubleshooting.md`
+      and `README.md`. Mirrored the same stance change there on its own
+      branch + PR (GWB uses PRs, unlike GLB's fast-forward-to-`main`).
+      GWB does **not** get Ghostty itself — no official native Windows
+      build (only community ports / `libghostty`-based third-party
+      terminals); a Windows equivalent (Windows Terminal's Sixel, or
+      WezTerm) is a separate future call for that repo.
+  - **Verified:** full bats suite 223/227 (the 4 failures are the
+    pre-existing `fresh`/`starship`-on-PATH test-isolation gap, tests
+    38/39/88/116, confirmed identical on unmodified HEAD via `git
+    stash`); `glb restore default --dry-run` on the laptop picks up the
+    `ghostty` extra and the `yazi.desktop` dotfile correctly.
+  - **Not yet done:** a real (non-dry-run) `glb restore default` that
+    installs Ghostty from scratch on a machine that doesn't already
+    have it, on any of the four package managers; and confirming the
+    native `ghostty:pacman`/`ghostty:zypper` routes install cleanly on
+    real Arch/openSUSE. Branch not merged to `main` or pushed yet as of
+    this note.
 
 - **Neovim + LazyVim redesigned from a private-repo clone to a public,
   vendored config, built into all three profiles (2026-08-30, cloud

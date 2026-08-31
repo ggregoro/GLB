@@ -92,14 +92,22 @@ Ubuntu-family, Pop!_OS, Fedora, Arch-family) and their test history.
 - **Not a fork or replacement of the tools it curates.** GLB brings
   together existing, mature open-source projects rather than
   reimplementing what they already do well.
-- **Not a GUI application installer.** GLB installs and configures
-  things that run inside whatever terminal a distro already ships —
-  shells, prompts, terminal-based editors, CLI tools. It does not
-  install terminal emulators, browsers, office suites, or any other
-  application with its own window. See `PHILOSOPHY.md` ("Enhance the
-  Terminal You Have, Don't Replace It") for why — this was tried twice
-  (a managed WezTerm install, `new-to-linux`'s curated desktop apps)
-  and reversed both times as scope creep.
+- **Not a general software center.** GLB's mission is the terminal:
+  shells, prompts, terminal-based editors, CLI tools. A GUI application
+  is in scope only when it's a deliberate, opinionated pick that
+  complements that mission — installed and lightly configured like any
+  other tool, not deeply managed. GLB does not offer a menu of
+  browsers, office suites, or media players that anyone can install
+  themselves, and does not vendor-manage a GUI app's full
+  configuration. See `PHILOSOPHY.md` ("Terminal-First, Not
+  Terminal-Only") for the history behind this line — a managed WezTerm
+  install and `new-to-linux`'s curated desktop apps were both tried and
+  reversed (2026-08-09), and the "install, don't vendor-manage" rule is
+  what that produced. `default` installs **Ghostty** (2026-08-30) as
+  the first GUI pick under this stance: the graphics-capable terminal
+  Yazi's image preview needs where a distro's default provides none,
+  installed and launched on demand, never set as the default terminal.
+  See `docs/design/ghostty-yazi.md`.
 
 ## Release Strategy
 

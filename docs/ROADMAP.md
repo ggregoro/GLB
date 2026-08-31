@@ -86,9 +86,12 @@ Introduce workstation profiles.
   they're used to: Firefox, LibreOffice, GIMP, VLC, plus the shared
   shell setup. Superseded the same day it was built out further
   (2026-08-09) when Firefox/LibreOffice/GIMP/VLC were removed per the
-  "Enhance the Terminal You Have, Don't Replace It" principle in
-  `docs/PHILOSOPHY.md` — GLB doesn't install GUI applications at all.
-  Without the desktop-app picks, the profile had shrunk to a near-
+  "Terminal-First, Not Terminal-Only" principle in `docs/PHILOSOPHY.md`
+  — they were padding rather than a deliberate pick that complemented
+  the terminal-onboarding mission (the "no GUI applications" rule that
+  originally produced this removal was later relaxed, 2026-08-30, but
+  the padding judgment stands). Without the desktop-app picks, the
+  profile had shrunk to a near-
   duplicate of `default`'s shared shell setup (same dotfiles minus
   `.gitconfig`/ranger, plus Fresh — which `default` already has too),
   so rather than maintain two profiles this similar, it was retired
@@ -458,6 +461,25 @@ time, but the project itself is considered essentially done.
   Revised the same day from an initial private-repo-clone design once
   it became clear a public project's built-in feature shouldn't depend
   on Greg's own personal repo access. See `docs/design/nvim-lazyvim.md`.
+
+- **Scope relaxed: GUI apps allowed when curated (2026-08-30) ✅** —
+  GLB's "no GUI applications, terminal emulators included" rule was
+  dropped. GUI apps are now in scope when they're a deliberate,
+  opinionated pick that complements the terminal-first mission —
+  installed and lightly configured, never vendor-managed, and never a
+  general app menu. The WezTerm/`new-to-linux` history stands as the
+  "install, don't vendor-manage" guidance the old rule produced. See
+  `docs/PHILOSOPHY.md` ("Terminal-First, Not Terminal-Only").
+
+- **Ghostty for Yazi image preview (2026-08-30) ✅** — the first GUI
+  pick under the relaxed scope. `default` installs Ghostty as the
+  graphics-capable terminal Yazi's image preview needs where a distro's
+  default provides none (COSMIC Terminal has no inline image protocol,
+  and its `chafa` is too old for Yazi's ASCII fallback). Installed via
+  `snap`, routed to the native package on pacman/zypper; never set as
+  the default terminal; launched on demand by a portable `yazi.desktop`
+  entry. Binding a key to that launcher is a documented per-desktop
+  manual step. See `docs/design/ghostty-yazi.md`.
 
 ---
 

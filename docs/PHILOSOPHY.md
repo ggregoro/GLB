@@ -59,58 +59,76 @@ project that does the job well, without inheriting a framework's extra weight.
 
 ---
 
-## Enhance the Terminal You Have, Don't Replace It
+## Terminal-First, Not Terminal-Only
 
-**GLB does not install GUI applications, full stop — not a terminal
-emulator, not a browser, not an office suite, not anything with its own
-window.** Everything GLB installs and configures must run *inside*
-whatever terminal a distro already ships (GNOME Terminal, Konsole, Cosmic
-Terminal, etc.): shells, prompts, terminal-based editors, CLI tools, zsh
-plugins. If it needs its own window, it's out of scope.
+GLB's mission is the terminal: making the shell, prompt, and CLI tooling
+of a fresh install approachable in one pass. The default move is always
+to **enhance whatever terminal you already have** rather than replace it
+— none of GLB's shell/prompt configuration assumes a particular terminal
+emulator, so it keeps working wherever it lands.
 
-This was learned the hard way, twice, in the same session (2026-08-09):
+**GUI applications are in scope when they're a deliberate, opinionated
+pick that complements that mission** — installed and lightly configured
+the same way as any CLI tool. What stays out of scope is GLB behaving
+like a general software center (a menu of browsers, office suites, media
+players that anyone can install themselves), and sinking real effort
+into deep GUI-app configuration management. Install it, set the handful
+of options that make it useful for GLB's purpose, and stop there.
 
-- **Terminal emulators.** GLB briefly installed and managed WezTerm as
-  part of the `default` profile (2026-08-05 through 2026-08-09), before
-  being reversed. The install/config path ended up consuming significant
-  real time chasing Flatpak-sandbox and desktop-compositor interactions
-  (COSMIC-specific window-decoration and config-resolution behavior)
-  that had nothing to do with GLB's actual job — shell and prompt
-  configuration. A terminal emulator is a bigger, more opinionated
-  commitment than a CLI tool or a dotfile; picking one for someone is a
-  step beyond "curate a workstation" into "replace a tool the user
-  already has an opinion about."
-- **Desktop applications.** `new-to-linux` originally curated a browser,
-  office suite, image editor, and media player (Firefox, LibreOffice,
-  GIMP, VLC) for people switching from Windows/macOS. Reversed the same
-  day for the same underlying reason: these are easy for anyone to
-  install themselves via their distro's own software center once
-  they've found their way around a real terminal, and GLB picking them
-  is scope creep beyond what a shell-bootstrapping tool should own.
-  Without the desktop-app picks, `new-to-linux` had shrunk to a near-
-  duplicate of `default`'s shared shell setup — retired as a separate
-  profile entirely (2026-08-09), rather than keep two profiles this
-  similar. The terminal-onboarding mission it served isn't a
-  profile-specific job; it's what GLB's shared shell/prompt setup is
-  built to do regardless of which profile someone picks.
+This boundary was drawn from experience (2026-08-09), and the history is
+worth keeping even though the rule it produced has since been relaxed:
 
-Someone who wants WezTerm, Ghostty, Firefox, LibreOffice, or anything
-else with a window is free to install and configure it themselves — GLB
-just needs whatever they land on to keep working, which "enhance
-whatever terminal is already there" already guarantees, since none of
-GLB's own configuration assumes a specific terminal emulator.
+- **WezTerm** was briefly installed and *managed* as part of `default`
+  (2026-08-05 through 2026-08-09), then removed. The problem wasn't
+  "GLB installed a terminal emulator" — it was that GLB tried to *own*
+  WezTerm's configuration: a vendored `wezterm.lua`, and real time lost
+  chasing Flatpak-sandbox and COSMIC window-decoration interactions
+  that had nothing to do with shell and prompt setup. That's the line
+  the "install, don't vendor-manage" rule above draws.
+- **`new-to-linux`'s desktop apps** (Firefox, LibreOffice, GIMP, VLC)
+  were removed the same day because they were *padding*, not a
+  deliberate pick that complemented the terminal-onboarding mission —
+  and trivially self-installed from any software center. The question
+  they failed is still the right one to ask of any GUI candidate: does
+  this specifically complement what GLB is *for*, or is it just "apps a
+  new user might want"? Without those picks, `new-to-linux` had shrunk
+  to a near-duplicate of `default`'s shared shell setup and was retired
+  as a separate profile.
 
-**The line is GUI vs. terminal, not "simple" vs. "complex."** A
-full-screen TUI application that takes over the whole terminal window —
-Ranger, Midnight Commander, htop, btop, even something as involved as
-the Claude Code CLI — is still fully in scope, because it never opens a
-window of its own; it runs entirely inside whatever terminal is already
-there, same as `bat` or `fzf`. Ranger and htop are already curated in
-`default` for exactly this reason. The disqualifying question is never
-"how much does this app do," it's "does launching it ever produce a
-window separate from the terminal it was launched in." A yes to that
-question is what put WezTerm and the `new-to-linux` desktop apps out of
-scope — it isn't a complexity or feature-set judgment.
+Terminal-based tools were never in question and remain the core: a
+full-screen TUI — Ranger, Midnight Commander, htop, btop, the Claude
+Code CLI — is in scope no matter how involved it is, because it runs
+inside whatever terminal is already there. Ranger and htop are curated
+in `default` for exactly that reason.
+
+### Ghostty — the first GUI pick under this stance
+
+`default` installs **Ghostty**, a GPU-accelerated terminal emulator
+(2026-08-30). It's a curated pick that complements the mission rather
+than a replacement for anyone's terminal: Yazi's image preview needs a
+graphics-capable host, and some distros' default terminals provide none.
+COSMIC Terminal — Greg's daily driver — supports no inline image
+protocol at all
+([pop-os/cosmic-term#438](https://github.com/pop-os/cosmic-term/issues/438)),
+and its packaged `chafa` is too old for Yazi's ASCII-art fallback, so on
+cosmic-term there is *no* working image preview without a terminal that
+draws the images itself. Ghostty (Kitty graphics protocol) is that
+terminal.
+
+The "install, don't vendor-manage" restraint is applied deliberately —
+this is the WezTerm lesson, not an exception to it:
+
+- GLB installs the Ghostty package and ships **one** launcher line
+  (`ghostty --class=com.yazi.Yazi -e yazi`, an app-menu entry that runs
+  Yazi inside it). It does **not** set Ghostty as the default terminal,
+  rebind the terminal shortcut, or ship a Ghostty config.
+- Binding a key to that launcher is left to the user — COSMIC, KDE, and
+  GNOME each do custom keyboard shortcuts differently and none
+  portably, so GLB documents the one-liner rather than automating three
+  fragile per-desktop code paths.
+
+See `docs/design/ghostty-yazi.md` for the full rationale and the
+per-distro packaging details.
 
 ---
 

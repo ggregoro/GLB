@@ -25,6 +25,24 @@ This project follows a simple versioning approach:
   restore — reverted once it became clear a public project's built-in
   feature shouldn't depend on the maintainer's own repo access. See
   `docs/design/nvim-lazyvim.md`.
+- Scope relaxed: GLB's "no GUI applications, terminal emulators
+  included" rule is dropped. A GUI app is now in scope when it's a
+  deliberate, opinionated pick that complements the terminal-first
+  mission — installed and lightly configured, never vendor-managed,
+  never a general app menu. `docs/PHILOSOPHY.md` ("Terminal-First, Not
+  Terminal-Only"), `docs/PROJECT.md` Non-Goals, and `README.md` updated
+  to match.
+- Ghostty installed in `default` — the first GUI pick under the relaxed
+  scope. It's the graphics-capable host Yazi's image preview needs
+  where a distro's default terminal provides none (COSMIC Terminal has
+  no inline image protocol, and its `chafa` is too old for Yazi's ASCII
+  fallback). `snap ghostty classic` in `extras.txt`, routed to the
+  native `ghostty` package on pacman (Arch `extra`) and zypper
+  (openSUSE `repo-oss`) via `_GLB_SNAP_NATIVE_OVERRIDES`. Ghostty is
+  never set as the default terminal; a portable `yazi.desktop` launcher
+  (`dotfiles/.local/share/applications/`) runs Yazi inside it on
+  demand. Binding a key to that launcher is a documented per-desktop
+  manual step, not automated. See `docs/design/ghostty-yazi.md`.
 
 ---
 
