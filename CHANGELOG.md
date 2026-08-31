@@ -32,6 +32,13 @@ This project follows a simple versioning approach:
   never a general app menu. `docs/PHILOSOPHY.md` ("Terminal-First, Not
   Terminal-Only"), `docs/PROJECT.md` Non-Goals, and `README.md` updated
   to match.
+- `default` now ships `~/.config/yazi/theme.toml` with a `[git]`
+  override for the vendored `yazi-rs/plugins:git` plugin: plain-text
+  signs (green `✓` for clean/tracked files, `M`/`A`/`?`/`D`/`U` for
+  changes) instead of the plugin's default Nerd Font glyphs, and clean
+  files get a mark too — so a project's file list reads like ranger's
+  `vcs_aware` column. Matches the letter-indicator choice GLB's ranger
+  `rc.conf` already made (icon glyphs failed to render on a test VM).
 - Ghostty installed in `default` — the first GUI pick under the relaxed
   scope. It's the graphics-capable host Yazi's image preview needs
   where a distro's default terminal provides none (COSMIC Terminal has

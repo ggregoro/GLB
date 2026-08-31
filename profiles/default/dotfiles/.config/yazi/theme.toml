@@ -1,0 +1,28 @@
+# GLB — Yazi theme override: git status signs
+#
+# Yazi core has no VCS awareness; the vendored yazi-rs/plugins:git plugin
+# (plugins/git.yazi/) provides it. The plugin's own defaults use Nerd
+# Font glyphs and show *nothing* for clean/tracked files. This override
+# switches to plain-text signs (no Nerd Font dependency) and marks clean
+# files too, so a project's file list reads like ranger's vcs_aware
+# column — GLB's ranger rc.conf already uses letter/checkmark indicators
+# for the same reason (see CLAUDE.md, 2026-08-05: icon glyphs failed to
+# render on a test VM). A partial theme.toml only overrides these keys;
+# Yazi's default theme still applies to everything else.
+
+[git]
+clean_sign     = "✓"
+modified_sign  = "M"
+added_sign     = "A"
+untracked_sign = "?"
+deleted_sign   = "D"
+updated_sign   = "U"
+ignored_sign   = ""
+unknown_sign   = ""
+
+clean     = { fg = "green" }
+modified  = { fg = "yellow" }
+added     = { fg = "green" }
+untracked = { fg = "magenta" }
+deleted   = { fg = "red" }
+updated   = { fg = "yellow" }

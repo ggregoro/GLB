@@ -987,6 +987,36 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **Yazi git-status signs made ranger-like (2026-08-30, Pop!_OS Cosmic
+  laptop).** Greg noticed Yazi wasn't showing per-file git status the
+  way his ranger does (a green `✓` on every tracked file in a repo).
+  Root cause, confirmed by reading the vendored plugin: Yazi core has
+  no VCS awareness at all — it comes entirely from `yazi-rs/plugins:git`
+  (`plugins/git.yazi/`, already vendored + wired via `init.lua` +
+  `yazi.toml` fetchers since 2026-08-13). The plugin *was* working; its
+  defaults just render **nothing for clean files** (`clean_sign`/
+  `unknown_sign` default to `""`) and use **Nerd Font glyphs** for
+  changes (invisible in a terminal without a Nerd Font — which is
+  likely why it looked dead in plain cosmic-term).
+  - **Fix:** new `profiles/default/dotfiles/.config/yazi/theme.toml`
+    with a `[git]` section — `clean_sign = "✓"` (plain Unicode, green),
+    `modified_sign = "M"` / `added_sign = "A"` / `untracked_sign = "?"`
+    / `deleted_sign = "D"` / `updated_sign = "U"`, `ignored_sign`/
+    `unknown_sign = ""`. Plain-text, no Nerd Font dependency —
+    deliberately matching the letter-indicator choice GLB's ranger
+    `rc.conf` already made (see the 2026-08-05 ranger entry: icon
+    glyphs failed to render on the CachyOS VM). A partial `theme.toml`
+    only overrides those keys; Yazi's default theme still applies to
+    everything else. First `theme.toml` GLB ships for Yazi.
+  - The plugin still renders the sign in the **linemode** (right edge
+    of the active pane), not left of the filename — that's not
+    configurable, and it's close enough to ranger's layout.
+  - Verified: TOML parses; `yazi --debug` loads it with no theme/parse
+    error in `~/.local/state/yazi/yazi.log` (only the expected
+    non-tty `/dev/tty` errors from the sandbox). Deployed live on the
+    laptop. Not yet eyeballed in a real Yazi window by Greg as of this
+    note. Branch `feat/yazi-git-signs`.
+
 - **The "no GUI applications, terminal emulators included" rule was
   dropped from both GLB and GWB, and Ghostty added to `default`
   (2026-08-30, Pop!_OS Cosmic laptop).** Grew directly out of a real
