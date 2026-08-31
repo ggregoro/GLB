@@ -52,3 +52,34 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 # comment in packages.txt; this entry fails as a direct downstream
 # consequence there until the user acts on that pause's hint.
 snap    yazi      classic
+
+# Ghostty - a GPU-accelerated terminal emulator that speaks the Kitty
+# graphics protocol, so yazi (above) renders real images in it instead
+# of falling back to chafa's Unicode-block art. This is a DELIBERATE,
+# narrowly-scoped exception to GLB's "no GUI applications, terminal
+# emulators included" rule (docs/PHILOSOPHY.md) - it earns its place
+# only as the graphics-capable host yazi's image preview needs where a
+# distro's default terminal provides none. COSMIC Terminal (Greg's
+# daily driver, pop-os/cosmic-term#438 still open) supports no inline
+# image protocol at all, and its bundled/apt chafa is 1.14.0 while
+# yazi >= 26.x needs chafa >= 1.16 for `--probe` - so on cosmic-term
+# there is no working image preview without a terminal that draws the
+# images itself. Ghostty does not become the default terminal; it's
+# launched on demand via the yazi.desktop launcher shipped in this
+# profile's dotfiles/.local/share/applications/ (bare `ghostty ... -e
+# yazi`, so it resolves whether Ghostty is a snap or a native package).
+# Binding a key to that command is a per-desktop-environment manual
+# step - COSMIC/KDE/GNOME each do custom shortcuts differently, none
+# portably, so GLB documents it rather than automating three fragile
+# code paths (see docs/design/ghostty-yazi.md).
+#
+# Per-distro routing, same _GLB_SNAP_NATIVE_OVERRIDES mechanism as yazi:
+#   pacman  -> native `ghostty` (Arch `extra` repo) - confirmed
+#   zypper  -> native `ghostty` (openSUSE repo-oss) - confirmed; note
+#              this is BETTER than yazi, which has no zypper path at all
+#   apt     -> snap (not in Debian/Ubuntu/Pop!_OS/Mint apt index),
+#              same snapd caveats as yazi (Mint's nosnap.pref block)
+#   dnf     -> snap (Fedora ships Ghostty only via COPR, not the
+#              official repos - GLB doesn't chase non-default repos,
+#              same call as lazygit on dnf)
+snap    ghostty   classic

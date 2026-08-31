@@ -30,10 +30,24 @@ fi
 # now. zypper has no native yazi package at all (would need a
 # non-default OBS repo), so it deliberately has no entry here - the
 # snap method (and its own known snapd gap) stays the only path there.
+#
+# ghostty:pacman / ghostty:zypper - Ghostty (default's terminal-emulator
+# exception for yazi image preview, see profiles/default/extras.txt and
+# docs/PHILOSOPHY.md) ships as a native `ghostty` package in Arch's
+# `extra` repo and in openSUSE's repo-oss - both confirmed. zypper does
+# get an entry here (unlike yazi), so openSUSE installs Ghostty natively
+# even though snapd isn't available there. No dnf entry: Fedora packages
+# Ghostty only via COPR, not its official repos, and GLB doesn't route
+# through non-default repos (same call as lazygit on dnf) - Fedora falls
+# through to snap. apt has no Ghostty package on any Debian/Ubuntu-family
+# distro, so it falls through to snap too, with the same snapd caveats
+# yazi carries (notably Mint's nosnap.pref block).
 # ------------------------------------------------------------
 
 declare -gA _GLB_SNAP_NATIVE_OVERRIDES=(
     [yazi:pacman]="yazi"
+    [ghostty:pacman]="ghostty"
+    [ghostty:zypper]="ghostty"
 )
 
 _glb_extra_native_package() {

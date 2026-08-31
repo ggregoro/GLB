@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Yazi
+GenericName=File Manager
+Comment=Terminal file manager, in Ghostty
+Icon=system-file-manager
+Exec=ghostty --class=com.yazi.Yazi -e yazi
+Terminal=false
+Categories=System;Utility;FileTools;
+Keywords=files;file manager;yazi;ghostty;
+StartupWMClass=com.yazi.Yazi
