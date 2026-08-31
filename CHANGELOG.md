@@ -68,6 +68,17 @@ This project follows a simple versioning approach:
   `term = xterm-256color` for SSH compatibility with hosts that lack
   Ghostty's own terminfo. See `docs/design/ghostty-yazi.md`.
 
+### Fixed
+- The strict-confinement `atuin` snap (apt distros) errored on every
+  shell start — `could not create dir "~/.config/atuin": Permission
+  denied` — because its sandbox can't write hidden dirs in `$HOME`.
+  `default`'s `.bashrc`/`.zshrc`/`config.fish` now export
+  `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under `~/snap/atuin/current/`
+  when `atuin` resolves to a `*/snap/*` path, before `atuin init`.
+  Native `atuin` (pacman/dnf/zypper) doesn't match the guard and keeps
+  the XDG defaults. Respects a pre-set `ATUIN_*_DIR`. Found on the
+  fresh Pop!_OS Cosmic VM, 2026-08-31.
+
 ---
 
 ## [1.0.0] - 2026-08-18

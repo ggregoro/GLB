@@ -162,6 +162,16 @@ export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
 # keeps plain Up as normal per-session history.
 # ------------------------------------------------------------
 if command -v atuin >/dev/null 2>&1; then
+    # The strict-confinement atuin snap (apt distros) can't write to
+    # ~/.config/atuin or ~/.local/share/atuin - it errors on every
+    # shell start. Point it at its own writable SNAP_USER_DATA. Native
+    # packages (pacman/dnf/zypper) don't match and use the XDG defaults.
+    case "$(command -v atuin)" in
+        */snap/*)
+            export ATUIN_CONFIG_DIR="${ATUIN_CONFIG_DIR:-$HOME/snap/atuin/current/.config/atuin}"
+            export ATUIN_DATA_DIR="${ATUIN_DATA_DIR:-$HOME/snap/atuin/current/.local/share/atuin}"
+            ;;
+    esac
     eval "$(atuin init bash --disable-up-arrow)"
 fi
 

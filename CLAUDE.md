@@ -4268,18 +4268,30 @@ branches on it.
   - **Yazi git-status signs — theme.toml deployed; [Greg to confirm
     the visual: green check on tracked files / `?` on the untracked
     `plugins/` dir, inside `~/.local/share/glb`].**
-  - **atuin strict snap errors on every interactive shell (parked
-    2026-08-31, not yet fixed).** On this clean VM `~/.config/atuin`
-    doesn't exist and the strict-confinement snap can't create it
-    (`snap connections atuin` has no plug for it) — every new shell
-    prints `Error: could not load client settings ... could not create
-    dir "/home/grego/.config/atuin": Permission denied`. GLB's
-    existing notes call this a "caveat"; on a genuinely fresh machine
-    it's a hard error on shell startup. Likely fix: point
-    `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under `~/snap/atuin/` (or add
-    an `atuin:dot-config-atuin` personal-files plug) in the shell
-    init, rather than leaving it to default. Parked for a follow-up
-    session.
+  - **atuin strict snap errors on every interactive shell — FIXED on a
+    branch 2026-08-31, needs cross-distro re-test before merge.** On
+    this clean VM `~/.config/atuin` doesn't exist and the
+    strict-confinement snap can't create it (`snap connections atuin`
+    has no plug for it, and the `home` interface doesn't cover hidden
+    dirs) — every new shell printed `Error: could not load client
+    settings ... could not create dir "/home/grego/.config/atuin":
+    Permission denied`. GLB's existing notes called this a "caveat"; on
+    a genuinely fresh machine it's a hard error on shell startup.
+    **Fix (branch `claude/atuin-snap-config-dir`):** `default`'s
+    `.bashrc`/`.zshrc`/`config.fish` now export
+    `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under
+    `~/snap/atuin/current/` before `atuin init`, guarded by
+    `case "$(command -v atuin)" in */snap/*)` (fish: `string match -q
+    '*/snap/*'`) so native `atuin` on pacman/dnf/zypper is untouched;
+    respects a pre-set `ATUIN_*_DIR`. Confirmed working on the VM
+    (`atuin status` clean, DB already populated at
+    `~/snap/atuin/current/.local/share/atuin/`). `extras.txt` comment
+    + `CHANGELOG.md` `### Fixed` updated. **Before merging to `main`:
+    re-run a shell on a pacman/dnf/zypper box to confirm the guard
+    doesn't match the native binary and `~/.config/atuin` is still
+    used there.** (A machine-local `~/.config/environment.d/atuin.conf`
+    with the same two vars was also dropped on this VM as an immediate
+    mitigation, independent of the dotfile fix.)
   - **LazyVim vendored config — 8 files symlinked; `lazy-lock.json`
     writes to `~/.config/nvim/` as a real file (GLB repo tree stays
     clean, only untracked `plugins/` = vendored zsh plugins). BUT

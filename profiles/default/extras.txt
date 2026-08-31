@@ -89,9 +89,11 @@ snap    ghostty   classic
 # on `command -v atuin`, `--disable-up-arrow` so plain Up stays
 # per-session history). Not in apt's index on Debian/Ubuntu/Pop!_OS,
 # so `default`'s primary (apt) target needs a non-package path -> snap
-# (strict confinement, no `--classic`). Strict-snap caveats there: the
-# history DB lives under `~/snap/atuin/` rather than
-# `~/.local/share/atuin/`, the `scripts` feature is unavailable, and
+# (strict confinement, no `--classic`). Strict-snap caveats there: it
+# can't write `~/.config/atuin` or `~/.local/share/atuin` at all, so
+# the shell dotfiles export `ATUIN_CONFIG_DIR`/`ATUIN_DATA_DIR` under
+# `~/snap/atuin/current/` (guarded to the snap only - native packages
+# use the XDG defaults); the `scripts` feature is unavailable; and
 # `atuin import` can't read `~/.bash_history` (a dotfile) through the
 # sandbox - run `atuin import auto` by hand once if you want existing
 # history brought in. On pacman/dnf/zypper this routes to the real
