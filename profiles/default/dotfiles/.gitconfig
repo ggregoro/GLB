@@ -6,3 +6,16 @@
 # if it's missing.
 [include]
 	path = ~/.gitconfig.local
+
+# git-delta (installed via packages.txt) - a syntax-highlighting diff
+# pager. `delta || less` so a machine where the package wasn't
+# installed still pages with plain less instead of erroring.
+[core]
+	pager = delta || less
+[interactive]
+	diffFilter = delta --color-only || cat
+[delta]
+	navigate = true
+	line-numbers = true
+[merge]
+	conflictStyle = zdiff3

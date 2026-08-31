@@ -987,6 +987,46 @@ branches on it.
 
 ## Roadmap / in progress
 
+- **`wl-clipboard` + `git-delta` + `atuin` added to `default`
+  (2026-08-31, Pop!_OS Cosmic laptop).** Greg's pick from a "now that
+  GUI apps are allowed, what did we overlook" brainstorm — all three
+  are actually CLI/TUI, just never added.
+  - **`wl-clipboard`** (`packages.txt`) — Wayland `wl-copy`/`wl-paste`;
+    without it, yazi "yank path", Neovim `"+y`, tmux clipboard, and
+    `… | wl-copy` silently don't reach the system clipboard. Same
+    package name on all four managers. X11 sessions would want
+    `xclip`/`xsel` instead — deliberately not added (`default` targets
+    a modern Wayland desktop; Neovim's clipboard provider auto-detects
+    whichever is present).
+  - **`git-delta`** (`packages.txt`, binary is `delta`) — wired into
+    `profiles/default/dotfiles/.gitconfig`: `core.pager = delta ||
+    less`, `interactive.diffFilter = delta --color-only || cat`, plus
+    `[delta] navigate/line-numbers` and `merge.conflictStyle = zdiff3`.
+    The `|| less`/`|| cat` fallbacks matter because `.gitconfig` is a
+    live symlink — a machine that pulls the checkout before running
+    `glb restore` (so `delta` isn't installed yet) still pages with
+    plain `less` instead of erroring. Package is `git-delta` on all
+    four managers (apt confirmed: `0.16.5-5` on Pop!_OS noble).
+  - **`atuin`** (`extras.txt` → `snap atuin`, strict) — searchable
+    SQLite shell history, replaces Ctrl-R in bash/zsh/fish. Init added
+    after the fzf block in all three shell dotfiles (so atuin's Ctrl-R
+    wins), guarded on `command -v atuin`, with `--disable-up-arrow` so
+    plain Up stays per-session history. **Not in apt's index**, so the
+    apt distros use the strict snap (works, since they have snapd) —
+    caveats there: history DB under `~/snap/atuin/`, no `scripts`, and
+    `atuin import` can't read `~/.bash_history` through the sandbox
+    (`atuin import auto` by hand if wanted). `_GLB_SNAP_NATIVE_OVERRIDES`
+    routes pacman/dnf/zypper to the native `atuin` package instead
+    (pacman `extra` confirmed; dnf/zypper believed-good, VM-unverified
+    — same caveat as the old `firefox:zypper`/`libreoffice:pacman`
+    entries).
+  - Verified: `bash -n`/`zsh -n`/`fish -n` clean on all three dotfiles;
+    `.gitconfig` parses; bats 223/227 (same 4 pre-existing); `glb
+    restore default --dry-run` shows `Would install: wl-clipboard` /
+    `git-delta` / `atuin (via snap)`, no errors. **Not yet
+    real-restored** — needs `glb restore default` in a real terminal
+    (sudo for the two apt packages, `snap install atuin`).
+
 - **Yazi git-status signs made ranger-like (2026-08-30, Pop!_OS Cosmic
   laptop).** Greg noticed Yazi wasn't showing per-file git status the
   way his ranger does (a green `✓` on every tracked file in a repo).

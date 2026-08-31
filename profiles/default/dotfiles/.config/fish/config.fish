@@ -113,6 +113,15 @@ end
 set -gx FZF_DEFAULT_OPTS "--height 40% --layout=reverse --border"
 
 # ------------------------------------------------------------
+# atuin (searchable, synced shell history - replaces Ctrl-R).
+# Sourced after fzf so atuin's Ctrl-R binding wins. --disable-up-arrow
+# keeps plain Up as normal per-session history.
+# ------------------------------------------------------------
+if command -q atuin
+    atuin init fish --disable-up-arrow | source
+end
+
+# ------------------------------------------------------------
 # Prompt (hand-rolled Pure-style — no Starship here)
 # ------------------------------------------------------------
 function fish_prompt

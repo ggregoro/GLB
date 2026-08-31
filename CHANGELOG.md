@@ -13,6 +13,18 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- `default` gained three shell/CLI tools: **`wl-clipboard`** (Wayland
+  `wl-copy`/`wl-paste` — makes yank-to-clipboard work in yazi, Neovim,
+  tmux, and pipelines), **`git-delta`** (syntax-highlighting `git diff`
+  pager, wired into `.gitconfig` as `delta || less` so an un-restored
+  machine still pages), and **`atuin`** (searchable SQLite shell
+  history replacing Ctrl-R, init added to all three shell dotfiles
+  guarded on `command -v atuin`, `--disable-up-arrow`). `wl-clipboard`
+  and `git-delta` are plain `packages.txt` entries (same name on all
+  four managers); `atuin` is `snap atuin` in `extras.txt`, routed to
+  the native package on pacman/dnf/zypper via
+  `_GLB_SNAP_NATIVE_OVERRIDES` (apt has no `atuin`, so
+  Debian/Ubuntu/Pop!_OS/Mint use the strict snap).
 - Neovim + LazyVim, built into every profile (`default`/`developer`/
   `server`): each now vendors the real, public [LazyVim/starter](
   https://github.com/LazyVim/starter) template as a normal tracked

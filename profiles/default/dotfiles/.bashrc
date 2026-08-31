@@ -157,6 +157,15 @@ fi
 export FZF_DEFAULT_OPTS="--height 40% --layout=reverse --border"
 
 # ------------------------------------------------------------
+# atuin (searchable, synced shell history - replaces Ctrl-R).
+# Sourced after fzf so atuin's Ctrl-R binding wins. --disable-up-arrow
+# keeps plain Up as normal per-session history.
+# ------------------------------------------------------------
+if command -v atuin >/dev/null 2>&1; then
+    eval "$(atuin init bash --disable-up-arrow)"
+fi
+
+# ------------------------------------------------------------
 # Homebrew
 # ------------------------------------------------------------
 if [ -x /home/linuxbrew/.linuxbrew/bin/brew ]; then

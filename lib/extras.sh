@@ -42,12 +42,24 @@ fi
 # through to snap. apt has no Ghostty package on any Debian/Ubuntu-family
 # distro, so it falls through to snap too, with the same snapd caveats
 # yazi carries (notably Mint's nosnap.pref block).
+#
+# atuin:pacman / atuin:dnf / atuin:zypper - atuin (default's shell-history
+# tool, see profiles/default/extras.txt) has a real native package on all
+# three: Arch `extra` (confirmed), Fedora's official repos, and openSUSE
+# (both believed-good, not yet VM-confirmed). The native package avoids
+# the atuin *snap*'s strict-confinement limits (non-standard DB path
+# under ~/snap/atuin/, no history import, no scripts). apt has no atuin
+# package, so Debian/Ubuntu/Pop!_OS/Mint fall through to the snap - which
+# works there since those distros have snapd.
 # ------------------------------------------------------------
 
 declare -gA _GLB_SNAP_NATIVE_OVERRIDES=(
     [yazi:pacman]="yazi"
     [ghostty:pacman]="ghostty"
     [ghostty:zypper]="ghostty"
+    [atuin:pacman]="atuin"
+    [atuin:dnf]="atuin"
+    [atuin:zypper]="atuin"
 )
 
 _glb_extra_native_package() {

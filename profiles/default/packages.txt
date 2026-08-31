@@ -82,3 +82,20 @@ cpufetch
 # cross-distro fallback for fastfetch, just a happy coincidence on Mint
 # specifically).
 fastfetch
+
+# Wayland clipboard (`wl-copy`/`wl-paste`) - what makes "yank path" in
+# yazi, `"+y` in Neovim, tmux copy-mode-to-clipboard, and `... |
+# wl-copy` actually reach the system clipboard on a Wayland session.
+# Same package name on apt/dnf/pacman/zypper. X11-only sessions want
+# `xclip` or `xsel` instead (not added - `default`'s target is a
+# modern Wayland desktop, and Neovim's clipboard provider auto-detects
+# whichever is present).
+wl-clipboard
+
+# git-delta - a syntax-highlighting pager for `git diff`/`git log
+# -p`/`git show`, wired into `.gitconfig` (core.pager). The package is
+# `git-delta` on all four managers; the binary it installs is `delta`.
+# `.gitconfig` uses `delta || less` so an un-restored machine (package
+# skipped at a no-TTY restore) still pages with plain `less` instead of
+# erroring.
+git-delta
