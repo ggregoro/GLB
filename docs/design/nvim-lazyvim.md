@@ -16,7 +16,7 @@ This brought GLB to parity — at first.
 
 ## Revision: public, vendored config (2026-08-30, same day)
 
-The first cut (below) cloned Greg's own private `nvim-config` repo on
+The first cut (below) cloned a private `nvim-config` repo on
 every restore — real parity with his actual setup, but only for
 machines with SSH access to that private repo. Greg caught this
 directly: GLB is a public project, and its features — Neovim/LazyVim
@@ -71,7 +71,7 @@ Every other config GLB manages (`dotfiles/`, `starship.toml`, the
 `yazi/` config) is a static file vendored into this repo and symlinked
 into place. Greg's Neovim setup is different: it's his own
 actively-maintained personal config, already a separate private GitHub
-repo (`github.com/ggregoro/nvim-config`, a LazyVim starter he keeps
+repo (a personal LazyVim starter the maintainer keeps
 tweaking). Vendoring a snapshot into GLB would go stale the moment he
 changed anything there and force a manual re-sync into this repo on
 every tweak.
@@ -81,7 +81,7 @@ the living source of truth and clone it. Two sub-decisions:
 
 - **True parity — clone the real private repo**, not the public
   `LazyVim/starter` and not an env-var-only stub. A machine without SSH
-  access to `nvim-config` (i.e. anyone who isn't Greg) gets a clean
+  access to `nvim-config` (i.e. anyone but the maintainer) gets a clean
   "clone failed" message and an otherwise-normal restore; `nvim` still
   installs, it's just unconfigured. `GLB_NVIM_CONFIG_REPO` in the
   environment overrides the URL (mirrors GWB's `GWB_NVIM_CONFIG_REPO`),
@@ -104,7 +104,7 @@ and `git clone`d fresh, wired into `glb_apply_profile`/
 `glb_apply_manifest`/`glb_apply_snapshot` and explicitly special-cased
 in `glb_undo_restore` (a directory clone, not a symlink, needed
 handling before the generic backup-swap loop). Verified for real on the
-Pop!_OS Cosmic laptop the same day it was built — fresh clone, backup,
+Pop!_OS Cosmic machine the same day it was built — fresh clone, backup,
 idempotent pull, dry-run messages, the env override, and a full
 `--undo` round-trip all confirmed working, right before the design
 changed.

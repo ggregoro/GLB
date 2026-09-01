@@ -59,8 +59,8 @@ snap    yazi      classic
 # narrowly-scoped exception to GLB's "no GUI applications, terminal
 # emulators included" rule (docs/PHILOSOPHY.md) - it earns its place
 # only as the graphics-capable host yazi's image preview needs where a
-# distro's default terminal provides none. COSMIC Terminal (Greg's
-# daily driver, pop-os/cosmic-term#438 still open) supports no inline
+# distro's default terminal provides none. COSMIC Terminal (a common Pop!_OS default;
+# pop-os/cosmic-term#438 still open) supports no inline
 # image protocol at all, and its bundled/apt chafa is 1.14.0 while
 # yazi >= 26.x needs chafa >= 1.16 for `--probe` - so on cosmic-term
 # there is no working image preview without a terminal that draws the

@@ -211,7 +211,7 @@ section and `CLAUDE.md` for the complete history behind each item below.
   part of getting the repo ready to go public.
 - Replaced `default`'s `.config/wezterm/wezterm.lua` (the gradient/
   opacity/keybindings version above) with the simpler config that was
-  actually already running on Greg's Dell laptop via an untracked
+  actually already running on the maintainer's machine via an untracked
   `~/.wezterm.lua` - discovered during a `$HOME` cleanup that WezTerm
   had been silently preferring that stray file over the real
   GLB-managed one the whole time. See CLAUDE.md for the full writeup.

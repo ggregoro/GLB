@@ -12,7 +12,7 @@ Yazi's own detection order is: a native inline-image protocol (Kitty
 graphics / iTerm2 / Sixel) if the terminal has one, then überzug++, then
 `chafa` Unicode-block art as the last resort.
 
-On Greg's daily driver — Pop!_OS with **COSMIC Terminal** — every one of
+On a Pop!_OS + **COSMIC Terminal** setup, every one of
 those paths is blocked:
 
 - cosmic-term supports **no inline image protocol at all**

@@ -107,7 +107,7 @@ in `default` for exactly that reason.
 (2026-08-30). It's a curated pick that complements the mission rather
 than a replacement for anyone's terminal: Yazi's image preview needs a
 graphics-capable host, and some distros' default terminals provide none.
-COSMIC Terminal — Greg's daily driver — supports no inline image
+COSMIC Terminal (a common Pop!_OS default) supports no inline image
 protocol at all
 ([pop-os/cosmic-term#438](https://github.com/pop-os/cosmic-term/issues/438)),
 and its packaged `chafa` is too old for Yazi's ASCII-art fallback, so on

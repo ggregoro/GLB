@@ -19,3 +19,8 @@ logs/
 
 # Windows
 Thumbs.db
+
+# Local, private notes (not committed)
+
+CLAUDE.local.md
+CLAUDE.*.local.md
