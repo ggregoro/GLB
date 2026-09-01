@@ -187,10 +187,9 @@ GLB's direction and current progress are tracked in
 
 ## Contributing
 
-GLB is currently a personal project (private repository) built and tested
-by its author across several real machines and VMs, documented in detail in
-`CLAUDE.md`. It's built with the idea that it might be shared publicly if
-there's interest — see [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for the
+GLB is a public but personal project — built and tested by its author
+across several real machines and VMs, and documented in detail in
+`CLAUDE.md`. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for the
 guiding principles behind its design decisions.
 
 ## License
