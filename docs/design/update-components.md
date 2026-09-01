@@ -1,6 +1,6 @@
 # Design: Updating Installed Components
 
-**Status:** Built (2026-08-07, Dell laptop)
+**Status:** Built (2026-08-07)
 **Added:** 2026-08-07
 
 ## Motivation

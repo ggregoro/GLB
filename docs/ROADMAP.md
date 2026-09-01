@@ -307,7 +307,7 @@ Improve reproducibility.
   `glb_install_zsh_plugins` only checks that a directory exists, not
   that the clone inside it is complete) — worth doing once real
   corruption cases actually show up, not pre-emptively.
-- **Update installed components — done (2026-08-07, Dell laptop).**
+- **Update installed components — done (2026-08-07).**
   See `docs/design/update-components.md`. `glb update` already covered
   system packages; now also updates everything else GLB installs
   outside the package manager: Starship (`glb_update_starship`,
@@ -342,8 +342,8 @@ Improve reproducibility.
     elsewhere in this file for `fresh`/`starship`. 201/202 bats tests
     pass overall — the one failure is a pre-existing, unrelated zypper
     test that also fails on unmodified `main` on this apt machine.
-  - **Real, for-real verification on this laptop (2026-08-07), Greg's
-    actual daily driver:** bare `./glb update` run for real —
+  - **Real, for-real verification on a real machine (2026-08-07):**
+    bare `./glb update` run for real —
     `sudo apt upgrade`/Starship's reinstall both failed cleanly with
     zero side effects (no TTY for sudo), zsh plugins updated
     unprompted (`zsh-syntax-highlighting` fast-forwarded a real
@@ -448,7 +448,7 @@ Deliver the first stable version of GLB.
   and `CLAUDE.md`'s "Repository is now public" Working notes entry.
 
 Marked complete 2026-08-18, per Greg: real-hardware verification (a
-fresh Arch Linux Cosmic install on the Dell laptop) ran end-to-end
+fresh Arch Linux Cosmic install on a real machine) ran end-to-end
 exactly as designed. Small add-ons are still expected from time to
 time, but the project itself is considered essentially done.
 
@@ -460,7 +460,7 @@ time, but the project itself is considered essentially done.
   normal tracked dotfile, no external repo or credentials required.
   Revised the same day from an initial private-repo-clone design once
   it became clear a public project's built-in feature shouldn't depend
-  on Greg's own personal repo access. See `docs/design/nvim-lazyvim.md`.
+  on the maintainer's personal repo access. See `docs/design/nvim-lazyvim.md`.
 
 - **Scope relaxed: GUI apps allowed when curated (2026-08-30) ✅** —
   GLB's "no GUI applications, terminal emulators included" rule was
