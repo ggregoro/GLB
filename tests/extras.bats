@@ -482,6 +482,211 @@ teardown() {
     ! grep -q "snap install" "$TEST_TMP/calls"
 }
 
+# --- github-release method ----------------------------------------------
+#
+# Downloads github.com/<owner/repo>/releases/latest/download/<asset>,
+# verifies a sibling .sha256 when the release publishes one, unpacks the
+# archive, and drops the <name> binary in ~/.local/bin. curl/tar are
+# always stubbed - nothing here touches the real network. "faketool" is
+# used wherever detection runs through PATH (a real `atuin` on the test
+# machine's PATH would otherwise read as already-installed, same bleed
+# class as fresh/starship elsewhere in this suite).
+
+@test "github-release: skips install when the binary is already on PATH" {
+    stub_command atuin 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed github-release atuin 'atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "github-release: not installed when the binary is absent from PATH" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed github-release faketool 'someorg/faketool faketool-linux-x86_64.tar.gz'
+    "
+    [ "$status" -ne 0 ]
+}
+
+@test "github-release: downloads the latest asset, unpacks it, installs the binary into ~/.local/bin" {
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        echo "curl $url" >> "$TEST_TMP/calls"
+        case "$url" in
+            *.sha256) exit 22 ;;
+            *) : > "$out"; exit 0 ;;
+        esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in -C) dest="$2"; shift 2 ;; *) shift ;; esac; done
+        echo "tar ran" >> "$TEST_TMP/calls"
+        mkdir -p "$dest/atuin-x86_64-unknown-linux-gnu"
+        printf "#!/bin/sh\necho atuin\n" > "$dest/atuin-x86_64-unknown-linux-gnu/atuin"
+        chmod +x "$dest/atuin-x86_64-unknown-linux-gnu/atuin"
+        exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra github-release atuin 'atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+    [ -x "$HOME/.local/bin/atuin" ]
+    grep -q "curl https://github.com/atuinsh/atuin/releases/latest/download/atuin-x86_64-unknown-linux-gnu.tar.gz" "$TEST_TMP/calls"
+}
+
+@test "github-release: picks the executable when the archive also holds a same-named non-exec file" {
+    # fastfetch's tarball ships usr/bin/fastfetch (ELF) *and*
+    # usr/share/bash-completion/completions/fastfetch (plain text) -
+    # the -perm -u+x filter must land on the binary.
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        case "$url" in *.sha256) exit 22 ;; *) : > "$out"; exit 0 ;; esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in -C) dest="$2"; shift 2 ;; *) shift ;; esac; done
+        mkdir -p "$dest/pkg/usr/bin" "$dest/pkg/usr/share/bash-completion/completions"
+        printf "completion script\n" > "$dest/pkg/usr/share/bash-completion/completions/fastfetch"
+        printf "#!/bin/sh\necho fastfetch 9.9\n" > "$dest/pkg/usr/bin/fastfetch"
+        chmod +x "$dest/pkg/usr/bin/fastfetch"
+        exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_install_github_release fastfetch fastfetch-cli/fastfetch fastfetch-linux-amd64.tar.gz
+    "
+    [ "$status" -eq 0 ]
+    [ -x "$HOME/.local/bin/fastfetch" ]
+    run "$HOME/.local/bin/fastfetch"
+    [[ "$output" == *"fastfetch 9.9"* ]]
+}
+
+@test "github-release: aborts when a published .sha256 does not match the download" {
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        case "$url" in
+            *.sha256) printf "cafef00d  atuin-x86_64-unknown-linux-gnu.tar.gz\n" > "$out" ;;
+            *) printf "payload\n" > "$out" ;;
+        esac
+        exit 0'
+    stub_command sha256sum 'echo "deadbeef  $1"'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_install_github_release atuin atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Checksum mismatch"* ]]
+    [ ! -e "$HOME/.local/bin/atuin" ]
+}
+
+@test "github-release: routes to the native package when a _GLB_EXTRA_NATIVE_OVERRIDES entry exists" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_detect_package_manager() { echo pacman; }
+        glb_install_package() { echo \"install_package \$*\"; }
+        glb_install_extra github-release atuin 'atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"via the package manager (atuin), not a GitHub release"* ]]
+    [[ "$output" == *"install_package atuin"* ]]
+}
+
+@test "dry-run: github-release extra announces would-install without downloading" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'github-release faketool someorg/faketool faketool-linux-x86_64.tar.gz\n' > "$pdir/extras.txt"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: faketool (via github-release)"* ]]
+}
+
+@test "github-release: pauses on failure, prints a manual hint, and succeeds once confirmed" {
+    stub_command curl 'exit 22'
+    stub_command atuin 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra github-release atuin 'atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz' <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Run this yourself"* ]]
+    [[ "$output" == *"download atuin-x86_64-unknown-linux-gnu.tar.gz from https://github.com/atuinsh/atuin/releases/latest"* ]]
+    [[ "$output" == *"Confirmed installed after manual step: atuin"* ]]
+}
+
+@test "github-release: returns failure when the user skips the manual step" {
+    stub_command curl 'exit 22'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra github-release atuin 'atuinsh/atuin atuin-x86_64-unknown-linux-gnu.tar.gz' <<< 's'
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Skipped: install atuin"* ]]
+}
+
+@test "update: github-release - re-downloads the latest asset for an already-installed extra" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'github-release faketool someorg/faketool faketool-linux-x86_64.tar.gz\n' > "$pdir/extras.txt"
+    stub_command faketool 'exit 0'
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        echo "curl $url" >> "$TEST_TMP/calls"
+        case "$url" in
+            *.sha256) exit 22 ;;
+            *) : > "$out"; exit 0 ;;
+        esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in -C) dest="$2"; shift 2 ;; *) shift ;; esac; done
+        mkdir -p "$dest/x"; printf "#!/bin/sh\n" > "$dest/x/faketool"; chmod +x "$dest/x/faketool"; exit 0'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updating faketool from someorg/faketool"* ]]
+    grep -q "curl https://github.com/someorg/faketool/releases/latest/download/faketool-linux-x86_64.tar.gz" "$TEST_TMP/calls"
+}
+
 # --- glb_update_profile_extras / _glb_update_extra --------------------------
 #
 # Re-running an already-installed extra to pick up updates. Deliberately
