@@ -55,8 +55,9 @@ bash-completion    # loads glb's completion file - see lib/completions.sh
 snapd
 
 # CPU architecture info banner (James Tigert / kz6fittycent), pairs
-# with fastfetch above. A real native package on all four managers -
-# no per-distro override needed, name is "cpufetch" everywhere.
+# with fastfetch (now a `github-release` extra - see extras.txt). A
+# real native package on all four managers - no per-distro override
+# needed, name is "cpufetch" everywhere.
 # Confirmed current (1.07, matching upstream) on Fedora 44+ (dnf),
 # Arch's `extra` repo (pacman), and openSUSE Tumbleweed (zypper).
 # Debian stable/trixie lags one point release behind (1.06-2) - a
@@ -70,18 +71,14 @@ snapd
 # comment above).
 cpufetch
 
-# Not in apt's index on every distro (e.g. not packaged on this Pop!_OS
-# setup, nor on Linux Mint 22.3 - confirmed 2026-08-07, reconfirmed on a
-# fresh Mint VM 2026-08-25, same "has no installation candidate" error)
-# — may need a PPA or manual install. No known curl-install script to
-# move this to extras.txt like fresh; it's a repo-availability gap, not
-# a wrong-install-method one. Not worth chasing further: Mint already
-# ships `neofetch` preinstalled, which covers the same "system info
-# banner" niche well enough there (even though neofetch itself is
-# archived/unmaintained upstream - not worth adding as a real
-# cross-distro fallback for fastfetch, just a happy coincidence on Mint
-# specifically).
-fastfetch
+# fastfetch (system-info banner) lives in extras.txt now, not here.
+# It's not in apt's index on GLB's fresh-VM targets (Pop!_OS 24.04,
+# Linux Mint 22.x - "has no installation candidate", confirmed
+# 2026-08-07 and again on a fresh Mint VM 2026-08-25), so a bare
+# packages.txt line forced a manual-step pause on every apt restore.
+# `github-release fastfetch fastfetch-cli/fastfetch` pulls the upstream
+# tarball into ~/.local/bin instead; dnf/pacman/zypper still get the
+# native package via _GLB_EXTRA_NATIVE_OVERRIDES. See extras.txt.
 
 # Wayland clipboard (`wl-copy`/`wl-paste`) - what makes "yank path" in
 # yazi, `"+y` in Neovim, tmux copy-mode-to-clipboard, and `... |

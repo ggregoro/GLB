@@ -379,7 +379,10 @@ Expand platform support.
   chosen via the interactive picker, real sudo password entry at the
   prompt. Worked cleanly end-to-end except the already-documented
   `fastfetch`-not-in-apt's-index gap, which reproduced exactly as
-  expected. See CLAUDE.md for the full writeup.
+  expected. See CLAUDE.md for the full writeup. *(That gap is closed as
+  of 2026-09-07: `fastfetch` moved to the `github-release` extras
+  method, so apt targets get the upstream tarball with no manual-step
+  pause.)*
 - **Fedora ✅** — dnf confirmed via a real `glb restore default` on a
   Fedora 44 Workstation test VM (2026-08-05). Zero package overrides
   needed.

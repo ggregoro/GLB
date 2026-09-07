@@ -13,6 +13,21 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- New `extras.txt` method **`github-release <name> <owner/repo>
+  <asset>`**: downloads a project's latest GitHub release asset from
+  `releases/latest/download/<asset>`, verifies a sibling `<asset>.sha256`
+  when the release publishes one, unpacks any `.tar.*`/`.zip` (or takes
+  a raw binary), and installs the `<name>` binary into `~/.local/bin`.
+  Like `snap`, a `_GLB_EXTRA_NATIVE_OVERRIDES` entry (the renamed
+  `_GLB_SNAP_NATIVE_OVERRIDES`) routes it to a real package on managers
+  that have one.
+- **`fastfetch`** moved from `default`'s `packages.txt` to
+  `extras.txt` as `github-release fastfetch fastfetch-cli/fastfetch`.
+  It isn't in apt's index on the fresh-VM targets (Pop!_OS 24.04, Mint
+  22.x — "no installation candidate"), so a bare `packages.txt` line
+  forced a manual-step pause on every apt restore; the upstream tarball
+  goes into `~/.local/bin` instead. dnf/pacman/zypper keep the native
+  `fastfetch` package via `_GLB_EXTRA_NATIVE_OVERRIDES`.
 - `default` gained three shell/CLI tools: **`wl-clipboard`** (Wayland
   `wl-copy`/`wl-paste` — makes yank-to-clipboard work in yazi, Neovim,
   tmux, and pipelines), **`git-delta`** (syntax-highlighting `git diff`
@@ -21,10 +36,14 @@ This project follows a simple versioning approach:
   history replacing Ctrl-R, init added to all three shell dotfiles
   guarded on `command -v atuin`, `--disable-up-arrow`). `wl-clipboard`
   and `git-delta` are plain `packages.txt` entries (same name on all
-  four managers); `atuin` is `snap atuin` in `extras.txt`, routed to
+  four managers); `atuin` is `github-release atuin atuinsh/atuin` in
+  `extras.txt` (upstream static binary into `~/.local/bin`), routed to
   the native package on pacman/dnf/zypper via
-  `_GLB_SNAP_NATIVE_OVERRIDES` (apt has no `atuin`, so
-  Debian/Ubuntu/Pop!_OS/Mint use the strict snap).
+  `_GLB_EXTRA_NATIVE_OVERRIDES`. The atuin **snap** is deliberately not
+  used: strict confinement can't create `~/.config/atuin` or
+  `~/.local/share/atuin`, `snap run` strips the `ATUIN_*_DIR` overrides
+  that would redirect them, and `scripts` / `atuin import auto` don't
+  work through the sandbox.
 - Neovim + LazyVim, built into every profile (`default`/`developer`/
   `server`): each now vendors the real, public [LazyVim/starter](
   https://github.com/LazyVim/starter) template as a normal tracked
@@ -57,7 +76,7 @@ This project follows a simple versioning approach:
   no inline image protocol, and its `chafa` is too old for Yazi's ASCII
   fallback). `snap ghostty classic` in `extras.txt`, routed to the
   native `ghostty` package on pacman (Arch `extra`) and zypper
-  (openSUSE `repo-oss`) via `_GLB_SNAP_NATIVE_OVERRIDES`. Ghostty is
+  (openSUSE `repo-oss`) via `_GLB_EXTRA_NATIVE_OVERRIDES`. Ghostty is
   never set as the default terminal; a portable `yazi.desktop` launcher
   (`dotfiles/.local/share/applications/`) runs Yazi inside it on
   demand. Binding a key to that launcher is a documented per-desktop

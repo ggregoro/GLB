@@ -17,11 +17,11 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 fi
 
 # ------------------------------------------------------------
-# Some snap-method extras have a real native package on certain
-# package managers - when that's true, check/install/update through
-# the plain package manager instead of snap, sidestepping a snap/
-# snapd dependency entirely where it isn't actually needed. Keyed
-# "<name>:<package-manager>" -> the native package name.
+# Some snap / github-release extras have a real native package on
+# certain package managers - when that's true, check/install/update
+# through the plain package manager instead, sidestepping a snap/snapd
+# (or a hand-managed binary in ~/.local/bin) where it isn't actually
+# needed. Keyed "<name>:<package-manager>" -> the native package name.
 #
 # yazi:pacman - confirmed real (2026-08-16): Arch's own `extra` repo
 # ships `yazi` directly, unlike CachyOS/EndeavourOS's snapd, which is
@@ -46,20 +46,33 @@ fi
 # atuin:pacman / atuin:dnf / atuin:zypper - atuin (default's shell-history
 # tool, see profiles/default/extras.txt) has a real native package on all
 # three: Arch `extra` (confirmed), Fedora's official repos, and openSUSE
-# (both believed-good, not yet VM-confirmed). The native package avoids
-# the atuin *snap*'s strict-confinement limits (non-standard DB path
-# under ~/snap/atuin/, no history import, no scripts). apt has no atuin
-# package, so Debian/Ubuntu/Pop!_OS/Mint fall through to the snap - which
-# works there since those distros have snapd.
+# (both believed-good, not yet VM-confirmed). apt has no atuin package,
+# so Debian/Ubuntu/Pop!_OS/Mint use the `github-release` method (a
+# static gnu binary dropped in ~/.local/bin). The atuin *snap* is
+# deliberately not used: its strict confinement can't write
+# ~/.config/atuin or ~/.local/share/atuin, `snap run` strips the
+# ATUIN_*_DIR overrides that would redirect them, and `scripts` /
+# `atuin import auto` don't work through the sandbox.
+#
+# fastfetch:dnf / fastfetch:pacman / fastfetch:zypper - fastfetch is a
+# native package in Fedora's official repos, Arch `extra`, and openSUSE.
+# It is NOT in apt's index on GLB's fresh-VM targets (Pop!_OS 24.04,
+# Linux Mint 22.x - "no installation candidate", confirmed twice), so
+# on apt it moves to the `github-release` method
+# (fastfetch-cli/fastfetch, upstream tarball -> ~/.local/bin) rather
+# than the manual-step pause a bare packages.txt entry used to force.
 # ------------------------------------------------------------
 
-declare -gA _GLB_SNAP_NATIVE_OVERRIDES=(
+declare -gA _GLB_EXTRA_NATIVE_OVERRIDES=(
     [yazi:pacman]="yazi"
     [ghostty:pacman]="ghostty"
     [ghostty:zypper]="ghostty"
     [atuin:pacman]="atuin"
     [atuin:dnf]="atuin"
     [atuin:zypper]="atuin"
+    [fastfetch:dnf]="fastfetch"
+    [fastfetch:pacman]="fastfetch"
+    [fastfetch:zypper]="fastfetch"
 )
 
 _glb_extra_native_package() {
@@ -67,7 +80,106 @@ _glb_extra_native_package() {
     local pkg_mgr
 
     pkg_mgr="$(glb_detect_package_manager)" || return 1
-    printf "%s\n" "${_GLB_SNAP_NATIVE_OVERRIDES[${name}:${pkg_mgr}]:-}"
+    printf "%s\n" "${_GLB_EXTRA_NATIVE_OVERRIDES[${name}:${pkg_mgr}]:-}"
+}
+
+# ------------------------------------------------------------
+# Download a project's latest GitHub release asset and drop its
+# <name> binary into ~/.local/bin. <asset> is a literal filename
+# (GLB doesn't do per-arch substitution anywhere else, so profiles
+# name the asset they want) fetched from
+#   https://github.com/<owner/repo>/releases/latest/download/<asset>
+# If the release publishes "<asset>.sha256" alongside it, it's
+# verified; if not, that's skipped rather than treated as an error.
+# .tar.*/.zip archives are unpacked and the <name> file located
+# within; anything else is treated as a raw binary.
+# ------------------------------------------------------------
+
+_glb_install_github_release() {
+    local name="$1"
+    local repo="$2"
+    local asset="$3"
+    local base="https://github.com/$repo/releases/latest/download"
+    local bindir="$HOME/.local/bin"
+    local tmp archive found want have
+
+    if [[ -z "$name" || -z "$repo" || -z "$asset" ]]; then
+        glb_log_error "github-release: expected <name> <owner/repo> <asset>"
+        return 1
+    fi
+
+    tmp="$(mktemp -d)" || return 1
+    archive="$tmp/$asset"
+
+    if ! curl -fsSL "$base/$asset" -o "$archive"; then
+        glb_log_error "Could not download $asset from $repo's latest release"
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    if curl -fsSL "$base/$asset.sha256" -o "$archive.sha256" 2>/dev/null \
+        && [[ -s "$archive.sha256" ]]; then
+        want="$(awk '{print $1}' "$archive.sha256")"
+        have="$(sha256sum "$archive" | awk '{print $1}')"
+        if [[ "$want" != "$have" ]]; then
+            glb_log_error "Checksum mismatch for $asset (expected $want, got $have)"
+            rm -rf "$tmp"
+            return 1
+        fi
+        glb_log_info "Checksum verified: $asset"
+    fi
+
+    if ! glb_create_directory "$bindir"; then
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    case "$asset" in
+        *.tar.gz|*.tgz|*.tar.xz|*.tar.bz2|*.tar.zst|*.tar)
+            mkdir -p "$tmp/x"
+            if ! tar -xf "$archive" -C "$tmp/x"; then
+                glb_log_error "Could not extract $asset"
+                rm -rf "$tmp"
+                return 1
+            fi
+            ;;
+        *.zip)
+            mkdir -p "$tmp/x"
+            if ! unzip -o -q "$archive" -d "$tmp/x"; then
+                glb_log_error "Could not unzip $asset"
+                rm -rf "$tmp"
+                return 1
+            fi
+            ;;
+        *)
+            install -m 0755 "$archive" "$bindir/$name"
+            rm -rf "$tmp"
+            if [[ -x "$bindir/$name" ]]; then
+                glb_log_success "Installed $name -> $bindir/$name"
+                return 0
+            fi
+            return 1
+            ;;
+    esac
+
+    found="$(find "$tmp/x" -type f -name "$name" -perm -u+x -print -quit)"
+    [[ -z "$found" ]] && found="$(find "$tmp/x" -type f -name "$name" -print -quit)"
+    if [[ -z "$found" ]]; then
+        glb_log_error "No '$name' binary found inside $asset"
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    install -m 0755 "$found" "$bindir/$name"
+    rm -rf "$tmp"
+
+    if [[ -x "$bindir/$name" ]]; then
+        glb_log_success "Installed $name -> $bindir/$name"
+        return 0
+    fi
+
+    glb_log_error "github-release install of $name did not produce $bindir/$name"
+    return 1
 }
 
 # ------------------------------------------------------------
@@ -96,6 +208,14 @@ glb_extra_installed() {
                 glb_package_installed "$native"
             else
                 snap list "$name" >/dev/null 2>&1
+            fi
+            ;;
+        github-release)
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_package_installed "$native"
+            else
+                glb_command_exists "$name"
             fi
             ;;
         *)
@@ -198,6 +318,25 @@ glb_install_extra() {
             _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
                 "sudo snap install $name${spec:+ --$spec}"
             ;;
+        github-release)
+            local native repo asset
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_log_info "Installing $name via the package manager ($native), not a GitHub release"
+                glb_install_package "$native"
+                return $?
+            fi
+
+            read -r repo asset <<< "$spec"
+            glb_log_info "Installing $name from ${repo}'s latest GitHub release"
+
+            if _glb_install_github_release "$name" "$repo" "$asset"; then
+                return 0
+            fi
+
+            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
+                "download $asset from https://github.com/$repo/releases/latest and put its '$name' binary in ~/.local/bin"
+            ;;
         *)
             glb_log_error "Unknown extras method: $method"
             return 1
@@ -260,6 +399,19 @@ _glb_update_extra() {
 
             glb_log_info "Updating $name via snap"
             glb_sudo snap refresh "$name"
+            ;;
+        github-release)
+            local native repo asset
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                # Native package - kept current by glb_update_packages,
+                # nothing extra to do here.
+                return 0
+            fi
+
+            read -r repo asset <<< "$spec"
+            glb_log_info "Updating $name from ${repo}'s latest GitHub release"
+            _glb_install_github_release "$name" "$repo" "$asset"
             ;;
         *)
             glb_log_error "Unknown extras method: $method"
@@ -342,9 +494,10 @@ glb_apply_profile_extras() {
 
         if [[ "$dry_run" == "--dry-run" ]]; then
             local native=""
-            [[ "$method" == "snap" ]] && native="$(_glb_extra_native_package "$name")"
+            [[ "$method" == "snap" || "$method" == "github-release" ]] \
+                && native="$(_glb_extra_native_package "$name")"
             if [[ -n "$native" ]]; then
-                glb_log_info "Would install: $name (via the package manager, $native - not snap)"
+                glb_log_info "Would install: $name (via the package manager, $native - not $method)"
             else
                 glb_log_info "Would install: $name (via $method)"
             fi

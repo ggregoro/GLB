@@ -91,15 +91,18 @@ glb restore default
 Watch, in order:
 
 - **Packages install from nothing** (not "Already installed").
-- **`fastfetch`** hits the apt-index gap → manual-step pause. Expected;
-  skip it (`s`). *(Not in apt's index on Pop!_OS/Mint — a known gap
-  pending a `github-release` extras method.)*
-- **`snapd` apt-installed, then three `snap install`s** — `yazi`,
-  `ghostty --classic`, `atuin`. On a fresh machine snapd may need to
-  seed: if a `snap install` fails with "too early for operation, device
-  not yet seeded", wait ~30s and re-run `glb restore default`. The
-  `/snap` classic-confinement symlink is auto-created on Ubuntu/Pop
-  (manual on Fedora).
+- **`fastfetch`** and **`atuin`** install via `github-release` — the
+  upstream release tarballs from `fastfetch-cli/fastfetch` and
+  `atuinsh/atuin`, unpacked into `~/.local/bin/`. No apt-index
+  manual-step pause anymore (the old `fastfetch`-not-packaged gap).
+  atuin's download is checksum-verified against the release's
+  `.sha256`; fastfetch publishes none, so that step is skipped.
+- **`snapd` apt-installed, then two `snap install`s** — `yazi` and
+  `ghostty --classic`. On a fresh machine snapd may need to seed: if a
+  `snap install` fails with "too early for operation, device not yet
+  seeded", wait ~30s and re-run `glb restore default`. The `/snap`
+  classic-confinement symlink is auto-created on Ubuntu/Pop (manual on
+  Fedora).
 - **Dotfiles linked with no `.glb-backup`** on a clean VM:
   `~/.config/ghostty/config`, `~/.config/yazi/theme.toml`,
   `~/.local/share/applications/yazi.desktop`, and 8 `~/.config/nvim/*`
@@ -141,12 +144,16 @@ the right edge of the active column; changes show `M`/`A`/`?`/`D`/`U`.
 Non-repo directories show nothing (correct).
 
 **F. atuin.** New shell → **Ctrl-R** opens atuin's full-screen search;
-plain **Up** stays per-session history. `which atuin` → `/snap/bin/atuin`
-on apt. Optional: `atuin import auto`.
-*Known bug on apt (fixed on branch `claude/atuin-snap-config-dir`,
-unmerged): the strict snap can't create `~/.config/atuin` on a clean
-machine — every shell errors until the dotfiles redirect
-`ATUIN_*_DIR` under `~/snap/atuin/`.*
+plain **Up** stays per-session history. On apt `which atuin` →
+`~/.local/bin/atuin` (upstream binary via `github-release`); on
+pacman/dnf/zypper it's the native package on `$PATH`. `~/.config/atuin`
+and `~/.local/share/atuin` are created on first run with no error.
+Optional: `atuin import auto`.
+*History: `default` used the `atuin` snap until 2026-09-07. Its strict
+confinement can't create `~/.config/atuin`, so every shell errored on
+startup; `snap run` strips the `ATUIN_*_DIR` overrides that would have
+redirected it (the abandoned `claude/atuin-snap-config-dir` branch),
+so the fix was to drop the snap for the upstream binary.*
 
 **G. git-delta.** In a repo: `git diff` / `git log -p` render through
 delta (syntax-highlighted, line numbers).

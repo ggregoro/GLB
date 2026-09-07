@@ -19,6 +19,19 @@
 #                              typically "classic" or left blank for
 #                              strict; checked via `snap list <name>`.
 #                              Requires snapd (see packages.txt).
+#   github-release <name> <owner/repo> <asset>
+#                            - downloads
+#                              github.com/<owner/repo>/releases/latest/
+#                              download/<asset>, verifies <asset>.sha256
+#                              if the release publishes one, unpacks any
+#                              .tar.*/.zip (or takes a raw binary), and
+#                              installs the <name> binary into
+#                              ~/.local/bin. <asset> is a literal
+#                              filename. <name> is checked with
+#                              `command -v`. Like snap, a
+#                              _GLB_EXTRA_NATIVE_OVERRIDES entry routes
+#                              this to a real package on managers that
+#                              have one.
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
@@ -88,16 +101,37 @@ snap    ghostty   classic
 # in bash/zsh/fish (init wired into all three shell dotfiles, guarded
 # on `command -v atuin`, `--disable-up-arrow` so plain Up stays
 # per-session history). Not in apt's index on Debian/Ubuntu/Pop!_OS,
-# so `default`'s primary (apt) target needs a non-package path -> snap
-# (strict confinement, no `--classic`). Strict-snap caveats there: the
-# history DB lives under `~/snap/atuin/` rather than
-# `~/.local/share/atuin/`, the `scripts` feature is unavailable, and
-# `atuin import` can't read `~/.bash_history` (a dotfile) through the
-# sandbox - run `atuin import auto` by hand once if you want existing
-# history brought in. On pacman/dnf/zypper this routes to the real
-# native `atuin` package instead (see _GLB_SNAP_NATIVE_OVERRIDES in
-# lib/extras.sh), which has none of those limitations. dnf/zypper
+# so `default`'s primary (apt) target pulls the upstream static binary
+# from the latest GitHub release into ~/.local/bin.
+#
+# NOT the atuin snap: it's strictly confined and can't create
+# ~/.config/atuin or ~/.local/share/atuin, so `atuin init` errors on
+# every shell start; `snap run` strips the ATUIN_CONFIG_DIR /
+# ATUIN_DATA_DIR overrides that would move them; and `scripts` /
+# `atuin import auto` don't work through the sandbox. (See the retired
+# claude/atuin-snap-config-dir branch for the redirect attempt that
+# doesn't survive `snap run`.)
+#
+# On pacman/dnf/zypper this routes to the real native `atuin` package
+# instead (see _GLB_EXTRA_NATIVE_OVERRIDES in lib/extras.sh). dnf/zypper
 # native availability is believed-good but not yet confirmed on a real
 # VM - same "verify next cross-distro pass" caveat as the original
-# firefox:zypper / libreoffice:pacman overrides.
-snap    atuin
+# firefox:zypper / libreoffice:pacman overrides. The GitHub-release
+# asset is the x86_64 glibc build; arm64 or musl-only hosts need the
+# asset name changed here.
+github-release    atuin    atuinsh/atuin    atuin-x86_64-unknown-linux-gnu.tar.gz
+
+# fastfetch - system-info banner (pairs with cpufetch in packages.txt).
+# Not in apt's index on `default`'s fresh-VM targets (Pop!_OS 24.04,
+# Linux Mint 22.x - "no installation candidate", confirmed twice), where
+# a bare packages.txt line forced a manual-step pause on every restore.
+# This pulls the upstream release tarball (usr/bin/fastfetch) into
+# ~/.local/bin. dnf/pacman/zypper route to the native `fastfetch`
+# package via _GLB_EXTRA_NATIVE_OVERRIDES and never touch this.
+#
+# Asset is the amd64 glibc build; fastfetch also ships
+# `-polyfilled` variants for older glibc and aarch64/armv7l/etc. -
+# change the asset name for those. fastfetch publishes no per-asset
+# .sha256, so unlike atuin this download isn't checksum-verified (the
+# method just skips that step when the sidecar is absent).
+github-release    fastfetch    fastfetch-cli/fastfetch    fastfetch-linux-amd64.tar.gz
