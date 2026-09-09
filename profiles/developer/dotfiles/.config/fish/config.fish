@@ -9,9 +9,11 @@ set -U fish_greeting
 # User programs
 fish_add_path ~/.local/bin
 
-# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+# snap binaries (e.g. yazi, installed via GLB's snap extras method).
+# --append so ~/.local/bin stays ahead of /snap/bin: a GLB-installed
+# upstream binary must beat a same-named snap.
 if test -d /snap/bin
-    fish_add_path /snap/bin
+    fish_add_path --append /snap/bin
 end
 
 # ------------------------------------------------------------

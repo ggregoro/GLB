@@ -87,6 +87,18 @@ This project follows a simple versioning approach:
   `term = xterm-256color` for SSH compatibility with hosts that lack
   Ghostty's own terminfo. See `docs/design/ghostty-yazi.md`.
 
+### Fixed
+- **`/snap/bin` no longer shadows `~/.local/bin`** in every profile's
+  bash/zsh/fish dotfiles. The `/snap/bin` entry was *prepended* after
+  the `~/.local/bin` entry, so it landed first on `$PATH` and a snap
+  could win over a same-named binary GLB installed into `~/.local/bin`
+  via the `github-release` method (e.g. `atuin`, `fastfetch` on apt).
+  It's now *appended* — `export PATH="$PATH:/snap/bin"` for bash/zsh,
+  `fish_add_path --append /snap/bin` for fish — so `~/.local/bin` keeps
+  priority. Existing fish installs persist `fish_user_paths` as a
+  universal variable and need `set -U -e fish_user_paths` once (or a
+  fresh restore) to pick up the new order.
+
 ---
 
 ## [1.0.0] - 2026-08-18
