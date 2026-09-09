@@ -51,10 +51,12 @@ fi
 export PATH="$HOME/.local/bin:$PATH"
 
 # ------------------------------------------------------------
-# snap binaries (e.g. yazi, installed via GLB's snap extras method)
+# snap binaries (e.g. yazi, installed via GLB's snap extras method).
+# Appended, not prepended: ~/.local/bin must stay ahead of /snap/bin so
+# a GLB-installed upstream binary beats a same-named snap.
 # ------------------------------------------------------------
 if [ -d /snap/bin ]; then
-    export PATH="/snap/bin:$PATH"
+    export PATH="$PATH:/snap/bin"
 fi
 
 # ------------------------------------------------------------
