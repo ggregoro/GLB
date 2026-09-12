@@ -12,8 +12,19 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
-Nothing yet — small add-ons are expected from time to time, but there's
-no unreleased work as of the `1.1.0` cut below.
+### Fixed
+- **`.bash_profile` added to all three profiles** (`default`/
+  `developer`/`server`) — bash only sources `~/.bashrc` for interactive
+  *non-login* shells; a login shell (a raw console/tty, some VM
+  consoles, `bash -l`, many SSH sessions) reads `~/.bash_profile`
+  instead, and none of GLB's profiles shipped one. Most desktops mask
+  this because their own `/etc/skel/.bash_profile` already sources
+  `.bashrc`, but on environments that don't (confirmed on a minimal
+  Fedora VM during `1.1.0` verification, 2026-09-12), bash's entire
+  `.bashrc` payload — Starship prompt included — silently never loaded,
+  while `fish`/`zsh` worked fine since they always read their own rc
+  file regardless of login/non-login. The new `.bash_profile` is the
+  standard portable one-liner: `[ -f ~/.bashrc ] && . ~/.bashrc`.
 
 ---
 

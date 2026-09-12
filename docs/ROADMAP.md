@@ -525,6 +525,15 @@ issue. Fedora (dnf) not yet re-verified against this release. Everything
 in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
 `[1.1.0]` entry for the itemized list.
 
+- **`.bash_profile` added to all three profiles (2026-09-12) ✅** —
+  found immediately on the Fedora `1.1.0` re-verification pass above:
+  bash's login-shell startup file (`.bash_profile`) was never shipped,
+  so on any environment where the OS's own default doesn't already
+  source `.bashrc` for login shells, GLB's entire `.bashrc` — Starship
+  prompt included — silently never loaded. `fish`/`zsh` were unaffected
+  (always read their own rc file). Fixed with the standard portable
+  `.bash_profile` one-liner in all three profiles.
+
 ---
 
 # Long-Term Vision
