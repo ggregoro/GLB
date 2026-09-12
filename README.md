@@ -60,6 +60,15 @@ terminal can't draw one) — never a general app menu. See
 
 ## Installation
 
+**Prerequisite: `git`.** GLB is installed by cloning it, so `git` has to
+already be on the machine — a genuinely minimal/server install on any
+of GLB's four supported distro families may not have it by default
+(desktop spins usually do, but it isn't guaranteed). If it's missing:
+`sudo apt install git` / `sudo dnf install git` / `sudo pacman -S git` /
+`sudo zypper install git`. `install.sh` below checks for this itself
+and exits with a clear message if `git` isn't found, rather than
+failing partway through.
+
 The quickest way — a one-line installer that clones GLB into
 `~/.local/share/glb` (or updates it in place if already there):
 

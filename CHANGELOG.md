@@ -12,6 +12,14 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+### Docs
+- **README and the fresh-VM checklist now call out `git` as a
+  prerequisite** for the `install.sh` one-liner (it clones GLB, so
+  `git` has to already be there). `install.sh` itself already checked
+  for this and exited with a clear message — this just documents it up
+  front instead of only surfacing it if a genuinely minimal install
+  hits the error.
+
 ### Fixed
 - **`.bash_profile` added to all three profiles** (`default`/
   `developer`/`server`) — bash only sources `~/.bashrc` for interactive

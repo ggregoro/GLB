@@ -69,6 +69,14 @@ Cosmic VM verification") — this file is the repeatable procedure.
 
 ## Part 1 — Install GLB (the end-user way)
 
+**If this is a minimal install, confirm `git` is present first**
+(`command -v git`) — a genuinely minimal/server image may not ship it
+by default, and `install.sh` needs it to clone GLB. If missing, install
+it via the distro's package manager before continuing; `install.sh`
+itself checks for this and exits with a clear message rather than
+failing partway through, but it's worth confirming up front on a truly
+minimal VM so this step isn't the first surprise.
+
 ```sh
 curl -fsSL https://raw.githubusercontent.com/ggregoro/GLB/main/install.sh | bash
 ```
