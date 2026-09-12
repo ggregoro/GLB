@@ -1,0 +1,126 @@
+"$schema" = 'https://starship.rs/config-schema.json'
+
+# Raised from Starship's own 30ms default - too tight for a large or
+# cold-cache directory (measured ~305ms scanning a slow real-world
+# directory on GWB, GLB's Windows sibling, before landing on this value).
+scan_timeout = 1000
+
+# bash's prompt, loaded via STARSHIP_CONFIG (set in ~/.bashrc, before
+# `starship init bash`) so it never depends on STARSHIP_CONFIG being
+# unset - an earlier version of this design (tested on Omarchy, see
+# CLAUDE.md) leaked a different shell's STARSHIP_CONFIG through the
+# environment and silently overrode bash's colors; every shell now sets
+# its own explicitly instead of relying on a default. Identical layout
+# to ~/.config/starship-fish.toml (blue) and ~/.config/starship.toml
+# (zsh, orange) - only the accent hue differs, so the three shells are
+# instantly distinguishable at a glance while sharing one prompt design.
+# Based on the official "Tokyo Night" preset from starship.rs/presets,
+# with one addition: $cmd_duration (the preset does not include it by
+# default), styled to match $time. $directory text is solid black in
+# all three (Greg's explicit call, 2026-09-11).
+
+format = """
+[░▒▓](#a3d2ab)\
+$os\
+[](bg:#46b959 fg:#a3d2ab)\
+$directory\
+[](fg:#46b959 bg:#396040)\
+$git_branch\
+$git_status\
+[](fg:#396040 bg:#213624)\
+$nodejs\
+$bun\
+$rust\
+$golang\
+$php\
+[](fg:#213624 bg:#1d3020)\
+$cmd_duration\
+$time\
+[ ](fg:#1d3020)\
+\n$character"""
+
+[directory]
+style = "fg:#000000 bg:#46b959"
+format = "[ $path ]($style)"
+truncation_length = 3
+truncation_symbol = "…/"
+
+[directory.substitutions]
+"Documents" = "󰈙 "
+"Downloads" = " "
+"Music" = " "
+"Pictures" = " "
+
+[git_branch]
+symbol = ""
+style = "bg:#396040"
+format = '[[ $symbol $branch ](fg:#46b959 bg:#396040)]($style)'
+
+[git_status]
+style = "bg:#396040"
+format = '[[($all_status$ahead_behind )](fg:#46b959 bg:#396040)]($style)'
+
+[nodejs]
+symbol = ""
+style = "bg:#213624"
+format = '[[ $symbol ($version) ](fg:#46b959 bg:#213624)]($style)'
+
+[bun]
+symbol = ""
+style = "bg:#213624"
+format = '[[ $symbol ($version) ](fg:#46b959 bg:#213624)]($style)'
+
+[rust]
+symbol = ""
+style = "bg:#213624"
+format = '[[ $symbol ($version) ](fg:#46b959 bg:#213624)]($style)'
+
+[golang]
+symbol = ""
+style = "bg:#213624"
+format = '[[ $symbol ($version) ](fg:#46b959 bg:#213624)]($style)'
+
+[php]
+symbol = ""
+style = "bg:#213624"
+format = '[[ $symbol ($version) ](fg:#46b959 bg:#213624)]($style)'
+
+[time]
+disabled = false
+time_format = "%R" # Hour:Minute Format
+style = "bg:#1d3020"
+format = '[[  $time ](fg:#a0cba7 bg:#1d3020)]($style)'
+
+[cmd_duration]
+min_time = 5000
+style = "bg:#1d3020"
+format = '[[  $duration ](fg:#a0cba7 bg:#1d3020)]($style)'
+
+[os]
+style = "bg:#a3d2ab fg:#090c0c"
+format = "[ $symbol ]($style)"
+disabled = false
+
+[os.symbols]
+Windows = "󰍲"
+Ubuntu = "󰕈"
+SUSE = ""
+Raspbian = "󰐿"
+Mint = "󰣭"
+Macos = "󰀵"
+Manjaro = ""
+Linux = "󰌽"
+Gentoo = "󰣨"
+Fedora = "󰣛"
+Alpine = ""
+Amazon = ""
+Android = ""
+AOSC = ""
+Arch = "󰣇"
+Artix = "󰣇"
+EndeavourOS = ""
+CentOS = ""
+Debian = "󰣚"
+Redhat = "󱄛"
+RedHatEnterprise = "󱄛"
+Pop = ""

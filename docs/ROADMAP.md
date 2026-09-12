@@ -155,12 +155,14 @@ Expand shell support.
 ### Completed
 
 - **Bash enhancements** — `default`'s `.bashrc` (aliases for
-  `eza`/`bat`/`zoxide`, apt/dnf/pacman/zypper-aware package shortcuts,
-  a plain Linux Mint/Debian-style prompt by deliberate design choice,
-  see Version 0.5's prompt-differentiation history in CLAUDE.md).
-- **Fish configuration** — `config.fish`, including a hand-rolled
-  Pure-style prompt (`fish_prompt`/`fish_right_prompt`, no plugin
-  manager) and the same shared alias set as bash/zsh.
+  `eza`/`bat`/`zoxide`, apt/dnf/pacman/zypper-aware package shortcuts).
+  ~~A plain Linux Mint/Debian-style prompt by deliberate design
+  choice~~ **superseded 2026-09-11** — see the tri-shell Starship prompt
+  entry under Post-1.0 add-ons below.
+- **Fish configuration** — `config.fish`, the same shared alias set as
+  bash/zsh. ~~A hand-rolled Pure-style prompt (`fish_prompt`/
+  `fish_right_prompt`, no plugin manager)~~ **superseded 2026-09-11** —
+  see the tri-shell Starship prompt entry under Post-1.0 add-ons below.
 - **Zsh configuration** — `.zshrc`, Starship with the Tokyo Night
   preset, plus framework-free vendored plugins (`zsh-autosuggestions`,
   `zsh-syntax-highlighting` via `lib/plugins.sh`).
@@ -174,8 +176,9 @@ Expand shell support.
   evaluation~~ — GLB's actual direction went the opposite way:
   `default`'s own setup *removed* Oh My Zsh in favor of vendoring
   `zsh-autosuggestions`/`zsh-syntax-highlighting` directly (no
-  framework dependency), and fish's prompt is hand-rolled rather than
-  Fisher-managed. See `docs/PHILOSOPHY.md`'s "Curate, Don't Reinvent"
+  framework dependency), and fish has no plugin manager at all (Fisher
+  or otherwise) — its prompt is Starship-driven, not a vendored fish
+  plugin. See `docs/PHILOSOPHY.md`'s "Curate, Don't Reinvent"
   section for why: bringing in a framework's extra weight for what a
   few vendored plugins already solve isn't worth it. These three
   bullets are left here, struck through, as a record that they were
@@ -483,6 +486,23 @@ time, but the project itself is considered essentially done.
   the default terminal; launched on demand by a portable `yazi.desktop`
   entry. Binding a key to that launcher is a documented per-desktop
   manual step. See `docs/design/ghostty-yazi.md`.
+
+- **Tri-shell Starship prompt for `default` (2026-09-11) ✅** —
+  reverses the Version 0.4 "deliberate design choice" of a native,
+  non-Starship bash prompt and hand-rolled fish prompt. All three of
+  `default`'s shells (bash/zsh/fish) now run the same Starship
+  (Tokyo Night-based, `$cmd_duration` added) layout, distinguished only
+  by accent color — bash green, fish blue, zsh orange (new) — with
+  solid black `$directory` text in all three. Each shell sets its own
+  `STARSHIP_CONFIG` explicitly (`~/.config/starship-bash.toml`/
+  `starship-fish.toml`/`starship.toml`) rather than relying on any one
+  shell being the unset default — a deliberate defense against a real
+  class of bug (one shell's `STARSHIP_CONFIG` leaking into another's
+  environment and silently overriding its colors) seen on an unrelated
+  personal setup outside this repo. Scoped to `default` only —
+  `developer`/`server` keep their own separate, unrelated dotfiles.
+  fish's old `fish_prompt`/`fish_right_prompt` functions were removed
+  entirely in favor of Starship.
 
 ---
 

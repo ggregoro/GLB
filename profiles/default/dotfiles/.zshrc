@@ -167,8 +167,12 @@ fi
 source "$HOME/.local/share/glb/plugins/zsh-autosuggestions/zsh-autosuggestions.zsh"
 
 # ------------------------------------------------------------
-# Starship Prompt (Tokyo Night preset — see lib/prompt.sh / `glb prompt`)
+# Starship Prompt (Tokyo Night preset, orange accent — see
+# ~/.config/starship.toml / lib/prompt.sh / `glb prompt`).
+# STARSHIP_CONFIG is set explicitly, not left to default, so a value
+# leaked from another shell's environment can never override it.
 # ------------------------------------------------------------
+export STARSHIP_CONFIG="$HOME/.config/starship.toml"
 eval "$(starship init zsh)"
 
 # Must be sourced last

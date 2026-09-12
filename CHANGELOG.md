@@ -12,6 +12,17 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+### Changed
+- **`default`'s bash and fish prompts now use Starship**, matching
+  zsh's, instead of a native bash PS1 and a hand-rolled fish prompt
+  (a prior deliberate design choice, see `docs/ROADMAP.md` Version 0.4).
+  All three shells now run the same Tokyo Night-based layout, colored
+  bash=green/fish=blue/zsh=orange (new), with solid black `$directory`
+  text. Each shell sets `STARSHIP_CONFIG` explicitly to its own file
+  (`starship-bash.toml`/`starship-fish.toml`/`starship.toml`) rather
+  than relying on any one shell being the unset default. `developer`/
+  `server` are unaffected.
+
 ### Added
 - New `extras.txt` method **`github-release <name> <owner/repo>
   <asset>`**: downloads a project's latest GitHub release asset from

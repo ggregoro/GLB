@@ -124,92 +124,13 @@ if command -q atuin
 end
 
 # ------------------------------------------------------------
-# Prompt (hand-rolled Pure-style — no Starship here)
+# Starship Prompt (Tokyo Night preset, blue accent — see
+# ~/.config/starship-fish.toml / lib/prompt.sh / `glb prompt`).
+# STARSHIP_CONFIG is set explicitly, not left to default, so a value
+# leaked from another shell's environment can never override it.
 # ------------------------------------------------------------
-function fish_prompt
-    set -l last_status $status
-
-    # Status symbols mirror Starship's default git_status set (zsh prompt)
-    # so both shells read the same way: = conflicted, $ stashed,
-    # ✘ deleted, » renamed, ! modified, + staged, ? untracked.
-    set -l git_info ""
-    if command -q git; and git rev-parse --is-inside-work-tree >/dev/null 2>&1
-        set -l branch (git symbolic-ref --short HEAD 2>/dev/null; or git rev-parse --short HEAD 2>/dev/null)
-        set git_info " $branch"
-
-        set -l conflicted 0
-        set -l deleted 0
-        set -l renamed 0
-        set -l modified 0
-        set -l staged 0
-        set -l untracked 0
-
-        for line in (git status --porcelain 2>/dev/null)
-            set -l x (string sub -l 1 $line)
-            set -l y (string sub -s 2 -l 1 $line)
-            if test "$x$y" = "??"
-                set untracked 1
-            else if contains U $x $y; or test "$x$y" = "AA"; or test "$x$y" = "DD"
-                set conflicted 1
-            else if test "$x" = D -o "$y" = D
-                set deleted 1
-            else if test "$x" = R
-                set renamed 1
-            else
-                test "$x" != " " -a "$x" != "?"; and set staged 1
-                test "$y" != " " -a "$y" != "?"; and set modified 1
-            end
-        end
-
-        set -l stashed 0
-        git rev-parse --verify --quiet refs/stash >/dev/null 2>&1; and set stashed 1
-
-        set -l status_symbols ""
-        test $conflicted -eq 1; and set status_symbols "$status_symbols="
-        test $stashed -eq 1; and set status_symbols "$status_symbols\$"
-        test $deleted -eq 1; and set status_symbols "$status_symbols✘"
-        test $renamed -eq 1; and set status_symbols "$status_symbols»"
-        test $modified -eq 1; and set status_symbols "$status_symbols!"
-        test $staged -eq 1; and set status_symbols "$status_symbols+"
-        test $untracked -eq 1; and set status_symbols "$status_symbols?"
-
-        test -n "$status_symbols"; and set git_info "$git_info $status_symbols"
-    end
-
-    echo
-    set_color blue --bold
-    echo -n (prompt_pwd)
-    set_color yellow
-    echo -n $git_info
-    set_color normal
-    echo
-    if test $last_status -eq 0
-        set_color green
-    else
-        set_color red
-    end
-    echo -n '❯ '
-    set_color normal
-end
-
-function fish_right_prompt
-    if test -n "$CMD_DURATION" -a "$CMD_DURATION" -gt 5000
-        set_color yellow
-        set -l total_seconds (math -s0 "$CMD_DURATION / 1000")
-        set -l hours (math -s0 "$total_seconds / 3600")
-        set -l minutes (math -s0 "($total_seconds % 3600) / 60")
-        set -l seconds (math -s0 "$total_seconds % 60")
-
-        if test $hours -gt 0
-            printf '%sh%sm%ss' $hours $minutes $seconds
-        else if test $minutes -gt 0
-            printf '%sm%ss' $minutes $seconds
-        else
-            printf '%ss' $seconds
-        end
-        set_color normal
-    end
-end
+set -gx STARSHIP_CONFIG ~/.config/starship-fish.toml
+starship init fish | source
 
 # ------------------------------------------------------------
 # Homebrew

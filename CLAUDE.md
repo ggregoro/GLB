@@ -74,9 +74,13 @@ Full module breakdown: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 | `developer` | Someone newer to development who wants solid defaults without researching every tool. |
 | `server` | Someone newer to server administration: firewall, backups, intrusion protection. |
 
-All profiles share the same bash/zsh/fish shell setup (with per-shell
-distinct prompts) and differ in package lists, extras, and
-profile-specific dotfiles. (`new-to-linux` was retired — once its
+All profiles ship the same bash/zsh/fish shells with per-shell distinct
+prompts, though each profile keeps its own separate dotfiles rather than
+sharing one file across profiles — `default`'s prompt setup (a
+tri-color Starship theme, bash green/fish blue/zsh orange, see
+`docs/ROADMAP.md` Post-1.0 add-ons) is specific to `default` and not
+mirrored in `developer`/`server`. Profiles differ in package lists,
+extras, and dotfile content generally. (`new-to-linux` was retired — once its
 curated-desktop-apps content was dropped as scope creep it duplicated
 `default`, and the terminal-onboarding mission was never
 profile-specific.)

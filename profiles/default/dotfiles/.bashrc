@@ -182,24 +182,13 @@ if [ -d "$HOME/.cargo/bin" ]; then
 fi
 
 # ------------------------------------------------------------
-# Prompt (Linux Mint default bash prompt — no Starship here)
+# Starship Prompt (Tokyo Night preset, green accent — see
+# ~/.config/starship-bash.toml / lib/prompt.sh / `glb prompt`).
+# STARSHIP_CONFIG is set explicitly, not left to default, so a value
+# leaked from another shell's environment can never override it.
 # ------------------------------------------------------------
-case "$TERM" in
-    xterm-color|*-256color) color_prompt=yes;;
-esac
-
-if [ "$color_prompt" = yes ]; then
-    PS1='${debian_chroot:+($debian_chroot)}\[\033[01;32m\]\u@\h\[\033[00m\]:\[\033[01;34m\]\w\[\033[00m\]\$ '
-else
-    PS1='${debian_chroot:+($debian_chroot)}\u@\h:\w\$ '
-fi
-unset color_prompt
-
-case "$TERM" in
-xterm*|rxvt*)
-    PS1="\[\e]0;${debian_chroot:+($debian_chroot)}\u@\h: \w\a\]$PS1"
-    ;;
-esac
+export STARSHIP_CONFIG="$HOME/.config/starship-bash.toml"
+eval "$(starship init bash)"
 
 # Generated for envman. Do not edit.
 [ -s "$HOME/.config/envman/load.sh" ] && source "$HOME/.config/envman/load.sh"
