@@ -37,6 +37,24 @@ This project follows a simple versioning approach:
   `/snap` already exists in any form, so it never touches a distro that
   already has one.
 
+### Changed
+- **`yazi` moved off `snap` onto `github-release`** in `default` and
+  `server` (Greg's call: avoid `snap` wherever a real alternative
+  exists — every cross-distro bug this project has hit traces back to
+  it: atuin's broken sandbox, fastfetch missing from apt's index, the
+  `/snap/bin` PATH-shadowing bug, and Fedora's missing `/snap` symlink
+  above). yazi publishes real GitHub release binaries, so it moves the
+  same way atuin/fastfetch/neovim already did — plain `github-release`,
+  not `github-release-tree`, since its archive is flat (no bin/lib/share
+  tree to preserve). `_GLB_EXTRA_NATIVE_OVERRIDES` routing on pacman is
+  unchanged; zypper, which previously had no path for `yazi` at all
+  (no snapd, no native package), now gets the same upstream binary apt
+  does. **`server` no longer needs `snapd`/`snap` at all** — `yazi` was
+  its only consumer, so both are removed from `server`'s `packages.txt`/
+  `extras.txt`. `ghostty` stays on `snap` in `default`: it has no
+  generic Linux binary release to move to (links dynamically against
+  system GTK4), so `snap`/native-package remains the only real option.
+
 ---
 
 ## [1.1.0] - 2026-09-12

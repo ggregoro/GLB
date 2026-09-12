@@ -62,23 +62,26 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 
 # File manager alternative to ranger (kept, not replaced) - stronger
 # plugin support (image previews, the git-status plugin configured in
-# dotfiles/.config/yazi/). Installed via snap since it's not in apt's
-# index on any Debian/Ubuntu-family distro (confirmed empirically on
-# Pop!_OS 24.04, apt-cache has no candidate at all) - snap was chosen
-# because that's genuinely how it's installed on Greg's real laptop,
-# not picked in the abstract. Needs --classic confinement. On pacman
-# specifically, this line is routed to a real native `yazi` pacman
-# package instead of snap entirely (see _GLB_SNAP_NATIVE_OVERRIDES in
-# lib/extras.sh) - confirmed 2026-08-16. Confirmed real gap on zypper
-# (see packages.txt) - snapd itself isn't available there and there's
-# no native yazi package either, so this entry is a documented no-op on
-# openSUSE rather than a GLB bug. Known gap there, not being chased
-# further (same call as lazygit on Fedora/dnf). Same practical outcome
-# on Linux Mint (confirmed 2026-08-25) but a different root cause -
-# Mint blocks snapd by policy rather than lacking it, see snapd's own
-# comment in packages.txt; this entry fails as a direct downstream
-# consequence there until the user acts on that pause's hint.
-snap    yazi      classic
+# dotfiles/.config/yazi/). Was `snap yazi classic` until 2026-09-12:
+# every real cross-distro bug this project has ever hit traced back to
+# snap (atuin's broken sandbox, fastfetch missing from apt's index, the
+# /snap/bin PATH-shadowing bug, Fedora's missing /snap symlink for
+# classic confinement) - moved off it wherever a real alternative
+# exists, per Greg's call. yazi publishes real GitHub release binaries
+# (confirmed live), so it moves the same way atuin/fastfetch/neovim
+# already did. The archive is flat (yazi + ya + docs, no bin/lib/share
+# tree to preserve), so plain `github-release` is the right method, not
+# `github-release-tree` - `find`'s `-perm -u+x` filter picks the real
+# `yazi` executable over the non-exec `yazi.bash`/`yazi.fish`/etc.
+# completion scripts with the same name, same as fastfetch's own
+# same-name-non-exec-file case. On pacman this still routes to the real
+# native `yazi` pacman package (see _GLB_EXTRA_NATIVE_OVERRIDES in
+# lib/extras.sh) - unchanged, confirmed 2026-08-16. zypper previously
+# had no path at all here (no snapd, no native package) - now gets the
+# same upstream binary apt does, closing that gap as a side effect.
+# Asset is the x86_64 glibc build; yazi publishes no per-asset .sha256
+# (same as fastfetch/neovim), so this download isn't checksum-verified.
+github-release    yazi    sxyazi/yazi    yazi-x86_64-unknown-linux-gnu.zip
 
 # Ghostty - a GPU-accelerated terminal emulator that speaks the Kitty
 # graphics protocol, so yazi (above) renders real images in it instead
@@ -100,12 +103,16 @@ snap    yazi      classic
 # portably, so GLB documents it rather than automating three fragile
 # code paths (see docs/design/ghostty-yazi.md).
 #
-# Per-distro routing, same _GLB_SNAP_NATIVE_OVERRIDES mechanism as yazi:
+# Per-distro routing via the same _GLB_EXTRA_NATIVE_OVERRIDES mechanism
+# yazi used to use before it moved to github-release (2026-09-12) -
+# Ghostty stays on snap since it has no generic Linux binary release to
+# move to instead (links dynamically against system GTK4):
 #   pacman  -> native `ghostty` (Arch `extra` repo) - confirmed
-#   zypper  -> native `ghostty` (openSUSE repo-oss) - confirmed; note
-#              this is BETTER than yazi, which has no zypper path at all
-#   apt     -> snap (not in Debian/Ubuntu/Pop!_OS/Mint apt index),
-#              same snapd caveats as yazi (Mint's nosnap.pref block)
+#   zypper  -> native `ghostty` (openSUSE repo-oss) - confirmed
+#   apt     -> snap (not in Debian/Ubuntu/Pop!_OS/Mint apt index) -
+#              needs `_glb_ensure_snap_dir`'s /snap symlink on distros
+#              missing it (Fedora, confirmed 2026-09-12); Mint also
+#              blocks snapd itself by policy (nosnap.pref)
 #   dnf     -> snap (Fedora ships Ghostty only via COPR, not the
 #              official repos - GLB doesn't chase non-default repos,
 #              same call as lazygit on dnf)

@@ -28,20 +28,25 @@ fi
 # AUR-only (see _GLB_PACKAGE_SKIP in lib/package.sh). Flagged as a
 # known follow-up in packages.txt/CLAUDE.md since 2026-08-13, built
 # now. zypper has no native yazi package at all (would need a
-# non-default OBS repo), so it deliberately has no entry here - the
-# snap method (and its own known snapd gap) stays the only path there.
+# non-default OBS repo), so it deliberately has no entry here - but
+# this no longer means openSUSE has no path at all: since 2026-09-12
+# yazi's own method is `github-release` (not `snap`), so zypper falls
+# through to the same upstream binary apt uses, not a documented no-op.
 #
 # ghostty:pacman / ghostty:zypper - Ghostty (default's terminal-emulator
 # exception for yazi image preview, see profiles/default/extras.txt and
 # docs/PHILOSOPHY.md) ships as a native `ghostty` package in Arch's
 # `extra` repo and in openSUSE's repo-oss - both confirmed. zypper does
-# get an entry here (unlike yazi), so openSUSE installs Ghostty natively
-# even though snapd isn't available there. No dnf entry: Fedora packages
-# Ghostty only via COPR, not its official repos, and GLB doesn't route
-# through non-default repos (same call as lazygit on dnf) - Fedora falls
-# through to snap. apt has no Ghostty package on any Debian/Ubuntu-family
-# distro, so it falls through to snap too, with the same snapd caveats
-# yazi carries (notably Mint's nosnap.pref block).
+# get an entry here, so openSUSE installs Ghostty natively even though
+# snapd isn't available there. No dnf entry: Fedora packages Ghostty
+# only via COPR, not its official repos, and GLB doesn't route through
+# non-default repos (same call as lazygit on dnf) - Fedora falls
+# through to snap (needs `_glb_ensure_snap_dir` there, see below). apt
+# has no Ghostty package on any Debian/Ubuntu-family distro, so it
+# falls through to snap too, with the same snapd caveats (notably
+# Mint's nosnap.pref block). Unlike yazi, Ghostty has no generic Linux
+# binary release to move to instead - it links dynamically against
+# system GTK4, so snap/native-package is the only real option here.
 #
 # atuin:pacman / atuin:dnf / atuin:zypper - atuin (default's shell-history
 # tool, see profiles/default/extras.txt) has a real native package on all

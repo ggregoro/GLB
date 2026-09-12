@@ -542,6 +542,15 @@ in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
   `_glb_ensure_snap_dir` helper creates it on first snap install,
   no-op anywhere `/snap` already exists.
 
+- **`yazi` moved off `snap` (2026-09-12) ✅** — Greg's design call after
+  the pattern above: avoid `snap` wherever a real alternative exists,
+  since every cross-distro bug this project has hit traces back to it.
+  `yazi` publishes real GitHub release binaries, so it moves to
+  `github-release` the same way atuin/fastfetch/neovim did. `server`
+  no longer needs `snapd`/`snap` at all as a result. `ghostty` stays on
+  `snap` — no generic Linux binary release exists for it, so
+  snap/native-package remains the only real option there.
+
 ---
 
 # Long-Term Vision

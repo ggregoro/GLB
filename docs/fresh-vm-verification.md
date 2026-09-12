@@ -23,7 +23,7 @@ Cosmic VM verification") — this file is the repeatable procedure.
    ```
 
    A fresh image pulls a new kernel + mesa + snapd; you want those
-   current before testing Ghostty and the snaps.
+   current before testing Ghostty (GLB's one remaining snap install).
 
 3. **Give the VM a working GPU path.** This is a VM-only concern —
    Ghostty runs fine on real hardware.
@@ -91,18 +91,21 @@ glb restore default
 Watch, in order:
 
 - **Packages install from nothing** (not "Already installed").
-- **`fastfetch`** and **`atuin`** install via `github-release` — the
-  upstream release tarballs from `fastfetch-cli/fastfetch` and
-  `atuinsh/atuin`, unpacked into `~/.local/bin/`. No apt-index
-  manual-step pause anymore (the old `fastfetch`-not-packaged gap).
-  atuin's download is checksum-verified against the release's
-  `.sha256`; fastfetch publishes none, so that step is skipped.
-- **`snapd` apt-installed, then two `snap install`s** — `yazi` and
-  `ghostty --classic`. On a fresh machine snapd may need to seed: if a
-  `snap install` fails with "too early for operation, device not yet
-  seeded", wait ~30s and re-run `glb restore default`. The `/snap`
-  classic-confinement symlink is auto-created on Ubuntu/Pop (manual on
-  Fedora).
+- **`fastfetch`, `atuin`, `yazi`** install via `github-release`, and
+  **`neovim`** via `github-release-tree` — upstream release archives
+  unpacked into `~/.local/bin` (`~/.local` for neovim's whole
+  `bin`/`lib`/`share` tree). No apt-index manual-step pause anymore
+  (the old `fastfetch`-not-packaged and `neovim`-too-old gaps). atuin's
+  download is checksum-verified against the release's `.sha256`;
+  fastfetch/yazi/neovim publish none, so that step is skipped for them.
+- **`snapd` apt-installed, then one `snap install`** — `ghostty
+  --classic` (as of 2026-09-12, `yazi` moved off snap — see above). On
+  a fresh machine snapd may need to seed: if the `snap install` fails
+  with "too early for operation, device not yet seeded", wait ~30s and
+  re-run `glb restore default`. The `/snap` classic-confinement symlink
+  is auto-created on Ubuntu/Pop, and by GLB itself
+  (`_glb_ensure_snap_dir`) anywhere else it's missing — confirmed
+  needed and working on Fedora.
 - **Dotfiles linked with no `.glb-backup`** on a clean VM:
   `~/.config/ghostty/config`, `~/.config/yazi/theme.toml`,
   `~/.local/share/applications/yazi.desktop`, and 8 `~/.config/nvim/*`

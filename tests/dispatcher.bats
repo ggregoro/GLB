@@ -79,7 +79,7 @@ teardown() {
     [[ "$output" == *"Profile applied: default"* ]]
     [[ "$output" == *"Installing fresh via curl-install script"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
-    [[ "$output" == *"Installing yazi via snap"* ]]
+    [[ "$output" == *"Installing yazi from sxyazi/yazi"* ]]
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.bash_profile" ]
     [ -L "$HOME/.gitconfig" ]
@@ -151,9 +151,25 @@ teardown() {
             *) shift ;;
         esac; done
         mkdir -p "$dest/bin"; printf "#!/bin/sh\n" > "$dest/bin/nvim"; chmod +x "$dest/bin/nvim"; exit 0'
-    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
+    # unzip serves two different extras here (the font, and yazi as of
+    # 2026-09-12) - branch on the archive name so each produces
+    # realistic contents, same "pick the exec, not a same-named
+    # non-exec file" shape as the real yazi archive (yazi + completion
+    # scripts named yazi.bash/yazi.fish/etc.).
+    stub_command unzip 'archive=""; dest="${@: -1}"
+        for a in "$@"; do case "$a" in *.zip) archive="$a" ;; esac; done
+        mkdir -p "$dest"
+        case "$archive" in
+            *yazi*)
+                mkdir -p "$dest/yazi-x86_64-unknown-linux-gnu"
+                printf "not executable\n" > "$dest/yazi-x86_64-unknown-linux-gnu/yazi.bash"
+                printf "#!/bin/sh\necho yazi\n" > "$dest/yazi-x86_64-unknown-linux-gnu/yazi"
+                chmod +x "$dest/yazi-x86_64-unknown-linux-gnu/yazi"
+                ;;
+            *) touch "$dest/Fake-Regular.ttf" ;;
+        esac
+        exit 0'
     stub_command fc-cache 'exit 0'
-    stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
 
     run "$GLB_ROOT/glb" restore server <<< ''
 
@@ -161,7 +177,7 @@ teardown() {
     [[ "$output" == *"Profile applied: server"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
     [[ "$output" == *"Installing nvim from neovim/neovim"* ]]
-    [[ "$output" == *"Installing yazi via snap"* ]]
+    [[ "$output" == *"Installing yazi from sxyazi/yazi"* ]]
     [[ "$output" == *"apt install -y ufw"* ]]
     [[ "$output" == *"apt install -y restic"* ]]
     [[ "$output" == *"apt install -y fail2ban"* ]]
@@ -172,6 +188,7 @@ teardown() {
     [ -L "$HOME/.config/starship.toml" ]
     [ ! -e "$HOME/.gitconfig" ]
     [ -x "$HOME/.local/bin/nvim" ]
+    [ -x "$HOME/.local/bin/yazi" ]
 }
 
 @test "glb restore fails cleanly for an unknown profile" {

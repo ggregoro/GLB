@@ -2,6 +2,11 @@
 
 **Status:** Implemented (2026-08-30)
 **Added:** 2026-08-30
+**Amended 2026-09-12:** `yazi` moved off `snap` onto `github-release`
+(it publishes real Linux release binaries; Ghostty doesn't, so it stays
+on `snap`) — see `CHANGELOG.md`. Every "mirrors the existing `snap yazi
+classic` entry"-style comparison below is now historical; Ghostty's own
+`snap`-based design described here is unaffected and still current.
 
 ## Motivation
 

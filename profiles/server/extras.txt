@@ -7,11 +7,14 @@
 #                            `fc-cache -f`. <name> becomes the install
 #                            directory, so no spaces. Requires unzip
 #                            (see packages.txt).
-#   snap <name> <confinement> - `sudo snap install <name>
-#                            [--<confinement>]`. <confinement> is
-#                            typically "classic" or left blank for
-#                            strict; checked via `snap list <name>`.
-#                            Requires snapd (see packages.txt).
+#   github-release <name> <owner/repo> <asset>
+#                          - downloads github.com/<owner/repo>/releases/
+#                            latest/download/<asset>, unpacks any
+#                            .tar.*/.zip (or takes a raw binary), and
+#                            installs the <name> binary into
+#                            ~/.local/bin. A _GLB_EXTRA_NATIVE_OVERRIDES
+#                            entry in lib/extras.sh routes this to a
+#                            real package on managers that have one.
 #   github-release-tree <name> <owner/repo> <asset>
 #                          - downloads github.com/<owner/repo>/releases/
 #                            latest/download/<asset> and extracts the
@@ -38,13 +41,13 @@ font    jetbrains-mono-nerd-font    https://github.com/ryanoasis/nerd-fonts/rele
 
 # File manager alternative to ranger (kept, not replaced) - same tool,
 # same rationale as default/extras.txt (stronger plugin support,
-# git-status plugin configured in dotfiles/.config/yazi/). Needs
-# --classic confinement. On pacman specifically, this line is routed to
-# a real native `yazi` pacman package instead of snap entirely (see
-# _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh) - confirmed 2026-08-16.
-# Confirmed real gap on zypper (see packages.txt) - snapd itself isn't
-# available there and there's no native yazi package either, so this
-# entry is a documented no-op on openSUSE rather than a GLB bug. Known
-# gap there, not being chased further (same call as lazygit on
-# Fedora/dnf).
-snap    yazi      classic
+# git-status plugin configured in dotfiles/.config/yazi/). Was `snap
+# yazi classic` until 2026-09-12 - moved to `github-release` for the
+# same reason as `default` (yazi publishes real Linux release binaries;
+# snap has been the source of every cross-distro bug this project has
+# hit). This also means `server` no longer needs `snapd`/`snap` at all
+# - see packages.txt. On pacman this still routes to the real native
+# `yazi` pacman package (see _GLB_EXTRA_NATIVE_OVERRIDES in
+# lib/extras.sh) - unchanged, confirmed 2026-08-16. zypper previously
+# had no path at all here; now gets the same upstream binary apt does.
+github-release    yazi    sxyazi/yazi    yazi-x86_64-unknown-linux-gnu.zip

@@ -24,20 +24,24 @@ btop
 unzip      # needed for the font extras.txt entry below
 bash-completion    # loads glb's completion file - see lib/completions.sh
 
-# snapd - needed for the snap extras.txt entry below (yazi). Confirmed
-# in apt's index (Pop!_OS/Debian/Ubuntu). Not in Arch/pacman's official
-# repos at all (AUR-only) - but this no longer matters on pacman
-# specifically: yazi has a real native pacman package (`extra` repo),
-# so the snap extras.txt entry below routes through it directly there
-# (see _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh) and snapd itself is
+# snapd - needed for the snap extras.txt entry below (ghostty only,
+# since 2026-09-12 - yazi moved to github-release, see extras.txt).
+# Confirmed in apt's index (Pop!_OS/Debian/Ubuntu). Not in Arch/pacman's
+# official repos at all (AUR-only) - but this doesn't matter on pacman:
+# ghostty has a real native pacman package (`extra` repo), so the snap
+# extras.txt entry below routes through it directly there (see
+# _GLB_EXTRA_NATIVE_OVERRIDES in lib/extras.sh) and snapd itself is
 # skipped outright on pacman via _GLB_PACKAGE_SKIP in lib/package.sh -
 # confirmed 2026-08-16, no more manual-step pause on Arch-family
 # machines. Confirmed real gap on zypper too (2026-08-13, openSUSE
 # Tumbleweed VM, real restore of the server profile): `zypper info
-# snapd` reports "package 'snapd' not found" in the default repos, and
-# zypper has no native yazi package either (no OBS repo), so snap/yazi
-# still don't install there - same known-gap treatment as lazygit on
-# Fedora/dnf rather than chasing a non-default repo. dnf unverified.
+# snapd` reports "package 'snapd' not found" in the default repos -
+# but ghostty has a real native zypper package too (`repo-oss`), so
+# this is a non-issue there as well; snapd is simply never needed on
+# openSUSE. dnf unverified for snapd itself, and ghostty falls through
+# to snap there (Fedora packages it only via COPR) - confirmed working
+# 2026-09-12 once `_glb_ensure_snap_dir` created the `/snap` symlink
+# Fedora's snapd package doesn't set up on its own (see lib/extras.sh).
 #
 # Linux Mint (apt) is its own distinct case, confirmed 2026-08-25 on a
 # fresh Mint VM: `apt install snapd` fails with "has no installation
@@ -49,8 +53,8 @@ bash-completion    # loads glb's completion file - see lib/completions.sh
 # _GLB_PACKAGE_MANUAL_HINT in lib/package.sh, which now surfaces this
 # explanation (and the fix command) at the manual-step pause instead
 # of just re-showing a `sudo apt install -y snapd` that would fail
-# identically every time. yazi below fails as a direct consequence on
-# Mint until snapd is manually unblocked.
+# identically every time. ghostty below fails as a direct consequence
+# on Mint until snapd is manually unblocked.
 snapd
 
 # CPU architecture info banner (James Tigert / kz6fittycent), pairs
