@@ -13,7 +13,6 @@ git
 zsh
 fish
 tmux
-neovim     # LazyVim config vendored in dotfiles/.config/nvim (real LazyVim/starter, public)
 curl
 ripgrep
 fzf
@@ -79,6 +78,21 @@ cpufetch
 # `github-release fastfetch fastfetch-cli/fastfetch` pulls the upstream
 # tarball into ~/.local/bin instead; dnf/pacman/zypper still get the
 # native package via _GLB_EXTRA_NATIVE_OVERRIDES. See extras.txt.
+
+# neovim (LazyVim config vendored in dotfiles/.config/nvim, real
+# LazyVim/starter, public) also lives in extras.txt now, not here. Real
+# gap hit on Greg's E7450 (2026-09-06, again 2026-09-11 after a
+# reinstall): apt's `neovim` is 0.9.5, LazyVim needs >= 0.11.2, so
+# `nvim` refused to load with "requires 0.11.2" - a bare packages.txt
+# line silently installs a version too old to work. `github-release-tree
+# nvim neovim/neovim nvim-linux-x86_64.tar.gz` extracts the upstream
+# release's whole bin/lib/share tree into ~/.local instead (a plain
+# `github-release` single-binary grab breaks `nvim`'s syntax/colorscheme
+# lookup - confirmed: "E484: Can't open file .../syntax/syntax.vim"
+# without its sibling lib/share alongside it). dnf/pacman get the
+# native `neovim` package via _GLB_EXTRA_NATIVE_OVERRIDES (both
+# confirmed current); zypper isn't verified either way yet, so it also
+# gets the upstream tarball for now. See extras.txt.
 
 # Wayland clipboard (`wl-copy`/`wl-paste`) - what makes "yank path" in
 # yazi, `"+y` in Neovim, tmux copy-mode-to-clipboard, and `... |

@@ -687,6 +687,180 @@ teardown() {
     grep -q "curl https://github.com/someorg/faketool/releases/latest/download/faketool-linux-x86_64.tar.gz" "$TEST_TMP/calls"
 }
 
+# --- github-release-tree method -----------------------------------------
+#
+# Same download/verify as github-release, but extracts the WHOLE archive
+# into ~/.local (stripping its one top-level directory) instead of
+# pulling out a single named binary - for tools (nvim) whose binary
+# looks up sibling runtime files at a path relative to itself, so a
+# lone-binary grab would leave it unable to find them. curl/tar are
+# always stubbed - nothing here touches the real network.
+
+@test "github-release-tree: skips install when the binary is already on PATH" {
+    stub_command nvim 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed github-release-tree nvim 'neovim/neovim nvim-linux-x86_64.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+}
+
+@test "github-release-tree: not installed when the binary is absent from PATH" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_extra_installed github-release-tree nvim 'neovim/neovim nvim-linux-x86_64.tar.gz'
+    "
+    [ "$status" -ne 0 ]
+}
+
+@test "github-release-tree: downloads the latest asset and extracts its whole tree into ~/.local" {
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        case "$url" in *.sha256) exit 22 ;; *) : > "$out"; exit 0 ;; esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in
+            -C) dest="$2"; shift 2 ;;
+            --strip-components=*) shift ;;
+            *) shift ;;
+        esac; done
+        mkdir -p "$dest/bin" "$dest/share/nvim/runtime"
+        printf "#!/bin/sh\necho nvim\n" > "$dest/bin/nvim"
+        chmod +x "$dest/bin/nvim"
+        printf "runtime file\n" > "$dest/share/nvim/runtime/syntax.vim"
+        exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra github-release-tree nvim 'neovim/neovim nvim-linux-x86_64.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+    [ -x "$HOME/.local/bin/nvim" ]
+    [ -f "$HOME/.local/share/nvim/runtime/syntax.vim" ]
+}
+
+@test "github-release-tree: rejects a non-tar asset" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_install_github_release_tree nvim neovim/neovim nvim-win64.zip
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"not a supported archive"* ]]
+}
+
+@test "github-release-tree: aborts when a published .sha256 does not match the download" {
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        case "$url" in
+            *.sha256) printf "cafef00d  nvim-linux-x86_64.tar.gz\n" > "$out" ;;
+            *) printf "payload\n" > "$out" ;;
+        esac
+        exit 0'
+    stub_command sha256sum 'echo "deadbeef  $1"'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_install_github_release_tree nvim neovim/neovim nvim-linux-x86_64.tar.gz
+    "
+    [ "$status" -eq 1 ]
+    [[ "$output" == *"Checksum mismatch"* ]]
+    [ ! -e "$HOME/.local/bin/nvim" ]
+}
+
+@test "github-release-tree: routes to the native package when a _GLB_EXTRA_NATIVE_OVERRIDES entry exists" {
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_detect_package_manager() { echo pacman; }
+        glb_install_package() { echo \"install_package \$*\"; }
+        glb_install_extra github-release-tree nvim 'neovim/neovim nvim-linux-x86_64.tar.gz'
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"via the package manager (neovim), not a GitHub release"* ]]
+    [[ "$output" == *"install_package neovim"* ]]
+}
+
+@test "dry-run: github-release-tree extra announces would-install without downloading" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'github-release-tree nvim neovim/neovim nvim-linux-x86_64.tar.gz\n' > "$pdir/extras.txt"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: nvim (via github-release-tree)"* ]]
+}
+
+@test "github-release-tree: pauses on failure, prints a manual hint, and succeeds once confirmed" {
+    stub_command curl 'exit 22'
+    stub_command nvim 'exit 0'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra github-release-tree nvim 'neovim/neovim nvim-linux-x86_64.tar.gz' <<< ''
+    "
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Run this yourself"* ]]
+    [[ "$output" == *"Confirmed installed after manual step: nvim"* ]]
+}
+
+@test "update: github-release-tree - re-downloads and re-extracts for an already-installed extra" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'github-release-tree nvim neovim/neovim nvim-linux-x86_64.tar.gz\n' > "$pdir/extras.txt"
+    stub_command nvim 'exit 0'
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        echo "curl $url" >> "$TEST_TMP/calls"
+        case "$url" in
+            *.sha256) exit 22 ;;
+            *) : > "$out"; exit 0 ;;
+        esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in
+            -C) dest="$2"; shift 2 ;;
+            --strip-components=*) shift ;;
+            *) shift ;;
+        esac; done
+        mkdir -p "$dest/bin"; printf "#!/bin/sh\n" > "$dest/bin/nvim"; chmod +x "$dest/bin/nvim"; exit 0'
+
+    run glb_update_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Updating nvim from neovim/neovim"* ]]
+    grep -q "curl https://github.com/neovim/neovim/releases/latest/download/nvim-linux-x86_64.tar.gz" "$TEST_TMP/calls"
+}
+
 # --- glb_update_profile_extras / _glb_update_extra --------------------------
 #
 # Re-running an already-installed extra to pick up updates. Deliberately

@@ -12,6 +12,40 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+### Fixed
+- **`neovim` moved from `packages.txt` to `extras.txt` in all three
+  profiles** (`default`/`developer`/`server`) — apt's `neovim` (0.9.5
+  on Debian/Ubuntu/Pop!_OS/Mint) is far below LazyVim's floor of
+  0.11.2, so `nvim` refused to load with "requires 0.11.2" on every
+  apt-based restore. Hit for real on Greg's E7450 twice (2026-09-06,
+  again 2026-09-11 after a reinstall). New `github-release-tree`
+  extras method (see Added below) installs a current upstream build
+  instead on apt; dnf/pacman route to the native `neovim` package
+  (both confirmed current) via `_GLB_EXTRA_NATIVE_OVERRIDES`; zypper
+  isn't verified either way yet, so it also gets the upstream build for
+  now rather than risk the same bug silently.
+
+### Added
+- New `extras.txt` method **`github-release-tree <name> <owner/repo>
+  <asset>`**: same download/checksum-verify as `github-release`, but
+  extracts the archive's contents WHOLE into `~/.local` (stripping its
+  one top-level directory) instead of pulling out a single named
+  binary. For tools whose binary looks up sibling files (runtime data,
+  libraries) at a path relative to itself — confirmed necessary for
+  Neovim specifically: extracting just `bin/nvim` on its own breaks
+  syntax highlighting and colorschemes ("E484: Can't open file
+  .../syntax/syntax.vim") because it can't find its own `lib/nvim` and
+  `share/nvim/runtime` alongside it. Tar archives only (Neovim's Linux
+  releases are the only current user; zip support can be added if
+  something else needs it). Routes to a real package via
+  `_GLB_EXTRA_NATIVE_OVERRIDES` the same way `github-release` does.
+  The shared download+checksum-verify logic between the two methods
+  was factored out into `_glb_download_release_asset`.
+- `default`/`developer`/`server` all gained **`github-release-tree nvim
+  neovim/neovim nvim-linux-x86_64.tar.gz`** in `extras.txt`, replacing
+  the `neovim` line removed from each profile's `packages.txt` (see
+  Fixed above).
+
 ### Changed
 - **`default`'s bash and fish prompts now use Starship**, matching
   zsh's, instead of a native bash PS1 and a hand-rolled fish prompt

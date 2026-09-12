@@ -12,9 +12,25 @@
 #                            typically "classic" or left blank for
 #                            strict; checked via `snap list <name>`.
 #                            Requires snapd (see packages.txt).
+#   github-release-tree <name> <owner/repo> <asset>
+#                          - downloads github.com/<owner/repo>/releases/
+#                            latest/download/<asset> and extracts the
+#                            WHOLE archive into ~/.local (stripping its
+#                            one top-level directory), for tools that
+#                            need their release's relative bin/lib/share
+#                            tree kept together — see `default`'s
+#                            extras.txt for the full rationale (neovim).
+#                            Tar archives only. A _GLB_EXTRA_NATIVE_OVERRIDES
+#                            entry in lib/extras.sh routes this to a
+#                            real package on managers that have one.
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
+
+# neovim (LazyVim's editor) - same apt-too-old-for-LazyVim fix as
+# `default`'s extras.txt; see that file for the full story on why this
+# is `github-release-tree` and not a plain packages.txt entry.
+github-release-tree    nvim    neovim/neovim    nvim-linux-x86_64.tar.gz
 
 # Nerd Font - required for `eza --icons` (all three shells' ls/ll/la/l
 # aliases). See default/extras.txt for the fuller rationale.

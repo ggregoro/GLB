@@ -61,6 +61,19 @@ fi
 # on apt it moves to the `github-release` method
 # (fastfetch-cli/fastfetch, upstream tarball -> ~/.local/bin) rather
 # than the manual-step pause a bare packages.txt entry used to force.
+#
+# nvim:pacman / nvim:dnf - apt's `neovim` is too old for LazyVim (0.9.5
+# on Pop!_OS/Debian/Ubuntu/Mint; LazyVim needs >= 0.11.2), hit for real
+# on Greg's E7450 (2026-09-06/2026-09-11) - `nvim` refused to load with
+# "requires 0.11.2". Confirmed current on Arch `extra` (pacman) and
+# Fedora's official repos (dnf), so those two route to the native
+# `neovim` package via the `github-release-tree` method below instead
+# of the upstream tarball. zypper deliberately has NO entry - openSUSE
+# Tumbleweed's neovim version isn't verified either way, so it falls
+# through to the same upstream-tarball path apt uses (always correct,
+# just not the most native option there until confirmed) rather than
+# risk silently shipping the same too-old-for-LazyVim bug this override
+# exists to avoid.
 # ------------------------------------------------------------
 
 declare -gA _GLB_EXTRA_NATIVE_OVERRIDES=(
@@ -73,6 +86,8 @@ declare -gA _GLB_EXTRA_NATIVE_OVERRIDES=(
     [fastfetch:dnf]="fastfetch"
     [fastfetch:pacman]="fastfetch"
     [fastfetch:zypper]="fastfetch"
+    [nvim:pacman]="neovim"
+    [nvim:dnf]="neovim"
 )
 
 _glb_extra_native_package() {
@@ -84,36 +99,28 @@ _glb_extra_native_package() {
 }
 
 # ------------------------------------------------------------
-# Download a project's latest GitHub release asset and drop its
-# <name> binary into ~/.local/bin. <asset> is a literal filename
-# (GLB doesn't do per-arch substitution anywhere else, so profiles
-# name the asset they want) fetched from
-#   https://github.com/<owner/repo>/releases/latest/download/<asset>
-# If the release publishes "<asset>.sha256" alongside it, it's
-# verified; if not, that's skipped rather than treated as an error.
-# .tar.*/.zip archives are unpacked and the <name> file located
-# within; anything else is treated as a raw binary.
+# Download <asset> from <repo>'s latest GitHub release to
+# <dest_dir>/<asset>, verifying a sibling "<asset>.sha256" when the
+# release publishes one (skipped, not an error, when it doesn't).
+# Shared by both github-release install methods below. Deliberately
+# does NOT report the downloaded path via a `$(...)` capture - GLB's
+# glb_log_* helpers write to stdout, and capturing this function's
+# stdout would silently swallow their output into the "path" instead
+# of showing it. The caller already knows the path is
+# "<dest_dir>/<asset>" (that's exactly what's downloaded to), so there
+# is nothing to hand back beyond a plain success/failure.
 # ------------------------------------------------------------
 
-_glb_install_github_release() {
-    local name="$1"
-    local repo="$2"
-    local asset="$3"
+_glb_download_release_asset() {
+    local repo="$1"
+    local asset="$2"
+    local dest_dir="$3"
     local base="https://github.com/$repo/releases/latest/download"
-    local bindir="$HOME/.local/bin"
-    local tmp archive found want have
-
-    if [[ -z "$name" || -z "$repo" || -z "$asset" ]]; then
-        glb_log_error "github-release: expected <name> <owner/repo> <asset>"
-        return 1
-    fi
-
-    tmp="$(mktemp -d)" || return 1
-    archive="$tmp/$asset"
+    local archive="$dest_dir/$asset"
+    local want have
 
     if ! curl -fsSL "$base/$asset" -o "$archive"; then
         glb_log_error "Could not download $asset from $repo's latest release"
-        rm -rf "$tmp"
         return 1
     fi
 
@@ -123,10 +130,40 @@ _glb_install_github_release() {
         have="$(sha256sum "$archive" | awk '{print $1}')"
         if [[ "$want" != "$have" ]]; then
             glb_log_error "Checksum mismatch for $asset (expected $want, got $have)"
-            rm -rf "$tmp"
             return 1
         fi
         glb_log_info "Checksum verified: $asset"
+    fi
+}
+
+# ------------------------------------------------------------
+# Download a project's latest GitHub release asset and drop its
+# <name> binary into ~/.local/bin. <asset> is a literal filename
+# (GLB doesn't do per-arch substitution anywhere else, so profiles
+# name the asset they want) fetched from
+#   https://github.com/<owner/repo>/releases/latest/download/<asset>
+# .tar.*/.zip archives are unpacked and the <name> file located
+# within; anything else is treated as a raw binary.
+# ------------------------------------------------------------
+
+_glb_install_github_release() {
+    local name="$1"
+    local repo="$2"
+    local asset="$3"
+    local bindir="$HOME/.local/bin"
+    local tmp archive found
+
+    if [[ -z "$name" || -z "$repo" || -z "$asset" ]]; then
+        glb_log_error "github-release: expected <name> <owner/repo> <asset>"
+        return 1
+    fi
+
+    tmp="$(mktemp -d)" || return 1
+    archive="$tmp/$asset"
+
+    if ! _glb_download_release_asset "$repo" "$asset" "$tmp"; then
+        rm -rf "$tmp"
+        return 1
     fi
 
     if ! glb_create_directory "$bindir"; then
@@ -183,6 +220,71 @@ _glb_install_github_release() {
 }
 
 # ------------------------------------------------------------
+# Download a project's latest GitHub release asset and extract it
+# WHOLE into ~/.local, stripping the archive's one top-level directory
+# so a bin/lib/share tree merges straight into ~/.local/{bin,lib,share}.
+# For tools whose binary looks up sibling files (runtime data,
+# libraries) at a path relative to itself - Neovim's `nvim` needs its
+# own lib/nvim + share/nvim/runtime alongside it, or it can't find
+# syntax/ftplugin/colorscheme files (confirmed: `bin/nvim` copied out
+# on its own errors "E484: Can't open file .../syntax/syntax.vim").
+# `github-release` (above) is for a single self-contained binary;
+# this is for anything that isn't one. Only tar archives are supported
+# (nvim's Linux releases are the only current user of this method; zip
+# support can be added if something else needs it).
+# ------------------------------------------------------------
+
+_glb_install_github_release_tree() {
+    local name="$1"
+    local repo="$2"
+    local asset="$3"
+    local target="$HOME/.local"
+    local tmp archive
+
+    if [[ -z "$name" || -z "$repo" || -z "$asset" ]]; then
+        glb_log_error "github-release-tree: expected <name> <owner/repo> <asset>"
+        return 1
+    fi
+
+    case "$asset" in
+        *.tar.gz|*.tgz|*.tar.xz|*.tar.bz2|*.tar.zst|*.tar) ;;
+        *)
+            glb_log_error "github-release-tree: $asset is not a supported archive (tar only)"
+            return 1
+            ;;
+    esac
+
+    tmp="$(mktemp -d)" || return 1
+    archive="$tmp/$asset"
+
+    if ! _glb_download_release_asset "$repo" "$asset" "$tmp"; then
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    if ! glb_create_directory "$target"; then
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    if ! tar -xf "$archive" -C "$target" --strip-components=1; then
+        glb_log_error "Could not extract $asset"
+        rm -rf "$tmp"
+        return 1
+    fi
+
+    rm -rf "$tmp"
+
+    if [[ -x "$target/bin/$name" ]]; then
+        glb_log_success "Installed $name -> $target/bin/$name"
+        return 0
+    fi
+
+    glb_log_error "github-release-tree install of $name did not produce $target/bin/$name"
+    return 1
+}
+
+# ------------------------------------------------------------
 # Check whether an extra is already installed
 # ------------------------------------------------------------
 
@@ -210,7 +312,7 @@ glb_extra_installed() {
                 snap list "$name" >/dev/null 2>&1
             fi
             ;;
-        github-release)
+        github-release | github-release-tree)
             native="$(_glb_extra_native_package "$name")"
             if [[ -n "$native" ]]; then
                 glb_package_installed "$native"
@@ -337,6 +439,25 @@ glb_install_extra() {
             _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
                 "download $asset from https://github.com/$repo/releases/latest and put its '$name' binary in ~/.local/bin"
             ;;
+        github-release-tree)
+            local native repo asset
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                glb_log_info "Installing $name via the package manager ($native), not a GitHub release"
+                glb_install_package "$native"
+                return $?
+            fi
+
+            read -r repo asset <<< "$spec"
+            glb_log_info "Installing $name from ${repo}'s latest GitHub release"
+
+            if _glb_install_github_release_tree "$name" "$repo" "$asset"; then
+                return 0
+            fi
+
+            _glb_extras_prompt_and_recheck "$method" "$name" "$spec" \
+                "download $asset from https://github.com/$repo/releases/latest, extract it, and copy its bin/lib/share tree into ~/.local"
+            ;;
         *)
             glb_log_error "Unknown extras method: $method"
             return 1
@@ -412,6 +533,19 @@ _glb_update_extra() {
             read -r repo asset <<< "$spec"
             glb_log_info "Updating $name from ${repo}'s latest GitHub release"
             _glb_install_github_release "$name" "$repo" "$asset"
+            ;;
+        github-release-tree)
+            local native repo asset
+            native="$(_glb_extra_native_package "$name")"
+            if [[ -n "$native" ]]; then
+                # Native package - kept current by glb_update_packages,
+                # nothing extra to do here.
+                return 0
+            fi
+
+            read -r repo asset <<< "$spec"
+            glb_log_info "Updating $name from ${repo}'s latest GitHub release"
+            _glb_install_github_release_tree "$name" "$repo" "$asset"
             ;;
         *)
             glb_log_error "Unknown extras method: $method"
@@ -494,7 +628,7 @@ glb_apply_profile_extras() {
 
         if [[ "$dry_run" == "--dry-run" ]]; then
             local native=""
-            [[ "$method" == "snap" || "$method" == "github-release" ]] \
+            [[ "$method" == "snap" || "$method" == "github-release" || "$method" == "github-release-tree" ]] \
                 && native="$(_glb_extra_native_package "$name")"
             if [[ -n "$native" ]]; then
                 glb_log_info "Would install: $name (via the package manager, $native - not $method)"

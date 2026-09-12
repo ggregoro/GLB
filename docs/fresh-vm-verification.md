@@ -119,12 +119,16 @@ COSMIC Terminal's font (menu → Settings → Font) to *JetBrainsMono Nerd
 Font* or `eza --icons` and the Starship prompt render as boxes.
 Ghostty's config already sets it. (See README → "Terminal Font".)
 
-**B. Neovim / LazyVim.** `nvim` → first launch bootstraps lazy.nvim +
+**B. Neovim / LazyVim.** `nvim --version` → 0.11.2+ (on apt, the
+upstream build `github-release-tree` installs into `~/.local`; on
+dnf/pacman, the native package). First launch bootstraps lazy.nvim +
 the pinned plugins; `:Lazy` clean, no errors; `:q`; relaunch → straight
 into a working LazyVim. No SSH key needed (vendored public
 LazyVim/starter, just symlinked dotfiles).
-*Known bug on apt: `neovim` 0.9.5 is too old for current LazyVim
-(needs ≥ 0.11.2) — see the CLAUDE.md Roadmap entry.*
+*Fixed 2026-09-11 — see `docs/ROADMAP.md`'s "neovim fixed on apt for
+real" entry. Previously apt's `neovim` 0.9.5 was too old for LazyVim
+(needs ≥ 0.11.2) and installed silently via a bare `packages.txt`
+entry.*
 
 **C. Ghostty.** Launches (Part 0 step 3 matters here). A "Yazi" entry
 appears in the COSMIC app launcher (`gtk-launch yazi.desktop` also
@@ -170,8 +174,9 @@ glb restore developer --dry-run
 glb restore server --dry-run
 ```
 
-Confirm both resolve clean and `server` lists `neovim`. A real restore
-of one is a bonus.
+Confirm both resolve clean and `server`'s `extras.txt` lists `nvim`
+(`github-release-tree`, moved out of `packages.txt` — see Part 3.B). A
+real restore of one is a bonus.
 
 ---
 

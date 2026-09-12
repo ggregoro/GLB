@@ -504,6 +504,19 @@ time, but the project itself is considered essentially done.
   fish's old `fish_prompt`/`fish_right_prompt` functions were removed
   entirely in favor of Starship.
 
+- **`neovim` fixed on apt for real (2026-09-11) ✅** — apt's `neovim`
+  (0.9.5) is far below LazyVim's floor (>= 0.11.2), a known gap since
+  the original Neovim + LazyVim add-on above, hit for real on Greg's
+  E7450 twice (2026-09-06, again 2026-09-11). Moved `neovim` from
+  `packages.txt` to `extras.txt` in all three profiles, via a new
+  `github-release-tree` method that extracts a current upstream Neovim
+  build's whole `bin`/`lib`/`share` tree into `~/.local` — a plain
+  single-binary `github-release` grab was tried and confirmed broken
+  (Neovim can't find its own runtime files without `lib`/`share`
+  alongside the binary). dnf/pacman route to the native package
+  instead (both confirmed current); zypper isn't verified either way
+  yet. See `docs/design/nvim-lazyvim.md`.
+
 ---
 
 # Long-Term Vision

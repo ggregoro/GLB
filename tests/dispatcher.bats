@@ -90,10 +90,29 @@ teardown() {
     cp -r "$GLB_REPO_ROOT/profiles/developer" "$GLB_ROOT/profiles/developer"
     stub_command starship 'exit 0'
     stub_command git 'exit 0'
-    stub_command curl 'exit 0'
+    # Handles both curl-pipe-bash extras (fresh/mise/lazydocker - no -o,
+    # just exit 0 and let the stubbed bash below take it from stdin) and
+    # nvim's github-release-tree download (-o <path> - write a real
+    # empty file so tar has something to "extract").
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        if [ -n "$out" ]; then
+            case "$url" in *.sha256) exit 22 ;; *) : > "$out"; exit 0 ;; esac
+        fi
+        exit 0'
     stub_command bash 'exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in
+            -C) dest="$2"; shift 2 ;;
+            --strip-components=*) shift ;;
+            *) shift ;;
+        esac; done
+        mkdir -p "$dest/bin"; printf "#!/bin/sh\n" > "$dest/bin/nvim"; chmod +x "$dest/bin/nvim"; exit 0'
 
     run "$GLB_ROOT/glb" restore developer <<< ''
 
@@ -102,12 +121,14 @@ teardown() {
     [[ "$output" == *"Installing fresh via curl-install script"* ]]
     [[ "$output" == *"Installing mise via curl-install script"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [[ "$output" == *"Installing nvim from neovim/neovim"* ]]
     [ -L "$HOME/.bashrc" ]
     [ -L "$HOME/.zshrc" ]
     [ -L "$HOME/.config/fish/config.fish" ]
     [ -L "$HOME/.config/starship.toml" ]
     [ ! -e "$HOME/.gitconfig" ]
     [ ! -e "$HOME/.config/ranger" ]
+    [ -x "$HOME/.local/bin/nvim" ]
     grep -q "mise (language version manager" "$HOME/.bashrc"
 }
 
@@ -115,6 +136,19 @@ teardown() {
     cp -r "$GLB_REPO_ROOT/profiles/server" "$GLB_ROOT/profiles/server"
     stub_command starship 'exit 0'
     stub_command git 'exit 0'
+    stub_command curl 'out=""; url=""
+        while [ "$#" -gt 0 ]; do case "$1" in
+            -o) out="$2"; shift 2 ;;
+            -f|-s|-S|-L|-fsSL) shift ;;
+            *) url="$1"; shift ;;
+        esac; done
+        case "$url" in *.sha256) exit 22 ;; *) : > "$out"; exit 0 ;; esac'
+    stub_command tar 'dest=""; while [ "$#" -gt 0 ]; do case "$1" in
+            -C) dest="$2"; shift 2 ;;
+            --strip-components=*) shift ;;
+            *) shift ;;
+        esac; done
+        mkdir -p "$dest/bin"; printf "#!/bin/sh\n" > "$dest/bin/nvim"; chmod +x "$dest/bin/nvim"; exit 0'
     stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
     stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
@@ -124,6 +158,7 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Profile applied: server"* ]]
     [[ "$output" == *"Installing font: jetbrains-mono-nerd-font"* ]]
+    [[ "$output" == *"Installing nvim from neovim/neovim"* ]]
     [[ "$output" == *"Installing yazi via snap"* ]]
     [[ "$output" == *"apt install -y ufw"* ]]
     [[ "$output" == *"apt install -y restic"* ]]
@@ -133,6 +168,7 @@ teardown() {
     [ -L "$HOME/.config/fish/config.fish" ]
     [ -L "$HOME/.config/starship.toml" ]
     [ ! -e "$HOME/.gitconfig" ]
+    [ -x "$HOME/.local/bin/nvim" ]
 }
 
 @test "glb restore fails cleanly for an unknown profile" {

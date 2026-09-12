@@ -32,6 +32,20 @@
 #                              _GLB_EXTRA_NATIVE_OVERRIDES entry routes
 #                              this to a real package on managers that
 #                              have one.
+#   github-release-tree <name> <owner/repo> <asset>
+#                            - same download/verify as github-release,
+#                              but extracts the WHOLE archive into
+#                              ~/.local (stripping its one top-level
+#                              directory) instead of pulling out a
+#                              single <name> binary. For tools that ship
+#                              a relative bin/lib/share tree their
+#                              binary needs alongside it to find its own
+#                              data files - a plain github-release grab
+#                              of just the binary would leave those
+#                              behind. Tar archives only. <name> is
+#                              checked at ~/.local/bin/<name>. Same
+#                              _GLB_EXTRA_NATIVE_OVERRIDES routing as
+#                              github-release.
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
@@ -135,3 +149,23 @@ github-release    atuin    atuinsh/atuin    atuin-x86_64-unknown-linux-gnu.tar.g
 # .sha256, so unlike atuin this download isn't checksum-verified (the
 # method just skips that step when the sidecar is absent).
 github-release    fastfetch    fastfetch-cli/fastfetch    fastfetch-linux-amd64.tar.gz
+
+# neovim (LazyVim's editor, config vendored in dotfiles/.config/nvim) —
+# apt's `neovim` (0.9.5) is too old for LazyVim (needs >= 0.11.2), hit
+# for real on Greg's E7450 (2026-09-06, again 2026-09-11 after a
+# reinstall): a bare packages.txt entry silently installs a version
+# that refuses to load with "requires 0.11.2". Uses `github-release-tree`,
+# not plain `github-release`: nvim's binary looks up its own runtime
+# files (syntax/ftplugin/colorscheme data, Treesitter parsers) at a
+# path relative to itself, so it needs its release's lib/ and share/
+# directories extracted alongside bin/nvim in ~/.local, not just the
+# bare binary — confirmed the single-binary method breaks this
+# ("E484: Can't open file .../syntax/syntax.vim", "E185: Cannot find
+# color scheme"). dnf/pacman route to the native `neovim` package
+# instead via _GLB_EXTRA_NATIVE_OVERRIDES (both confirmed current,
+# >= 0.11.2); zypper isn't verified either way yet, so openSUSE also
+# gets the upstream tarball for now rather than risk the same
+# too-old-for-LazyVim bug this exists to fix. Asset is the x86_64
+# glibc build; neovim publishes no per-asset .sha256 (same as
+# fastfetch above), so this download isn't checksum-verified either.
+github-release-tree    nvim    neovim/neovim    nvim-linux-x86_64.tar.gz

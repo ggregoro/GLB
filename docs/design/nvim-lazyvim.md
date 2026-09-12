@@ -5,6 +5,12 @@
 config" below. The original private-repo-clone design is kept here as a
 record of what was tried and why it changed, not a description of what
 GLB does today.
+**Amended 2026-09-11:** this doc covers the *dotfile* (config) side only
+— the *binary* itself moved from `packages.txt` to `extras.txt` on
+2026-09-11 to fix a real version gap (apt's `neovim` is 0.9.5, LazyVim
+needs >= 0.11.2). See `docs/ROADMAP.md`'s "neovim fixed on apt for
+real" entry and `lib/extras.sh`'s `github-release-tree` method for that
+change; nothing below changed as part of it.
 
 ## Motivation
 

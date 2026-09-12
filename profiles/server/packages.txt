@@ -29,7 +29,9 @@ unzip              # needed for the font extras.txt entry
 # Terminal editor — same as default/developer: LazyVim built in for
 # every profile (2026-08-30), not just default. LazyVim config vendored
 # in dotfiles/.config/nvim (real LazyVim/starter, public).
-neovim
+# Moved to extras.txt (`github-release-tree`) — same apt-too-old-for-
+# LazyVim fix as `default`, see that profile's packages.txt for the
+# full story.
 
 # Live resource monitor — same pick as default (btop, see CLAUDE.md
 # 2026-08-09; superseded the original htop-over-btop call from

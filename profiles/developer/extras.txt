@@ -10,12 +10,28 @@
 #                            `fc-cache -f`. <name> becomes the install
 #                            directory, so no spaces. Requires unzip
 #                            (see packages.txt).
+#   github-release-tree <name> <owner/repo> <asset>
+#                          - downloads github.com/<owner/repo>/releases/
+#                            latest/download/<asset> and extracts the
+#                            WHOLE archive into ~/.local (stripping its
+#                            one top-level directory), for tools that
+#                            need their release's relative bin/lib/share
+#                            tree kept together — see `default`'s
+#                            extras.txt for the full rationale (neovim).
+#                            Tar archives only. A _GLB_EXTRA_NATIVE_OVERRIDES
+#                            entry in lib/extras.sh routes this to a
+#                            real package on managers that have one.
 #
 # Blank lines and lines starting with '#' are ignored, same as
 # packages.txt.
 
 # Code editor - same choice as default.
 curl    fresh     https://raw.githubusercontent.com/sinelaw/fresh/refs/heads/master/scripts/install.sh
+
+# neovim (LazyVim's editor) - same apt-too-old-for-LazyVim fix as
+# `default`'s extras.txt; see that file for the full story on why this
+# is `github-release-tree` and not a plain packages.txt entry.
+github-release-tree    nvim    neovim/neovim    nvim-linux-x86_64.tar.gz
 
 # mise (language version manager) — picked over per-language tools
 # (nvm/pyenv/rustup) as one universal tool/mental model for someone
