@@ -517,6 +517,14 @@ time, but the project itself is considered essentially done.
   instead (both confirmed current); zypper isn't verified either way
   yet. See `docs/design/nvim-lazyvim.md`.
 
+**Cut as `1.1.0` on 2026-09-12, per Greg:** confirmed via real
+`glb restore default` end-to-end runs on the E7450 (Pop!_OS/apt), an
+openSUSE VM (zypper), and a CachyOS VM (pacman) — "ran perfectly end to
+end" on all three, with the neovim fix above closing the last known
+issue. Fedora (dnf) not yet re-verified against this release. Everything
+in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
+`[1.1.0]` entry for the itemized list.
+
 ---
 
 # Long-Term Vision

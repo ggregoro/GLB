@@ -12,6 +12,26 @@ This project follows a simple versioning approach:
 
 ## [Unreleased]
 
+Nothing yet — small add-ons are expected from time to time, but there's
+no unreleased work as of the `1.1.0` cut below.
+
+---
+
+## [1.1.0] - 2026-09-12
+
+Confirmed via real `glb restore default` end-to-end runs on the E7450
+(Pop!_OS/apt), an openSUSE VM (zypper), and a CachyOS VM (pacman) —
+"ran perfectly end to end" on all three, per Greg, with the `neovim`
+fix below closing the last known issue. Fedora (dnf) has not yet been
+re-verified against this release. Everything previously tracked under
+`[Unreleased]` since the `1.0.0` cut ships here: the tri-color Starship
+prompt, the `github-release` extras method (and atuin/fastfetch moving
+to it), Neovim + LazyVim in every profile (and now fixed for real on
+apt), the relaxed GUI-app scope (Ghostty), Yazi git-status signs,
+`wl-clipboard`/`git-delta`/`atuin`, and the `/snap/bin` PATH-order fix.
+See `docs/ROADMAP.md`'s "Post-1.0 add-ons" section for the complete
+history behind each item below.
+
 ### Fixed
 - **`neovim` moved from `packages.txt` to `extras.txt` in all three
   profiles** (`default`/`developer`/`server`) — apt's `neovim` (0.9.5
