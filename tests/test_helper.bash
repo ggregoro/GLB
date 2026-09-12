@@ -29,6 +29,16 @@ glb_setup_sandbox() {
     export STUB_BIN
     mkdir -p "$STUB_BIN"
     export PATH="$STUB_BIN:$PATH"
+
+    # _glb_ensure_snap_dir (lib/extras.sh) operates on a real, absolute
+    # filesystem path by design (it manages an actual /snap symlink on
+    # the real machine) - so unlike everything else sandboxed above, it
+    # will happily touch the REAL /snap outside any test's control
+    # unless every test that can reach the snap install path overrides
+    # it. Set the override here, once, for the whole suite, rather than
+    # trusting every current and future test to remember it themselves.
+    export _GLB_SNAP_DIR="$TEST_TMP/snap"
+    export _GLB_SNAPD_DIR="$TEST_TMP/var-lib-snapd-snap"
 }
 
 glb_teardown_sandbox() {

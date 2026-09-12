@@ -427,6 +427,66 @@ teardown() {
     grep -q "snap install sometool$" "$TEST_TMP/calls"
 }
 
+# --- _glb_ensure_snap_dir --------------------------------------------------
+#
+# Classic-confinement snaps (yazi, ghostty) need a real /snap or a symlink
+# to /var/lib/snapd/snap; Fedora's snapd package doesn't set this up on
+# its own (confirmed on a real VM, 2026-09-12 - "classic confinement
+# requires snaps under /snap or symlink from /snap to
+# /var/lib/snapd/snap"). _GLB_SNAP_DIR/_GLB_SNAPD_DIR let tests point this
+# at a sandboxed path instead of the real /snap.
+
+@test "_glb_ensure_snap_dir: creates the symlink when /snap doesn't exist" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    export _GLB_SNAP_DIR="$TEST_TMP/snap"
+    export _GLB_SNAPD_DIR="$TEST_TMP/var-lib-snapd-snap"
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_ensure_snap_dir
+    "
+    [ "$status" -eq 0 ]
+    [ -L "$_GLB_SNAP_DIR" ]
+    [ "$(readlink "$_GLB_SNAP_DIR")" = "$_GLB_SNAPD_DIR" ]
+}
+
+@test "_glb_ensure_snap_dir: no-op when /snap already exists (any form)" {
+    export _GLB_SNAP_DIR="$TEST_TMP/snap"
+    export _GLB_SNAPD_DIR="$TEST_TMP/var-lib-snapd-snap"
+    mkdir -p "$_GLB_SNAP_DIR"
+    stub_command sudo 'echo "sudo should not run" >> "$TEST_TMP/calls"; exit 1'
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        _glb_ensure_snap_dir
+    "
+    [ "$status" -eq 0 ]
+    [ ! -e "$TEST_TMP/calls" ]
+}
+
+@test "snap: install ensures the /snap symlink first" {
+    stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
+    stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
+    export _GLB_SNAP_DIR="$TEST_TMP/snap"
+    export _GLB_SNAPD_DIR="$TEST_TMP/var-lib-snapd-snap"
+
+    run bash -c "
+        source '$GLB_ROOT/lib/logging.sh'
+        source '$GLB_ROOT/lib/utils.sh'
+        source '$GLB_ROOT/lib/package.sh'
+        source '$GLB_ROOT/lib/extras.sh'
+        glb_install_extra snap yazi classic
+    "
+    [ "$status" -eq 0 ]
+    [ -L "$_GLB_SNAP_DIR" ]
+}
+
 @test "snap: pauses on failure, prints the exact command, and succeeds once confirmed" {
     stub_command sudo '[ "$1" = "-n" ] && shift; exec "$@"'
     # install fails (triggers the pause); list succeeds on the recheck

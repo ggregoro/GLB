@@ -351,6 +351,29 @@ _glb_extras_prompt_and_recheck() {
 }
 
 # ------------------------------------------------------------
+# Classic-confinement snaps (yazi, ghostty - both used with `classic`
+# in extras.txt) need a real /snap directory or a symlink to
+# /var/lib/snapd/snap; without it, `snap install --classic` fails with
+# "classic confinement requires snaps under /snap or symlink from
+# /snap to /var/lib/snapd/snap". apt-family snapd packages create this
+# themselves (a postinst trigger sets up the /snap automount), so this
+# is a no-op there - confirmed missing on Fedora specifically (dnf's
+# snapd package installs fine but never creates it, 2026-09-12 real VM
+# run: yazi and ghostty both failed with the exact error above).
+# Idempotent: only acts when /snap doesn't exist in any form yet, so it
+# never touches a distro that already has a real /snap.
+# ------------------------------------------------------------
+
+_glb_ensure_snap_dir() {
+    local snap_dir="${_GLB_SNAP_DIR:-/snap}"
+    local snapd_dir="${_GLB_SNAPD_DIR:-/var/lib/snapd/snap}"
+
+    [[ -e "$snap_dir" || -L "$snap_dir" ]] && return 0
+    glb_log_info "Creating $snap_dir -> $snapd_dir (classic-confinement snaps need this; this distro's snapd doesn't set it up on its own)"
+    glb_sudo ln -s "$snapd_dir" "$snap_dir"
+}
+
+# ------------------------------------------------------------
 # Install a single extra
 # ------------------------------------------------------------
 
@@ -412,6 +435,7 @@ glb_install_extra() {
             fi
 
             glb_log_info "Installing $name via snap${spec:+ (--$spec)}"
+            _glb_ensure_snap_dir
 
             if glb_sudo snap install "$name" ${spec:+--$spec}; then
                 return 0

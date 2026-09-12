@@ -534,6 +534,14 @@ in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
   (always read their own rc file). Fixed with the standard portable
   `.bash_profile` one-liner in all three profiles.
 
+- **Fedora classic-snap installs fixed (2026-09-12) ✅** — the same
+  Fedora re-verification pass found `yazi`/`ghostty` both failing with
+  `classic confinement requires snaps under /snap or symlink from
+  /snap to /var/lib/snapd/snap`. Fedora's `snapd` package doesn't
+  create that symlink itself, unlike apt-family distros. New
+  `_glb_ensure_snap_dir` helper creates it on first snap install,
+  no-op anywhere `/snap` already exists.
+
 ---
 
 # Long-Term Vision

@@ -25,6 +25,17 @@ This project follows a simple versioning approach:
   while `fish`/`zsh` worked fine since they always read their own rc
   file regardless of login/non-login. The new `.bash_profile` is the
   standard portable one-liner: `[ -f ~/.bashrc ] && . ~/.bashrc`.
+- **Classic-confinement snap installs (`yazi`, `ghostty`) now work on
+  Fedora.** Confirmed on a real Fedora VM (2026-09-12): both failed
+  with `error: cannot install "yazi": classic confinement requires
+  snaps under /snap or symlink from /snap to /var/lib/snapd/snap`.
+  Fedora's `snapd` package installs fine but — unlike apt-family
+  distros, whose `snapd` package sets this up via its own postinst —
+  never creates that symlink itself. New `_glb_ensure_snap_dir` helper
+  in `lib/extras.sh` creates it (`ln -s /var/lib/snapd/snap /snap`) the
+  first time any `snap` extra install runs, and is a no-op wherever
+  `/snap` already exists in any form, so it never touches a distro that
+  already has one.
 
 ---
 
