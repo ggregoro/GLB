@@ -67,6 +67,7 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias home='cd ~'
+alias lt='tree -C -I "node_modules|.git|__pycache__|venv"'
 
 # ------------------------------------------------------------
 # Directories
