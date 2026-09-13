@@ -45,6 +45,8 @@ if command -v eza >/dev/null 2>&1; then
     alias ll='eza --icons --git --hyperlink -lah --group-directories-first'
     alias la='eza --icons --git --hyperlink -la --group-directories-first'
     alias l='eza --icons --git --hyperlink -l --group-directories-first'
+    alias lt='eza --tree --level=2 --long --icons --git'
+    alias lta='lt -a'
 else
     alias ll='ls -lah'
     alias la='ls -la'
@@ -67,7 +69,6 @@ alias ..='cd ..'
 alias ...='cd ../..'
 alias ....='cd ../../..'
 alias home='cd ~'
-alias lt='tree -C -I "node_modules|.git|__pycache__|venv"'
 
 # ------------------------------------------------------------
 # Directories

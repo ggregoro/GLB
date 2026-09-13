@@ -21,7 +21,6 @@ bat
 zoxide
 ranger
 btop
-tree
 unzip      # needed for the font extras.txt entry below
 bash-completion    # loads glb's completion file - see lib/completions.sh
 
