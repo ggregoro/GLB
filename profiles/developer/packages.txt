@@ -22,6 +22,7 @@ eza
 bat
 zoxide
 btop
+tree
 bash-completion    # loads glb's completion file - see lib/completions.sh
 unzip              # needed for the font extras.txt entry
 

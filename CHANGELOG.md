@@ -13,14 +13,14 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
-- **`lt` alias/function in `default`** — colorized `tree` from the
-  current directory down, ignoring `node_modules`/`.git`/
-  `__pycache__`/`venv`, accepting extra args (e.g. `lt -L 2`). Bash/Zsh
-  get a plain alias; Fish gets its own autoloaded function file
-  (`~/.config/fish/functions/lt.fish`) since Fish aliases don't survive
-  a new shell session the way a function does. `tree` added to
-  `default`'s `packages.txt` (same package name on apt/dnf/pacman/
-  zypper, no override needed).
+- **`lt` alias/function in all three profiles** (`default`/`developer`/
+  `server`) — colorized `tree` from the current directory down,
+  ignoring `node_modules`/`.git`/`__pycache__`/`venv`, accepting extra
+  args (e.g. `lt -L 2`). Bash/Zsh get a plain alias; Fish gets its own
+  autoloaded function file (`~/.config/fish/functions/lt.fish`) since
+  Fish aliases don't survive a new shell session the way a function
+  does. `tree` added to each profile's `packages.txt` (same package
+  name on apt/dnf/pacman/zypper, no override needed).
 
 ### Docs
 - **README and the fresh-VM checklist now call out `git` as a
