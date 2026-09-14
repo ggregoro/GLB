@@ -142,6 +142,26 @@ elif command -v fresh >/dev/null 2>&1; then
 fi
 
 # ------------------------------------------------------------
+# bash-preexec (must load before atuin/starship below). Both of them
+# register into the precmd_functions/preexec_functions arrays instead
+# of setting PROMPT_COMMAND directly whenever those arrays already
+# exist - a real bash-preexec convention, but neither of them actually
+# provides the dispatcher that reads those arrays; that's bash-preexec's
+# job. Without it loaded first, atuin's init (which unconditionally
+# defines the arrays) makes starship think a framework is already
+# present, so starship also just appends itself to the same arrays -
+# and since nothing then reads them, PROMPT_COMMAND is silently left
+# holding only zoxide's hook and the Starship prompt never renders.
+# Hit for real on Fedora 44 (2026-09-14): zsh/fish were unaffected
+# (they have native precmd/preexec support built into the shell), only
+# bash showed the plain, uncustomized prompt.
+# ------------------------------------------------------------
+if [ ! -f "$HOME/.bash-preexec.sh" ]; then
+    curl -fsSL https://raw.githubusercontent.com/rcaloras/bash-preexec/master/bash-preexec.sh -o "$HOME/.bash-preexec.sh" 2>/dev/null
+fi
+[ -f "$HOME/.bash-preexec.sh" ] && source "$HOME/.bash-preexec.sh"
+
+# ------------------------------------------------------------
 # zoxide
 # ------------------------------------------------------------
 if command -v zoxide >/dev/null 2>&1; then
