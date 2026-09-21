@@ -67,9 +67,8 @@ teardown() {
     cp -r "$GLB_REPO_ROOT/profiles/default" "$GLB_ROOT/profiles/default"
     stub_command starship 'exit 0'
     stub_command git 'exit 0'
-    stub_command curl 'exit 0'
+    stub_release_download_tools
     stub_command bash 'exit 0'
-    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
     stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
 
@@ -506,10 +505,9 @@ teardown() {
 @test "glb repair finds real drift against the default profile and fixes it once confirmed" {
     stub_command starship 'exit 0'
     stub_command git 'exit 0'
-    stub_command curl 'exit 0'
+    stub_release_download_tools
     stub_command bash 'exit 0'
     stub_command flatpak 'echo "flatpak $*" >> "$TEST_TMP/calls"; [ "$1" = "info" ] && exit 1; exit 0'
-    stub_command unzip 'mkdir -p "${@: -1}"; touch "${@: -1}/Fake-Regular.ttf"; exit 0'
     stub_command fc-cache 'exit 0'
     stub_command apt-mark 'printf ""'
     stub_command snap 'case "$1" in list) exit 1 ;; install) exit 0 ;; esac'
