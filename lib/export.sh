@@ -17,6 +17,20 @@ if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
 fi
 
 # ------------------------------------------------------------
+# Print this machine's hostname. The `hostname` binary isn't part
+# of every distro's base install (Arch ships it in inetutils), so
+# fall back to `uname -n` (coreutils, always present).
+# ------------------------------------------------------------
+
+glb_get_hostname() {
+    if command -v hostname >/dev/null 2>&1; then
+        hostname
+    else
+        uname -n
+    fi
+}
+
+# ------------------------------------------------------------
 # Write packages.txt: every explicitly-installed package,
 # reverse-mapped through _GLB_PACKAGE_OVERRIDES back to GLB's
 # canonical names.
@@ -32,7 +46,7 @@ glb_export_packages() {
     }
 
     {
-        printf "# GLB snapshot: packages explicitly installed on %s\n" "$(hostname)"
+        printf "# GLB snapshot: packages explicitly installed on %s\n" "$(glb_get_hostname)"
         printf "# Captured by 'glb export' on %s (%s)\n" "$(date +%Y-%m-%d)" "$pkg_mgr"
         printf "#\n"
         printf "# Same format as a profile's packages.txt - one package per\n"
@@ -128,7 +142,7 @@ glb_export_metadata() {
     local snapshot_dir="$1"
 
     {
-        printf "hostname: %s\n" "$(hostname)"
+        printf "hostname: %s\n" "$(glb_get_hostname)"
         printf "distro: %s\n" "$(glb_detect_os 2>/dev/null || printf 'unknown')"
         printf "distro_version: %s\n" "$(glb_detect_version 2>/dev/null || printf 'unknown')"
         printf "package_manager: %s\n" "$(glb_detect_package_manager 2>/dev/null || printf 'unknown')"
@@ -147,7 +161,7 @@ glb_export_metadata() {
 glb_export_snapshot() {
     local hostname snapshot_name snapshot_dir
 
-    hostname="$(hostname)"
+    hostname="$(glb_get_hostname)"
     snapshot_name="${hostname}-$(date +%Y-%m-%d)"
     snapshot_dir="$GLB_ROOT/snapshots/$snapshot_name"
 

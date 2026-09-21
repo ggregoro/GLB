@@ -33,6 +33,13 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **`glb export`/`glb repair` no longer break on distros without a
+  `hostname` binary** — Arch doesn't include one in its base install
+  (it's in `inetutils`), so `lib/export.sh`'s three `$(hostname)` calls
+  printed `hostname: command not found` and, in `glb export`, would have
+  named the snapshot directory `-<date>` with no hostname. Now goes
+  through a `glb_get_hostname` helper that falls back to `uname -n`
+  (coreutils, always present). Found on a fresh Arch + COSMIC install.
 - **`.bash_profile` added to all three profiles** (`default`/
   `developer`/`server`) — bash only sources `~/.bashrc` for interactive
   *non-login* shells; a login shell (a raw console/tty, some VM

@@ -211,6 +211,25 @@ teardown() {
     [[ "$output" == *"starship=not installed"* ]]
 }
 
+# --- glb_get_hostname -------------------------------------------------------
+
+@test "get_hostname prefers the hostname binary when present" {
+    stub_command hostname 'echo test-host'
+    stub_command uname 'echo uname-host'
+
+    run bash -c "source '$GLB_ROOT/lib/export.sh'; PATH='$STUB_BIN'; glb_get_hostname"
+    [ "$status" -eq 0 ]
+    [ "$output" = "test-host" ]
+}
+
+@test "get_hostname falls back to uname -n when no hostname binary exists (e.g. Arch)" {
+    stub_command uname 'echo uname-host'
+
+    run bash -c "source '$GLB_ROOT/lib/export.sh'; PATH='$STUB_BIN'; glb_get_hostname"
+    [ "$status" -eq 0 ]
+    [ "$output" = "uname-host" ]
+}
+
 # --- glb_export_metadata ----------------------------------------------------
 
 @test "export_metadata records hostname, distro, package manager, and GLB version" {
