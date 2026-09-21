@@ -11,6 +11,7 @@ setup() {
     source "$GLB_ROOT/lib/logging.sh"
     source "$GLB_ROOT/lib/utils.sh"
     source "$GLB_ROOT/lib/extras.sh"
+    source "$GLB_ROOT/lib/timers.sh"
     source "$GLB_ROOT/lib/completions.sh"
     source "$GLB_ROOT/lib/profile.sh"
 
@@ -414,6 +415,36 @@ teardown() {
     [[ "$output" == *"Would replace ~/.bashrc's link (existing ~/.bashrc.glb-backup kept as-is)"* ]]
     [ "$(readlink "$HOME/.bashrc")" = "/some/other/profile/.bashrc" ]
     [ "$(cat "$HOME/.bashrc.glb-backup")" = "original content" ]
+}
+
+@test "links fresh when the destination is gone but an old backup exists, keeping the backup" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'new content' > "$pdir/dotfiles/.bashrc"
+    echo 'original pre-glb content' > "$HOME/.bashrc.glb-backup"
+    # $HOME/.bashrc deliberately absent (removed since the first restore).
+
+    run glb_apply_profile_dotfiles "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"missing, linking it fresh"* ]]
+    [ -L "$HOME/.bashrc" ]
+    [ "$(cat "$HOME/.bashrc")" = "new content" ]
+    [ "$(cat "$HOME/.bashrc.glb-backup")" = "original pre-glb content" ]
+}
+
+@test "dry-run: reports it would link (not refuse) when the destination is gone but a backup exists" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir/dotfiles"
+    echo 'new content' > "$pdir/dotfiles/.bashrc"
+    echo 'original content' > "$HOME/.bashrc.glb-backup"
+
+    run glb_apply_profile_dotfiles "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would link ~/.bashrc (existing ~/.bashrc.glb-backup kept as-is)"* ]]
+    [[ "$output" != *"Would refuse"* ]]
+    [ ! -e "$HOME/.bashrc" ]
 }
 
 # --- glb_undo_restore -------------------------------------------------------

@@ -1,0 +1,10 @@
+[Unit]
+Description=Periodically check for pacman and AUR updates
+
+[Timer]
+OnBootSec=5min
+OnUnitActiveSec=6h
+RandomizedDelaySec=2min
+
+[Install]
+WantedBy=timers.target

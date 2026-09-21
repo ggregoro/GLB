@@ -46,7 +46,7 @@ Two problems, one tool:
 ## Architecture
 
 A single `glb` dispatcher script sources focused library modules from
-`lib/` (`detect`, `package`, `extras`, `profile`, `export`, `diff`,
+`lib/` (`detect`, `package`, `extras`, `timers`, `profile`, `export`, `diff`,
 `repair`, `prompt`, `plugins`, `completions`), driven by per-profile
 directories under `profiles/`:
 
@@ -54,6 +54,7 @@ directories under `profiles/`:
 profiles/<name>/
   packages.txt      # package-manager installs, with per-distro name overrides
   extras.txt        # non-package-manager installs (curl script, snap, font, …)
+  timers.txt        # user systemd timers to enable after dotfiles (optional)
   dotfiles/         # symlinked into $HOME, backing up anything already there
   description.txt   # shown in the interactive picker
 ```
@@ -117,10 +118,14 @@ bats tests/
 If `bats` isn't packaged for your distro, a shallow clone of
 `bats-core` and its `bin/bats` works without installing anything.
 
-A known, environment-dependent gap: a few end-to-end/extras tests don't
-stub `fresh`/`starship`/`yazi`, so on a machine that has actually run
-`glb restore` they can see "already installed" and miss an expected
-"installing via curl" assertion. Not a regression — see `CHANGELOG.md`.
+The suite is independent of what's already installed on the machine
+running it: the sandbox `PATH` hides the host's copies of the commands
+GLB installs or notifies with (`GLB_HIDDEN_COMMANDS` in
+`tests/test_helper.bash` — `fresh`, `nvim`, `yazi`, `checkupdates`,
+`paru`, `notify-send`), so it passes the same on a bare machine and one
+GLB has already been applied to. A test that needs one of those present
+stubs it into `STUB_BIN`. If a new test assumes some other tool is
+absent, add it to that list.
 
 For end-to-end verification on a clean machine, follow
 [`docs/fresh-vm-verification.md`](docs/fresh-vm-verification.md).

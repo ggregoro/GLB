@@ -1,0 +1,20 @@
+# GLB profile: default — user systemd timers to enable after the dotfiles
+# are linked (the unit files themselves ship under
+# dotfiles/.config/systemd/user/).
+#
+# Format: <unit> [package-manager]
+#   <unit>            - a user unit name, e.g. update-check.timer. Enabled
+#                       with `systemctl --user enable --now <unit>`.
+#   [package-manager] - optional (apt/dnf/pacman/zypper). If given, the
+#                       timer is only enabled when the detected package
+#                       manager matches; on any other distro it is
+#                       skipped with a note. Omit to enable everywhere.
+#
+# Blank lines and lines starting with '#' are ignored, same as
+# packages.txt/extras.txt.
+
+# Desktop notification when pacman or AUR updates are available - checks
+# every 6h via checkupdates (pacman-contrib) and paru, and only notifies
+# when the pending set changes. Arch-only by design: apt/dnf/zypper have
+# their own update-notification tooling and this is unverified there.
+update-check.timer    pacman

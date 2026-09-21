@@ -36,6 +36,11 @@ terminal can't draw one) — never a general app menu. See
   ships as a curl-install script, a Flatpak app, or a font archive.
 - **Dotfile management** — symlinks a profile's dotfiles into `$HOME`,
   backing up anything already there first.
+- **Update notifications (Arch only)** — the `default` profile installs
+  a small systemd user timer that checks for pacman and AUR updates
+  every 6 hours and sends a desktop notification when there are new
+  ones. Other distros skip it. See
+  [`docs/design/update-notifier.md`](docs/design/update-notifier.md).
 - **Neovim + LazyVim, built in** — every profile vendors the real,
   public [LazyVim/starter](https://github.com/LazyVim/starter) config,
   set up automatically alongside every other opinionated default. No

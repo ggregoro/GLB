@@ -114,3 +114,10 @@ wl-clipboard
 # skipped at a no-TTY restore) still pages with plain `less` instead of
 # erroring.
 git-delta
+
+# pacman-contrib - provides `checkupdates`, which the update notifier
+# (dotfiles/.local/bin/update-check-notify, enabled via timers.txt) uses
+# to see pending repo updates without root. Arch-only: it doesn't exist
+# on apt/dnf/zypper, and the notifier's timer is only enabled on pacman,
+# so it's skipped everywhere else (_GLB_PACKAGE_SKIP in lib/package.sh).
+pacman-contrib

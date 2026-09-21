@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+# Desktop-notify when pacman or AUR updates are available. Run by the
+# update-check.timer user unit. Only notifies when the set of pending
+# updates has changed since the last notification, so it doesn't nag.
+# Needs pacman-contrib (checkupdates) and libnotify (notify-send); AUR
+# packages are included when paru is present.
+
+# Arch-only (checkupdates comes from pacman-contrib). GLB links this
+# script on every distro but only enables its timer on pacman, so on
+# anything else just do nothing, quietly.
+command -v checkupdates >/dev/null 2>&1 || exit 0
+
+state_dir="${XDG_STATE_HOME:-$HOME/.local/state}/update-check"
+last="$state_dir/last-notified"
+mkdir -p "$state_dir"
+
+# checkupdates exits 0 = updates, 2 = none, anything else = error
+# (offline, mirror down). Errors are not worth a notification.
+repo="$(checkupdates 2>/dev/null)"
+case $? in
+    0 | 2) ;;
+    *) exit 0 ;;
+esac
+
+aur=""
+if command -v paru >/dev/null 2>&1; then
+    aur="$(paru -Qua 2>/dev/null)"
+fi
+
+updates="$(printf '%s\n%s\n' "$repo" "$aur" | sed '/^$/d')"
+if [[ -z "$updates" ]]; then
+    rm -f "$last"
+    exit 0
+fi
+
+sum="$(printf '%s\n' "$updates" | sha256sum | cut -d' ' -f1)"
+[[ -f "$last" && "$(<"$last")" == "$sum" ]] && exit 0
+
+# grep -c, not wc -l: command substitution strips the trailing newline,
+# and wc -l counts newlines, so it would report one short (a single
+# pending update as 0).
+repo_n="$(printf '%s\n' "$repo" | grep -c .)"
+aur_n="$(printf '%s\n' "$aur" | grep -c .)"
+# awk join, not `paste -sd', '` - paste cycles through its delimiter
+# characters ("a,b c,d"), it doesn't use the string as a separator.
+names="$(printf '%s\n' "$updates" | awk 'NR <= 8 { printf "%s%s", (NR > 1 ? ", " : ""), $1 }')"
+total=$((repo_n + aur_n))
+[[ "$total" -gt 8 ]] && names="$names, ..."
+
+summary="$total update(s) available"
+body="$repo_n repo, $aur_n AUR: $names"
+
+if notify-send -a "Update check" -i software-update-available "$summary" "$body"; then
+    printf '%s\n' "$sum" > "$last"
+fi

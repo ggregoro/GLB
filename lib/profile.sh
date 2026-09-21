@@ -121,8 +121,10 @@ glb_apply_profile_dotfiles() {
             if [[ -e "$dest.glb-backup" || -L "$dest.glb-backup" ]]; then
                 if [[ -L "$dest" ]]; then
                     glb_log_info "Would replace ~/$rel's link (existing ~/$rel.glb-backup kept as-is)"
-                else
+                elif [[ -e "$dest" ]]; then
                     glb_log_info "Would refuse to link ~/$rel: ~/$rel.glb-backup already exists"
+                else
+                    glb_log_info "Would link ~/$rel (existing ~/$rel.glb-backup kept as-is)"
                 fi
             elif [[ -e "$dest" || -L "$dest" ]]; then
                 glb_log_info "Would back up ~/$rel -> ~/$rel.glb-backup, then link"
@@ -151,10 +153,16 @@ glb_apply_profile_dotfiles() {
                     failed+=("$rel")
                     continue
                 fi
-            else
+            elif [[ -e "$dest" ]]; then
                 glb_log_error "~/$rel.glb-backup already exists and ~/$rel is not a symlink; refusing to overwrite the existing backup. Resolve manually."
                 failed+=("$rel")
                 continue
+            else
+                # $dest is gone entirely - removed since the backup was
+                # made (e.g. `systemctl --user disable` deletes a linked
+                # unit's symlink). Nothing at $dest to protect or back up:
+                # keep the old backup as-is and just link.
+                glb_log_info "~/$rel.glb-backup already exists, keeping it; ~/$rel is missing, linking it fresh"
             fi
         elif [[ -e "$dest" || -L "$dest" ]]; then
             glb_log_warn "Backing up existing ~/$rel -> ~/$rel.glb-backup"
@@ -263,6 +271,7 @@ glb_apply_profile() {
     glb_install_self_symlink "$dry_run" || status=1
     glb_install_completions "$dry_run" || status=1
     glb_apply_profile_dotfiles "$profile_dir" "$dry_run" || status=1
+    glb_apply_profile_timers "$profile_dir" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then
         if [[ "$dry_run" == "--dry-run" ]]; then
@@ -314,6 +323,7 @@ glb_apply_manifest() {
     glb_install_self_symlink "$dry_run" || status=1
     glb_install_completions "$dry_run" || status=1
     glb_apply_profile_dotfiles "$path" "$dry_run" || status=1
+    glb_apply_profile_timers "$path" "$dry_run" || status=1
 
     if [[ "$status" -eq 0 ]]; then
         if [[ "$dry_run" == "--dry-run" ]]; then

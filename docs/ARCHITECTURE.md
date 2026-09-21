@@ -56,6 +56,7 @@ to clone a private one.
 | `detect.sh` | Detects the distro, distro version, package manager (apt/dnf/pacman/zypper), and current shell. |
 | `package.sh` | Package management abstraction: install/remove/list, per-distro name resolution (`_GLB_PACKAGE_OVERRIDES`) and its reverse for `glb export`, and the sudo-gated manual-step pause/resume. |
 | `extras.sh` | Installs software outside the package-manager model — curl-install scripts, Flatpak apps, and Nerd Font archives — driven by a profile's `extras.txt`. |
+| `timers.sh` | Enables the user systemd timers a profile lists in `timers.txt` (optionally restricted to one package manager), after the dotfiles that ship their unit files are linked. A timer that can't be enabled — no reachable user session, missing unit — warns with the exact command to run later; it never fails the restore. |
 | `profile.sh` | Applies a profile: packages, dotfiles (symlink + backup), the interactive picker (`glb restore` with no profile name), `--undo` rollback, and `--from-manifest <path>` for applying a profile-shaped directory from anywhere on disk. |
 | `prompt.sh` | Installs and configures the Starship prompt (`glb prompt`), including the update path. |
 | `plugins.sh` | Vendors a curated set of zsh plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`) by git-cloning them directly — framework-free, no Oh My Zsh/Fisher dependency. |
@@ -75,6 +76,9 @@ A profile is a directory containing:
   overrides are resolved via `lib/package.sh`).
 - **`extras.txt`** *(optional)* — `<method> <name> <spec>` lines for
   curl/Flatpak/font installs, parsed by `lib/extras.sh`.
+- **`timers.txt`** *(optional)* — `<unit> [package-manager]` lines: user
+  systemd timers to enable once the dotfiles are linked, optionally
+  only on one package manager; parsed by `lib/timers.sh`.
 - **`dotfiles/`** — files copied verbatim into the same relative path under
   `$HOME`, applied as symlinks (existing files backed up to `*.glb-backup`
   first).
@@ -88,7 +92,7 @@ other dotfile (symlinked, backed up on first touch), no external repo
 or credentials involved. See `docs/design/nvim-lazyvim.md`.
 
 `glb restore <profile>` runs, in order: packages → extras → Starship →
-zsh plugins → self-symlink + completions → dotfiles. `glb export` and
+zsh plugins → self-symlink + completions → dotfiles → timers. `glb export` and
 `glb diff`/`glb repair` all operate on this same shape, so a snapshot
 captured by `glb export` can be diffed against or restored from exactly
 like a profile.

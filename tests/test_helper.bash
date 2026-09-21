@@ -16,7 +16,7 @@ GLB_REAL_BASH="$(command -v bash)"
 # (glb_command_exists). Tests must behave the same whether or not the
 # host already has them - a test that wants one present stubs it into
 # STUB_BIN, which is always first on PATH.
-GLB_HIDDEN_COMMANDS=(fresh nvim yazi)
+GLB_HIDDEN_COMMANDS=(fresh nvim yazi checkupdates paru notify-send)
 
 # _glb_build_shadow_path <dest> [path]
 # Populate <dest> with a symlink to every executable reachable on

@@ -13,6 +13,20 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **Update notifier for Arch (`default` profile)** — a systemd user
+  timer that checks for pacman (`checkupdates`) and AUR (`paru -Qua`)
+  updates 5 minutes after boot and every 6 hours, and sends a desktop
+  notification when the set of pending updates changes (not on every
+  run). Ships as dotfiles (`.local/bin/update-check-notify`,
+  `.config/systemd/user/update-check.{service,timer}`) plus
+  `pacman-contrib`, which is skipped on apt/dnf/zypper. Arch-only by
+  design — see `docs/design/update-notifier.md`.
+- **`timers.txt` and `lib/timers.sh`** — new optional per-profile file
+  listing user systemd timers to enable after the dotfiles are linked,
+  each optionally restricted to one package manager. Failing to enable
+  one (no user session, e.g. a restore over ssh) warns with the exact
+  command to run later and never fails the restore. Wired into both
+  `glb restore <profile>` and `--from-manifest`.
 - **`lt`/`lta` aliases in all three profiles** (`default`/`developer`/
   `server`) — `alias lt='eza --tree --level=2 --long --icons --git'`
   and `lta='lt -a'`, matching the same aliases already used on the
@@ -33,6 +47,26 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **`glb restore` no longer refuses to re-link a dotfile that has gone
+  missing but has an old `.glb-backup`** — if `~/<file>` was removed
+  after a first restore, the link step hit its "backup already exists
+  and the file is not a symlink" guard and failed, even though there was
+  nothing at the destination to protect. It now keeps the existing backup
+  untouched and links fresh (the dry-run says "Would link", not "Would
+  refuse"). Found for real when `systemctl --user disable` deleted a
+  linked systemd unit's symlink; a real-object at the destination still
+  refuses, as before.
+- **The bats suite no longer depends on what's already installed on the
+  machine running it** — 7 tests failed on any machine GLB had already
+  been applied to, because the sandbox `PATH` let `command -v` see the
+  host's real `fresh`/`nvim`/`yazi`. Worse, the default-profile restore
+  and `glb repair` end-to-end tests never stubbed the `nvim` tarball or
+  `yazi` zip at all, so they only ever passed *because* those tools were
+  already present. The sandbox `PATH` now hides the host's copies
+  (`GLB_HIDDEN_COMMANDS` in `tests/test_helper.bash`), a shared
+  `stub_release_download_tools` helper fakes those downloads, and
+  `tests/sandbox.bats` covers the isolation itself. Suite: 244/251 →
+  all passing on an already-applied Arch machine.
 - **`glb export`/`glb repair` no longer break on distros without a
   `hostname` binary** — Arch doesn't include one in its base install
   (it's in `inetutils`), so `lib/export.sh`'s three `$(hostname)` calls

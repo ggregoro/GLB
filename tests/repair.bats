@@ -14,6 +14,7 @@ setup() {
     source "$GLB_ROOT/lib/detect.sh"
     source "$GLB_ROOT/lib/package.sh"
     source "$GLB_ROOT/lib/extras.sh"
+    source "$GLB_ROOT/lib/timers.sh"
     source "$GLB_ROOT/lib/completions.sh"
     source "$GLB_ROOT/lib/plugins.sh"
     source "$GLB_ROOT/lib/profile.sh"

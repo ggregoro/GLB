@@ -56,6 +56,9 @@ declare -gA _GLB_PACKAGE_OVERRIDES=(
 # the tool.
 declare -gA _GLB_PACKAGE_SKIP=(
     [snapd:pacman]="not in Arch's official repos (AUR-only); nothing in these profiles needs it on pacman since yazi installs as a native package instead"
+    [pacman-contrib:apt]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"
+    [pacman-contrib:dnf]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"
+    [pacman-contrib:zypper]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"
 )
 
 # ------------------------------------------------------------
