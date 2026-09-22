@@ -77,7 +77,20 @@ else if command -q dnf
     alias remove='sudo dnf remove'
     alias search='dnf search'
 else if command -q pacman
-    alias update='yay -Syu'
+    # `update` brings the whole system current: repo + AUR updates. Uses
+    # whichever AUR helper is installed (paru, then yay), else plain
+    # `sudo pacman -Syu`. Stops at the first step that fails or is
+    # declined. Extra arguments pass through to the package step.
+    function update --description 'Update the system (repo + AUR updates)'
+        if command -q paru
+            paru -Syu $argv
+        else if command -q yay
+            yay -Syu $argv
+        else
+            sudo pacman -Syu $argv
+        end
+        or return $status
+    end
     alias install='sudo pacman -S'
     alias remove='sudo pacman -R'
     alias search='pacman -Ss'

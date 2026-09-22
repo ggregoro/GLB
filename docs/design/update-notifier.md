@@ -14,7 +14,9 @@ This sits at the edge of GLB's terminal-first scope
 ([`docs/PHILOSOPHY.md`](../PHILOSOPHY.md)), so it is deliberately
 narrow: a ~60-line script and two systemd units that use tools already
 on the machine. It does not update anything itself — the notification
-just says updates exist; the user runs `paru` or `sudo pacman -Syu`.
+just says updates exist; the user then types `update`, the shell
+function the `default` profile defines on pacman (repo + AUR through
+`paru`/`yay`, then Flatpak apps).
 
 ## What ships (all in the `default` profile)
 

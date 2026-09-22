@@ -47,6 +47,18 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **The Arch `update` shortcut no longer assumes `yay` is installed** —
+  all three profiles defined `alias update='yay -Syu'` on pacman, but
+  nothing installs `yay`, so on an Arch machine using `paru` (or no AUR
+  helper) typing `update` failed with "command not found". It's now a
+  small function in bash, zsh and fish that uses whichever AUR helper
+  is present (`paru`, then `yay`), else plain `sudo pacman -Syu`, stops
+  at the first step that fails or is declined, and passes extra
+  arguments through. On the `default` profile it then also runs
+  `flatpak update` when Flatpak is installed, so one `update` brings the
+  repos, the AUR and Flatpak apps current; `developer`/`server` don't
+  touch Flatpak. Covered by `tests/update_alias.bats`, which runs the
+  real function extracted from each shell's dotfile.
 - **`glb restore` no longer refuses to re-link a dotfile that has gone
   missing but has an old `.glb-backup`** — if `~/<file>` was removed
   after a first restore, the link step hit its "backup already exists

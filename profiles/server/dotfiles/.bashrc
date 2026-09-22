@@ -121,7 +121,19 @@ elif command -v dnf >/dev/null 2>&1; then
     alias remove='sudo dnf remove'
     alias search='dnf search'
 elif command -v pacman >/dev/null 2>&1; then
-    alias update='yay -Syu'
+    # `update` brings the whole system current: repo + AUR updates. Uses
+    # whichever AUR helper is installed (paru, then yay), else plain
+    # `sudo pacman -Syu`. Stops at the first step that fails or is
+    # declined. Extra arguments pass through to the package step.
+    update() {
+        if command -v paru >/dev/null 2>&1; then
+            paru -Syu "$@" || return $?
+        elif command -v yay >/dev/null 2>&1; then
+            yay -Syu "$@" || return $?
+        else
+            sudo pacman -Syu "$@" || return $?
+        fi
+    }
     alias install='sudo pacman -S'
     alias remove='sudo pacman -R'
     alias search='pacman -Ss'
