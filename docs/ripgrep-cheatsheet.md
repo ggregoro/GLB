@@ -55,5 +55,14 @@ From inside your GLB checkout:
 rg -S alias --hidden profiles
 ```
 
-This lists every alias across the GLB profiles, dotfiles included. For
-more, `rg --help` is well organized.
+This lists every alias across the GLB profiles, dotfiles included. To
+see just one shell's aliases, add a file type:
+
+```
+rg -S alias --hidden -t fish profiles
+```
+
+The same `-t` filter works for other file types too: `-t sh` for bash
+scripts, `-t md` for docs. `rg --type-list` shows every type it knows.
+Run from outside the checkout, `profiles` won't be found; use the full
+path to it instead. For more, `rg --help` is well organized.
