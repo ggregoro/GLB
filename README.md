@@ -133,7 +133,8 @@ glb repair <profile>                  Check this machine against a profile
 
 All profiles share the same underlying shell setup (bash/zsh/fish with
 per-shell distinct prompts) and differ in their package lists, extras, and
-profile-specific dotfiles.
+profile-specific dotfiles. Every profile installs `ripgrep` (`rg`); see
+[`docs/ripgrep-cheatsheet.md`](docs/ripgrep-cheatsheet.md) for how to use it.
 
 ## Terminal Font
 

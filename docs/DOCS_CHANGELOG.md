@@ -12,6 +12,8 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- Added `ripgrep-cheatsheet.md`: everyday `rg` commands, filtering, the
+  default-skip gotchas, and why GLB doesn't alias `grep` to `rg`.
 - Added `arch-software-install.md`: how to install extra apps on Arch after
   GLB (pacman, then the AUR, then Flatpak), the partial-upgrade rule, and
   why PackageKit and the COSMIC Store's pacman backend are left out.
