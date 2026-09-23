@@ -151,4 +151,5 @@ For end-to-end verification on a clean machine, follow
 | [`docs/PROJECT.md`](docs/PROJECT.md) | Project overview, release strategy, long-term vision |
 | [`docs/ROADMAP.md`](docs/ROADMAP.md) | Direction, progress, per-distro verification history |
 | [`docs/CODING_STANDARDS.md`](docs/CODING_STANDARDS.md) | Style rules |
+| [`docs/arch-software-install.md`](docs/arch-software-install.md) | Installing extra apps on Arch after GLB (pacman → AUR → Flatpak, no PackageKit) |
 | [`docs/design/`](docs/design/) | Per-feature design notes |
