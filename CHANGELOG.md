@@ -114,6 +114,10 @@ This project follows a simple versioning approach:
   already has one.
 
 ### Changed
+- **Arch `remove` shortcut is now `sudo pacman -Rns`** (was `-R`), in
+  bash/zsh/fish across all three profiles, so removing a package also
+  removes its no-longer-needed dependencies and its `.pacsave` config
+  backups. apt/dnf/zypper unchanged. `glb remove` itself is unaffected.
 - **`yazi` moved off `snap` onto `github-release`** in `default` and
   `server` (Greg's call: avoid `snap` wherever a real alternative
   exists — every cross-distro bug this project has hit traces back to

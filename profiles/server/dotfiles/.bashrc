@@ -135,7 +135,7 @@ elif command -v pacman >/dev/null 2>&1; then
         fi
     }
     alias install='sudo pacman -S'
-    alias remove='sudo pacman -R'
+    alias remove='sudo pacman -Rns'
     alias search='pacman -Ss'
 elif command -v zypper >/dev/null 2>&1; then
     alias update='sudo zypper refresh && sudo zypper update'

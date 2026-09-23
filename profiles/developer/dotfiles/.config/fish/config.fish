@@ -92,7 +92,7 @@ else if command -q pacman
         or return $status
     end
     alias install='sudo pacman -S'
-    alias remove='sudo pacman -R'
+    alias remove='sudo pacman -Rns'
     alias search='pacman -Ss'
 else if command -q zypper
     alias update='sudo zypper refresh && sudo zypper update'

@@ -56,9 +56,9 @@ flatpak update       # Flatpak apps
 sudo pacman -Rns <name>    # removes the package, its unused dependencies, and system config files
 ```
 
-GLB's `remove` shortcut is plain `sudo pacman -R`, which leaves the package's
-unused dependencies installed. Use the full `-Rns` command above for a clean
-removal.
+GLB's `remove` shortcut runs exactly this (`remove <name>`). The `-s` part
+never removes a dependency that another package still needs, or a package you
+installed yourself, and pacman lists everything before asking to confirm.
 
 ## Decisions
 
