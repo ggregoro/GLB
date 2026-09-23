@@ -20,6 +20,7 @@ curl
 zsh
 fish
 fzf
+ripgrep
 eza
 bat
 zoxide

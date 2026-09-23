@@ -37,6 +37,9 @@ This project follows a simple versioning approach:
   earlier version of this feature used `tree -C -I '...'` with its own
   `tree` package and a standalone Fish function file, both now removed
   in favor of this eza-based version.
+- **`ripgrep` in the `developer` and `server` profiles** — previously
+  `default`-only, now in all three (matching GWB). Same package name on
+  apt/dnf/pacman/zypper; no alias, it stays `rg`.
 
 ### Docs
 - **README and the fresh-VM checklist now call out `git` as a
