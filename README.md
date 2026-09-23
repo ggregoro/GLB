@@ -180,7 +180,9 @@ with a real restore on real hardware or VMs:
 
 - **apt** — Debian, Ubuntu and derivatives (Pop!_OS, Linux Mint, Zorin OS)
 - **dnf** — Fedora
-- **pacman** — Arch and Arch-based distros (CachyOS, EndeavourOS)
+- **pacman** — Arch and Arch-based distros (CachyOS, EndeavourOS). For
+  installing extra apps afterwards, see
+  [`docs/arch-software-install.md`](docs/arch-software-install.md).
 - **zypper** — openSUSE
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full per-distro

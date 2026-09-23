@@ -12,6 +12,9 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- Added `arch-software-install.md`: how to install extra apps on Arch after
+  GLB (pacman, then the AUR, then Flatpak), the partial-upgrade rule, and
+  why PackageKit and the COSMIC Store's pacman backend are left out.
 - Added `fresh-vm-verification.md` — the repeatable checklist for
   installing GLB on a genuinely clean VM (as a new user) and confirming
   `glb restore default` works end to end. Includes the VirtualBox 3D-
