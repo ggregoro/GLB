@@ -93,7 +93,10 @@ sudo just install
 ```
 
 Releases are tagged `epoch-<version>` (for example `epoch-1.9.0`), and
-`git tag --sort=-creatordate | head -3` shows the newest ones. COSMIC
+`git tag --sort=-creatordate | head -3` shows the newest ones. To see
+which release you built, run `git log --oneline -1` in the source
+folder. Don't go by the About dialog: in 1.9.0 it still says `1.0.0`,
+because upstream didn't bump the app's own version number. COSMIC
 Viewer bundles its own copy of the COSMIC toolkit, so a newer Viewer
 runs fine on an older COSMIC desktop.
 
