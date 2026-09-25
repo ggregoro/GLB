@@ -40,6 +40,13 @@ This project follows a simple versioning approach:
 - **`ripgrep` in the `developer` and `server` profiles** — previously
   `default`-only, now in all three (matching GWB). Same package name on
   apt/dnf/pacman/zypper; no alias, it stays `rg`.
+- **Ranger opens images in COSMIC Viewer (`default` profile)** — a
+  `cosmic-viewer` rule ahead of the stock image-viewer list in
+  `rifle.conf`, gated on `has cosmic-viewer` so other machines are
+  unaffected. Without it, a box with none of the stock viewers fell
+  through to `xdg-open`, which runs unforked in ranger's terminal and
+  can hand images to a browser. Stock viewers such as `imv` stay as
+  the fallback.
 
 ### Docs
 - **README and the fresh-VM checklist now call out `git` as a
