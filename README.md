@@ -183,7 +183,9 @@ with a real restore on real hardware or VMs:
 - **dnf** — Fedora
 - **pacman** — Arch and Arch-based distros (CachyOS, EndeavourOS). For
   installing extra apps afterwards, see
-  [`docs/arch-software-install.md`](docs/arch-software-install.md).
+  [`docs/arch-software-install.md`](docs/arch-software-install.md). For
+  building COSMIC Viewer (not packaged for Arch) and fixing it after an
+  update, see [`docs/cosmic-viewer-arch.md`](docs/cosmic-viewer-arch.md).
 - **zypper** — openSUSE
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full per-distro

@@ -12,6 +12,11 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- Added `cosmic-viewer-arch.md`: building COSMIC Viewer from source on
+  Arch/EndeavourOS/CachyOS, the "cannot open shared object file" break
+  after a library update and how to rebuild, updating to a new release,
+  Ranger's image-viewer order (COSMIC Viewer, then `imv`), and switching
+  to an Arch package if one appears.
 - Added `ripgrep-cheatsheet.md`: everyday `rg` commands, filtering, the
   default-skip gotchas, and why GLB doesn't alias `grep` to `rg`.
 - Added `arch-software-install.md`: how to install extra apps on Arch after
