@@ -128,15 +128,12 @@ fi
 # ------------------------------------------------------------
 # Editors
 # ------------------------------------------------------------
-if command -v nano >/dev/null 2>&1; then
-    export EDITOR=nano
-    export VISUAL=nano
-fi
-
 if command -v fresh-editor >/dev/null 2>&1; then
+    export EDITOR=fresh-editor VISUAL=fresh-editor
     alias editzsh='fresh-editor ~/.zshrc'
     alias editstarship='fresh-editor ~/.config/starship.toml'
 elif command -v fresh >/dev/null 2>&1; then
+    export EDITOR=fresh VISUAL=fresh
     alias editzsh='fresh ~/.zshrc'
     alias editstarship='fresh ~/.config/starship.toml'
 fi

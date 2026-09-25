@@ -108,14 +108,13 @@ end
 # ------------------------------------------------------------
 # Editors
 # ------------------------------------------------------------
-if command -q nano
-    set -gx EDITOR nano
-    set -gx VISUAL nano
-end
-
 if command -q fresh-editor
+    set -gx EDITOR fresh-editor
+    set -gx VISUAL fresh-editor
     alias editfish='fresh-editor ~/.config/fish/config.fish'
 else if command -q fresh
+    set -gx EDITOR fresh
+    set -gx VISUAL fresh
     alias editfish='fresh ~/.config/fish/config.fish'
 end
 

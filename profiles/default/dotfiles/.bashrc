@@ -151,14 +151,11 @@ fi
 # ------------------------------------------------------------
 # Editors
 # ------------------------------------------------------------
-if command -v nano >/dev/null 2>&1; then
-    export EDITOR=nano
-    export VISUAL=nano
-fi
-
 if command -v fresh-editor >/dev/null 2>&1; then
+    export EDITOR=fresh-editor VISUAL=fresh-editor
     alias editbash='fresh-editor ~/.bashrc'
 elif command -v fresh >/dev/null 2>&1; then
+    export EDITOR=fresh VISUAL=fresh
     alias editbash='fresh ~/.bashrc'
 fi
 

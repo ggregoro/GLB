@@ -10,8 +10,10 @@ url   = "*/"
 run   = "git"
 group = "git"
 
-# Open text files in nano (yazi's default is ${EDITOR:-vi}, and vi isn't installed)
+# Open text files in Fresh, not yazi's default ${EDITOR:-vi} - vi isn't
+# installed, so an unset $EDITOR (e.g. yazi launched outside a shell)
+# would otherwise open nothing.
 [opener]
 edit = [
-  { run = "nano %s", block = true, for = "unix" },
+  { run = "fresh %s", block = true, for = "unix" },
 ]
