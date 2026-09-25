@@ -40,6 +40,13 @@ This project follows a simple versioning approach:
 - **`ripgrep` in the `developer` and `server` profiles** — previously
   `default`-only, now in all three (matching GWB). Same package name on
   apt/dnf/pacman/zypper; no alias, it stays `rg`.
+- **Fresh is the default editor everywhere (`default` profile)** —
+  `EDITOR`/`VISUAL` in bash, zsh and fish now point at Fresh, and
+  yazi's edit opener runs `fresh`. Ranger gets its own `rifle.conf`
+  (a copy of ranger 1.9.4's built-in one, since a user `rifle.conf`
+  replaces it entirely) with Fresh rules for text files and the
+  editor action (e.g. the `E` key) ahead of the stock
+  `${VISUAL:-$EDITOR}` rules, which stay as the fallback.
 - **Ranger opens images in COSMIC Viewer (`default` profile)** — a
   `cosmic-viewer` rule ahead of the stock image-viewer list in
   `rifle.conf`, gated on `has cosmic-viewer` so other machines are
