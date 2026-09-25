@@ -13,5 +13,5 @@ group = "git"
 # Open text files in nano (yazi's default is ${EDITOR:-vi}, and vi isn't installed)
 [opener]
 edit = [
-  { run = 'nano "$@"', block = true, for = "unix" },
+  { run = "nano %s", block = true, for = "unix" },
 ]
