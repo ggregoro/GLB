@@ -4,9 +4,17 @@ How to build and install COSMIC Viewer (`cosmic-viewer`, the COSMIC
 desktop's image viewer) on Arch and Arch-based distros (EndeavourOS,
 CachyOS), how to fix it when an update breaks it, and how Ranger uses it.
 
-Arch doesn't package COSMIC Viewer. The AUR only has `cosmic-viewer-git`,
-which builds from source the same way this page does. So on Arch it's
-built by hand.
+**Update, 2026-09-26: Arch now packages COSMIC Viewer** (`cosmic-viewer`
+in `extra`, starting with 1.9.0-1). On a fresh machine, just run
+`sudo pacman -S cosmic-viewer` and skip the build steps below. If a
+machine already has a hand-built copy, follow
+[Check whether Arch packages it yet](#check-whether-arch-packages-it-yet)
+to switch over. The build steps stay here for Arch-based distros whose
+repos don't carry it yet.
+
+Before that, Arch didn't package COSMIC Viewer. The AUR only had
+`cosmic-viewer-git`, which builds from source the same way this page
+does, so on Arch it was built by hand.
 
 ## Build and install
 
