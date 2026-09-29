@@ -128,6 +128,16 @@ This project follows a simple versioning approach:
   already has one.
 
 ### Changed
+- **`default`'s Starship prompt: pointed separators, `➜` prompt
+  character, purple zsh** — in all three shells' configs
+  (`starship-bash.toml`/`starship-fish.toml`/`starship.toml`), the
+  Tokyo Night preset's rounded segment separators are replaced with
+  Powerline arrows, and the `❯` prompt character with `➜` (still green
+  on success/red on error, via a new `[character]` block). zsh's accent
+  moves from orange to purple (`#b376f0`), derived the same way the
+  orange was: fish's blue palette hue-shifted, keeping each shade's
+  lightness. Colors, segments and layout are otherwise unchanged.
+  `developer`/`server` are unaffected.
 - **Arch `remove` shortcut is now `sudo pacman -Rns`** (was `-R`), in
   bash/zsh/fish across all three profiles, so removing a package also
   removes its no-longer-needed dependencies and its `.pacsave` config

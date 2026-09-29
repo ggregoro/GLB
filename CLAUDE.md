@@ -78,7 +78,7 @@ Full module breakdown: [`docs/ARCHITECTURE.md`](docs/ARCHITECTURE.md).
 All profiles ship the same bash/zsh/fish shells with per-shell distinct
 prompts, though each profile keeps its own separate dotfiles rather than
 sharing one file across profiles — `default`'s prompt setup (a
-tri-color Starship theme, bash green/fish blue/zsh orange, see
+tri-color Starship theme, bash green/fish blue/zsh purple, see
 `docs/ROADMAP.md` Post-1.0 add-ons) is specific to `default` and not
 mirrored in `developer`/`server`. Profiles differ in package lists,
 extras, and dotfile content generally. (`new-to-linux` was retired — once its

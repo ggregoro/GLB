@@ -12,7 +12,7 @@ scan_timeout = 1000
 # STARSHIP_CONFIG through the environment and silently overrode this
 # shell's colors; every shell now sets its own explicitly instead of
 # relying on a default. Identical layout to ~/.config/starship-bash.toml
-# (green) and ~/.config/starship.toml (zsh, orange) - only the accent
+# (green) and ~/.config/starship.toml (zsh, purple) - only the accent
 # hue differs, so the three shells are instantly distinguishable at a
 # glance while sharing one prompt design. Based on the official "Tokyo
 # Night" preset from starship.rs/presets, with one addition:
@@ -23,22 +23,26 @@ scan_timeout = 1000
 format = """
 [░▒▓](#a3aed2)\
 $os\
-[](bg:#769ff0 fg:#a3aed2)\
+[](bg:#769ff0 fg:#a3aed2)\
 $directory\
-[](fg:#769ff0 bg:#394260)\
+[](fg:#769ff0 bg:#394260)\
 $git_branch\
 $git_status\
-[](fg:#394260 bg:#212736)\
+[](fg:#394260 bg:#212736)\
 $nodejs\
 $bun\
 $rust\
 $golang\
 $php\
-[](fg:#212736 bg:#1d2230)\
+[](fg:#212736 bg:#1d2230)\
 $cmd_duration\
 $time\
-[ ](fg:#1d2230)\
+[ ](fg:#1d2230)\
 \n$character"""
+
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
 
 [directory]
 style = "fg:#000000 bg:#769ff0"

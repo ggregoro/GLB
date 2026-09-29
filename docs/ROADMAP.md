@@ -551,6 +551,14 @@ in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
   `snap` — no generic Linux binary release exists for it, so
   snap/native-package remains the only real option there.
 
+- **Arrow-style Starship prompt, purple zsh (2026-09-28) ✅** — Greg's
+  call: keep the Tokyo Night look but swap its rounded segment
+  separators for pointed Powerline arrows and the `❯` prompt character
+  for `➜`, in all three of `default`'s shells. zsh's accent changes from
+  orange to purple (`#b376f0`, fish's blue palette hue-shifted, same
+  method as the orange). Tried on fish first, then rolled out to
+  bash/zsh. `developer`/`server` unaffected.
+
 ---
 
 # Long-Term Vision

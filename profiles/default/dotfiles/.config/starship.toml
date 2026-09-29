@@ -13,35 +13,40 @@ scan_timeout = 1000
 # shell's colors; every shell now sets its own explicitly instead.
 # Identical layout to ~/.config/starship-bash.toml (green) and
 # ~/.config/starship-fish.toml (blue) - only the accent hue differs
-# (zsh is orange, new 2026-09-11), so the three shells are instantly
-# distinguishable at a glance while sharing one prompt design. Based on
+# (zsh is purple; orange until 2026-09-28), so the three shells are
+# instantly distinguishable at a glance while sharing one prompt
+# design. Based on
 # the official "Tokyo Night" preset from starship.rs/presets, with one
 # addition: $cmd_duration (the preset does not include it by default),
 # styled to match $time. $directory text is solid black in all three
 # (Greg's explicit call, 2026-09-11).
 
 format = """
-[░▒▓](#d2aea3)\
+[░▒▓](#bfa3d2)\
 $os\
-[](bg:#e8935c fg:#d2aea3)\
+[](bg:#b376f0 fg:#bfa3d2)\
 $directory\
-[](fg:#e8935c bg:#604239)\
+[](fg:#b376f0 bg:#503960)\
 $git_branch\
 $git_status\
-[](fg:#604239 bg:#362721)\
+[](fg:#503960 bg:#2c2136)\
 $nodejs\
 $bun\
 $rust\
 $golang\
 $php\
-[](fg:#362721 bg:#30221d)\
+[](fg:#2c2136 bg:#281d30)\
 $cmd_duration\
 $time\
-[ ](fg:#30221d)\
+[ ](fg:#281d30)\
 \n$character"""
 
+[character]
+success_symbol = "[➜](bold green)"
+error_symbol = "[➜](bold red)"
+
 [directory]
-style = "fg:#000000 bg:#e8935c"
+style = "fg:#000000 bg:#b376f0"
 format = "[ $path ]($style)"
 truncation_length = 3
 truncation_symbol = "…/"
@@ -54,51 +59,51 @@ truncation_symbol = "…/"
 
 [git_branch]
 symbol = ""
-style = "bg:#604239"
-format = '[[ $symbol $branch ](fg:#e8935c bg:#604239)]($style)'
+style = "bg:#503960"
+format = '[[ $symbol $branch ](fg:#b376f0 bg:#503960)]($style)'
 
 [git_status]
-style = "bg:#604239"
-format = '[[($all_status$ahead_behind )](fg:#e8935c bg:#604239)]($style)'
+style = "bg:#503960"
+format = '[[($all_status$ahead_behind )](fg:#b376f0 bg:#503960)]($style)'
 
 [nodejs]
 symbol = ""
-style = "bg:#362721"
-format = '[[ $symbol ($version) ](fg:#e8935c bg:#362721)]($style)'
+style = "bg:#2c2136"
+format = '[[ $symbol ($version) ](fg:#b376f0 bg:#2c2136)]($style)'
 
 [bun]
 symbol = ""
-style = "bg:#362721"
-format = '[[ $symbol ($version) ](fg:#e8935c bg:#362721)]($style)'
+style = "bg:#2c2136"
+format = '[[ $symbol ($version) ](fg:#b376f0 bg:#2c2136)]($style)'
 
 [rust]
 symbol = ""
-style = "bg:#362721"
-format = '[[ $symbol ($version) ](fg:#e8935c bg:#362721)]($style)'
+style = "bg:#2c2136"
+format = '[[ $symbol ($version) ](fg:#b376f0 bg:#2c2136)]($style)'
 
 [golang]
 symbol = ""
-style = "bg:#362721"
-format = '[[ $symbol ($version) ](fg:#e8935c bg:#362721)]($style)'
+style = "bg:#2c2136"
+format = '[[ $symbol ($version) ](fg:#b376f0 bg:#2c2136)]($style)'
 
 [php]
 symbol = ""
-style = "bg:#362721"
-format = '[[ $symbol ($version) ](fg:#e8935c bg:#362721)]($style)'
+style = "bg:#2c2136"
+format = '[[ $symbol ($version) ](fg:#b376f0 bg:#2c2136)]($style)'
 
 [time]
 disabled = false
 time_format = "%R" # Hour:Minute Format
-style = "bg:#30221d"
-format = '[[  $time ](fg:#cba9a0 bg:#30221d)]($style)'
+style = "bg:#281d30"
+format = '[[  $time ](fg:#bba0cb bg:#281d30)]($style)'
 
 [cmd_duration]
 min_time = 5000
-style = "bg:#30221d"
-format = '[[  $duration ](fg:#cba9a0 bg:#30221d)]($style)'
+style = "bg:#281d30"
+format = '[[  $duration ](fg:#bba0cb bg:#281d30)]($style)'
 
 [os]
-style = "bg:#d2aea3 fg:#090c0c"
+style = "bg:#bfa3d2 fg:#090c0c"
 format = "[ $symbol ]($style)"
 disabled = false
 
