@@ -13,6 +13,13 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **`.tmux.conf` in the `default` profile** — moved from the separate
+  COSMIC desktop repo, where it didn't belong (tmux is terminal setup,
+  not desktop theming), so `glb restore default` now links it like any
+  other dotfile. Prefix `C-f` (secondary `C-j`), `v`/`h` splits, mouse
+  on, 1-based windows/panes, `r` to reload, mouse-drag copy to the
+  Wayland clipboard via `wl-copy`. `tmux` and `wl-clipboard` were
+  already in `default`'s `packages.txt`; `developer`/`server` unaffected.
 - **Update notifier for Arch (`default` profile)** — a systemd user
   timer that checks for pacman (`checkupdates`) and AUR (`paru -Qua`)
   updates 5 minutes after boot and every 6 hours, and sends a desktop
