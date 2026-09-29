@@ -13,6 +13,17 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **Git aliases in all three profiles** (`default`/`developer`/`server`)
+  — `gs` (status), `ga` (add), `gc` (commit -m), `gp` (push), `gpl`
+  (pull), `gst` (stash), `gsp` (stash then pull), `gfo` (fetch origin),
+  `gcheck` (checkout), `gcredential` (credential.helper store), in a new
+  `# Git` block after `# System` in each profile's
+  `.bashrc`/`.zshrc`/`config.fish`. Same short names as the ML4W
+  Hyprland dotfiles, so muscle memory carries over between a GLB shell
+  and an ML4W desktop. `gcredential` saves credentials in plain text
+  (`~/.git-credentials`); prefer SSH or a credential manager where one
+  exists. `gs` shadows Ghostscript's `gs` in interactive shells (call
+  it as `command gs` if needed).
 - **`.tmux.conf` in the `default` profile** — moved from the separate
   COSMIC desktop repo, where it didn't belong (tmux is terminal setup,
   not desktop theming), so `glb restore default` now links it like any

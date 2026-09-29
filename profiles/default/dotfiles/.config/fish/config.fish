@@ -64,6 +64,20 @@ alias cls='clear'
 alias reload='source ~/.config/fish/config.fish'
 
 # ------------------------------------------------------------
+# Git (same short names as the ML4W Hyprland dotfiles)
+# ------------------------------------------------------------
+alias gs='git status'
+alias ga='git add'
+alias gc='git commit -m'
+alias gp='git push'
+alias gpl='git pull'
+alias gst='git stash'
+alias gsp='git stash; git pull'
+alias gfo='git fetch origin'
+alias gcheck='git checkout'
+alias gcredential='git config credential.helper store'
+
+# ------------------------------------------------------------
 # Package manager shortcuts (auto-detected: apt/dnf/pacman/zypper)
 # ------------------------------------------------------------
 if command -q apt
