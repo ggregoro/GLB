@@ -99,6 +99,13 @@ glb_setup_sandbox() {
     # trusting every current and future test to remember it themselves.
     export _GLB_SNAP_DIR="$TEST_TMP/snap"
     export _GLB_SNAPD_DIR="$TEST_TMP/var-lib-snapd-snap"
+
+    # glb_is_wsl (lib/detect.sh) reads the real /proc/version, so a
+    # suite run under WSL would skip the extras WSL has no use for and
+    # fail every test that expects them installed. Point it at a file
+    # that doesn't exist (= not WSL); a test that wants WSL writes a
+    # Microsoft kernel string there.
+    export _GLB_PROC_VERSION="$TEST_TMP/proc-version"
 }
 
 glb_teardown_sandbox() {

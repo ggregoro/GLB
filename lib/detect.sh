@@ -63,6 +63,21 @@ glb_detect_package_manager() {
 }
 
 # ------------------------------------------------------------
+# Detect whether this is Windows Subsystem for Linux
+#
+# Both WSL1 and WSL2 kernels report "microsoft"/"Microsoft" in
+# /proc/version; no real Linux install does. The path is overridable
+# (_GLB_PROC_VERSION) so the test suite gives the same answer whether
+# or not it's itself running under WSL - see tests/test_helper.bash.
+# ------------------------------------------------------------
+
+glb_is_wsl() {
+    local version_file="${_GLB_PROC_VERSION:-/proc/version}"
+
+    [[ -r "$version_file" ]] && grep -qi microsoft "$version_file"
+}
+
+# ------------------------------------------------------------
 # Detect user's shell
 # ------------------------------------------------------------
 

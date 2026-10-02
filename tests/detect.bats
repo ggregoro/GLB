@@ -73,3 +73,36 @@ teardown() {
     run bash -c "PATH='$STUB_BIN'; source '$GLB_ROOT/lib/detect.sh'; glb_detect_package_manager"
     [ "$status" -eq 1 ]
 }
+
+# --- glb_is_wsl ---------------------------------------------------------
+
+@test "is_wsl: true for a WSL2 kernel string" {
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2 (root@host) #1 SMP\n' > "$_GLB_PROC_VERSION"
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_is_wsl
+    [ "$status" -eq 0 ]
+}
+
+@test "is_wsl: true for a WSL1 kernel string (capital M)" {
+    printf 'Linux version 4.4.0-19041-Microsoft (Microsoft@Microsoft.com) #1\n' > "$_GLB_PROC_VERSION"
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_is_wsl
+    [ "$status" -eq 0 ]
+}
+
+@test "is_wsl: false for an ordinary Linux kernel string" {
+    printf 'Linux version 6.17.4-76061704-generic (jenkins@host) #1 SMP\n' > "$_GLB_PROC_VERSION"
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_is_wsl
+    [ "$status" -ne 0 ]
+}
+
+@test "is_wsl: false when the version file isn't readable at all" {
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_is_wsl
+    [ "$status" -ne 0 ]
+}

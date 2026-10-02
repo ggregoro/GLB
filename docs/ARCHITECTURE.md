@@ -53,7 +53,7 @@ to clone a private one.
 | `banner.sh` | Displays the GLB banner shown at the start of every invocation. |
 | `logging.sh` | Consistent `glb_log_info`/`_success`/`_warn`/`_error` output — all user-facing messages go through here, not raw `echo`. |
 | `utils.sh` | Small reusable helpers (e.g. directory creation) shared across modules. |
-| `detect.sh` | Detects the distro, distro version, package manager (apt/dnf/pacman/zypper), and current shell. |
+| `detect.sh` | Detects the distro, distro version, package manager (apt/dnf/pacman/zypper), current shell, and whether it's running under WSL. |
 | `package.sh` | Package management abstraction: install/remove/list, per-distro name resolution (`_GLB_PACKAGE_OVERRIDES`) and its reverse for `glb export`, and the sudo-gated manual-step pause/resume. |
 | `extras.sh` | Installs software outside the package-manager model — curl-install scripts, Flatpak apps, and Nerd Font archives — driven by a profile's `extras.txt`. |
 | `timers.sh` | Enables the user systemd timers a profile lists in `timers.txt` (optionally restricted to one package manager), after the dotfiles that ship their unit files are linked. A timer that can't be enabled — no reachable user session, missing unit — warns with the exact command to run later; it never fails the restore. |

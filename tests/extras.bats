@@ -80,6 +80,77 @@ teardown() {
     [[ "$output" == *"Failed to install: thing"* ]]
 }
 
+# --- WSL skips -------------------------------------------------------------
+#
+# _GLB_PROC_VERSION is pointed at a nonexistent file by the sandbox
+# (= not WSL); these tests write a Microsoft kernel string there to
+# turn WSL on.
+
+@test "wsl: skips ghostty and the Nerd Font, still installs everything else" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
+    printf 'snap ghostty classic\nfont jetbrains-mono-nerd-font https://example.test/font.zip\ncurl faketool https://example.test/install.sh\n' > "$pdir/extras.txt"
+    stub_command snap 'echo "snap $*" >> "$TEST_TMP/calls"; exit 1'
+    stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
+    stub_command bash 'exit 0'
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_apply_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Skipping ghostty: not needed under WSL"* ]]
+    [[ "$output" == *"Skipping jetbrains-mono-nerd-font:"*"on Windows instead"* ]]
+    [[ "$output" == *"Installing faketool via curl-install script"* ]]
+    run grep -E "snap install|font\.zip" "$TEST_TMP/calls"
+    [ "$status" -ne 0 ]
+}
+
+@test "wsl: dry-run reports the skip, not a would-install" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
+    printf 'snap ghostty classic\n' > "$pdir/extras.txt"
+    stub_command snap 'exit 1'
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Skipping ghostty"* ]]
+    [[ "$output" != *"Would install"* ]]
+}
+
+@test "wsl: an extra that's already installed is reported as such, not skipped" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
+    printf 'snap ghostty classic\n' > "$pdir/extras.txt"
+    stub_command snap 'case "$1" in list) exit 0 ;; esac'
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_apply_profile_extras "$pdir"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Already installed: ghostty"* ]]
+}
+
+@test "not wsl: ghostty and the Nerd Font are not skipped" {
+    local pdir="$TEST_TMP/profile"
+    mkdir -p "$pdir"
+    printf 'Linux version 6.17.4-generic\n' > "$_GLB_PROC_VERSION"
+    printf 'snap ghostty classic\nfont jetbrains-mono-nerd-font https://example.test/font.zip\n' > "$pdir/extras.txt"
+    stub_command snap 'exit 1'
+    source "$GLB_ROOT/lib/detect.sh"
+
+    run glb_apply_profile_extras "$pdir" "--dry-run"
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"Would install: ghostty (via snap)"* ]]
+    [[ "$output" == *"Would install: jetbrains-mono-nerd-font (via font)"* ]]
+    [[ "$output" != *"Skipping"* ]]
+}
+
 # --- manual-step pause interacting with the extras.txt loop ---------------
 #
 # Regression test for the same stdin-hijack bug fixed in

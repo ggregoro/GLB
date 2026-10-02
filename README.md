@@ -151,6 +151,12 @@ render as empty boxes:
   custom font
 - **Konsole** — *Settings* → *Edit Current Profile* → *Appearance* → *Font*
 - **Ghostty** (installed by `default`) — already configured, nothing to do
+- **WSL (Windows Terminal)** — the terminal is a Windows app and can't
+  see Linux fonts, so GLB skips its own font install there. Install
+  JetBrainsMono Nerd Font on Windows (download it from
+  [nerdfonts.com](https://www.nerdfonts.com/font-downloads), select the
+  `.ttf` files, right-click → *Install*), then *Settings* → your distro's
+  profile → *Appearance* → *Font face*
 
 If glyphs still don't show right after setting the font, fully close and
 reopen the terminal — GNOME Terminal in particular shares one background
@@ -190,6 +196,12 @@ with a real restore on real hardware or VMs:
 
 See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full per-distro
 verification history.
+
+GLB also runs under **WSL** (Windows Subsystem for Linux) on any of the
+distros above. It detects WSL and skips the two extras that have no use
+there — Ghostty (the Windows terminal you're in is already the
+terminal) and the Linux-side Nerd Font install (see
+[Terminal Font](#terminal-font)).
 
 ## Architecture
 

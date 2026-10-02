@@ -13,6 +13,17 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **WSL support** — `glb restore` now detects Windows Subsystem for
+  Linux (`glb_is_wsl` in `lib/detect.sh`, "microsoft" in
+  `/proc/version`) and skips the two extras that have no use there,
+  logging why instead of installing them: `ghostty` (the Windows
+  terminal already hosts the shell) and `jetbrains-mono-nerd-font` (a
+  Windows terminal can't see Linux fonts — install it on Windows
+  instead, see README "Terminal Font"). New `_GLB_EXTRA_WSL_SKIP` table
+  in `lib/extras.sh`, same log-and-continue shape as
+  `_GLB_PACKAGE_SKIP`. Everything else — packages, the other extras,
+  Starship, dotfiles — applies unchanged; first run on Ubuntu 26.04
+  under WSL2.
 - **Git aliases in all three profiles** (`default`/`developer`/`server`)
   — `gs` (status), `ga` (add), `gc` (commit -m), `gp` (push), `gpl`
   (pull), `gst` (stash), `gsp` (stash then pull), `gfo` (fetch origin),

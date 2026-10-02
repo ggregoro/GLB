@@ -104,6 +104,49 @@ _glb_extra_native_package() {
 }
 
 # ------------------------------------------------------------
+# Extras that have no use under WSL (Windows Subsystem for Linux),
+# keyed by extras.txt <name> to a short reason. glb_apply_profile_extras
+# skips these (log-and-continue) there, same spirit as
+# _GLB_PACKAGE_SKIP in lib/package.sh. Under WSL the terminal is a
+# Windows application (Windows Terminal, usually) hosting the Linux
+# shell, which changes two things:
+#
+# ghostty - a second, Linux-side GUI terminal has nothing to add; the
+# Windows terminal the user is already in is the terminal. (It would
+# install and even open through WSLg, but only as a slower window next
+# to the one they're typing in.)
+#
+# jetbrains-mono-nerd-font - a Windows terminal renders with Windows
+# fonts and can't see ~/.local/share/fonts, so the Linux-side install
+# never reaches the prompt it's meant for. The reason text says what to
+# do instead, since the icons still need the font - just on the other
+# side. See README.md, "Terminal Font".
+#
+# Dotfiles for these (ghostty's config, the yazi.desktop launcher) are
+# still linked: they're inert without the app, and leaving them in
+# place keeps `glb diff`/`glb repair` free of WSL-only drift.
+# ------------------------------------------------------------
+
+declare -gA _GLB_EXTRA_WSL_SKIP=(
+    [ghostty]="not needed under WSL - the Windows terminal you're already in hosts the shell"
+    [jetbrains-mono-nerd-font]="a Windows terminal can't see Linux fonts under WSL - install JetBrainsMono Nerd Font on Windows instead and select it in your terminal's profile"
+)
+
+# ------------------------------------------------------------
+# Look up whether an extra should be skipped on this machine. Prints
+# the reason and returns 0 if so; returns 1 with no output otherwise.
+# ------------------------------------------------------------
+
+glb_extra_skip_reason() {
+    local name="$1"
+    local reason="${_GLB_EXTRA_WSL_SKIP[$name]:-}"
+
+    [[ -n "$reason" ]] || return 1
+    glb_is_wsl 2>/dev/null || return 1
+    printf "%s\n" "$reason"
+}
+
+# ------------------------------------------------------------
 # Download <asset> from <repo>'s latest GitHub release to
 # <dest_dir>/<asset>, verifying a sibling "<asset>.sha256" when the
 # release publishes one (skipped, not an error, when it doesn't).
@@ -631,7 +674,7 @@ glb_apply_profile_extras() {
     local profile_dir="$1"
     local dry_run="${2:-}"
     local extras_file="$profile_dir/extras.txt"
-    local line method name spec
+    local line method name spec skip_reason
     local failed=()
 
     if [[ ! -f "$extras_file" ]]; then
@@ -652,6 +695,11 @@ glb_apply_profile_extras() {
 
         if glb_extra_installed "$method" "$name" "$spec"; then
             glb_log_info "Already installed: $name"
+            continue
+        fi
+
+        if skip_reason="$(glb_extra_skip_reason "$name")"; then
+            glb_log_info "Skipping $name: $skip_reason"
             continue
         fi
 
