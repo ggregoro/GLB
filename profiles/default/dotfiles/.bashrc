@@ -168,9 +168,11 @@ fi
 if command -v fresh-editor >/dev/null 2>&1; then
     export EDITOR=fresh-editor VISUAL=fresh-editor
     alias editbash='fresh-editor ~/.bashrc'
+    alias editstarship='fresh-editor ~/.config/starship-bash.toml'
 elif command -v fresh >/dev/null 2>&1; then
     export EDITOR=fresh VISUAL=fresh
     alias editbash='fresh ~/.bashrc'
+    alias editstarship='fresh ~/.config/starship-bash.toml'
 fi
 
 # ------------------------------------------------------------

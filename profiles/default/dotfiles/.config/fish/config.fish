@@ -126,10 +126,12 @@ if command -q fresh-editor
     set -gx EDITOR fresh-editor
     set -gx VISUAL fresh-editor
     alias editfish='fresh-editor ~/.config/fish/config.fish'
+    alias editstarship='fresh-editor ~/.config/starship-fish.toml'
 else if command -q fresh
     set -gx EDITOR fresh
     set -gx VISUAL fresh
     alias editfish='fresh ~/.config/fish/config.fish'
+    alias editstarship='fresh ~/.config/starship-fish.toml'
 end
 
 # ------------------------------------------------------------

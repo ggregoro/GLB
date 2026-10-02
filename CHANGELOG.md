@@ -13,6 +13,10 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **`editstarship` in bash and fish (`default` profile)** — previously
+  zsh-only. Each shell's alias opens its own Starship config
+  (`starship-bash.toml` / `starship-fish.toml`), in the existing
+  `# Editors` block next to `editbash`/`editfish`.
 - **WSL support** — `glb restore` now detects Windows Subsystem for
   Linux (`glb_is_wsl` in `lib/detect.sh`, "microsoft" in
   `/proc/version`) and skips the two extras that have no use there,
