@@ -24,3 +24,7 @@ Thumbs.db
 
 CLAUDE.local.md
 CLAUDE.*.local.md
+
+# zsh plugins cloned by `glb restore` when GLB is installed at
+# ~/.local/share/glb (root only; profiles keep their own plugins/ dirs)
+/plugins/
