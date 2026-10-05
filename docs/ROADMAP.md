@@ -559,6 +559,13 @@ in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
   method as the orange). Tried on fish first, then rolled out to
   bash/zsh. `developer`/`server` unaffected.
 
+- **One-line Starship prompt (2026-10-05) ✅** — Greg's call: drop the
+  prompt's second line in all three of `default`'s shells. `format` now
+  ends at the last arrow, with no line break and no `➜`, so the cursor
+  sits right after it; the unused `[character]` block is removed.
+  Colors, segments and arrow separators unchanged. `developer`/`server`
+  unaffected.
+
 ---
 
 # Long-Term Vision

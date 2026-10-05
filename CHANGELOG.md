@@ -161,6 +161,15 @@ This project follows a simple versioning approach:
   already has one.
 
 ### Changed
+- **`default`'s Starship prompt is now one line** — in all three
+  shells' configs (`starship-bash.toml`/`starship-fish.toml`/
+  `starship.toml`), the `format` string no longer ends with a line
+  break and the `➜` prompt character, so the cursor sits on the same
+  line, right after the last arrow. The `[character]` block added with
+  the arrow separators (next entry) is removed again as unused. This
+  also drops the green/red success/error cue the `➜` carried. Colors,
+  segments and separators are unchanged. `developer`/`server` are
+  unaffected.
 - **`default`'s Starship prompt: pointed separators, `➜` prompt
   character, purple zsh** — in all three shells' configs
   (`starship-bash.toml`/`starship-fish.toml`/`starship.toml`), the

@@ -36,12 +36,11 @@ $php\
 [](fg:#213624 bg:#1d3020)\
 $cmd_duration\
 $time\
-[ ](fg:#1d3020)\
-\n$character"""
+[ ](fg:#1d3020)"""
 
-[character]
-success_symbol = "[➜](bold green)"
-error_symbol = "[➜](bold red)"
+# One-line prompt: the format ends at the last arrow, with no
+# "\n$character" second line, so the cursor sits right after it.
+# There is no prompt character, so no [character] block either.
 
 [directory]
 style = "fg:#000000 bg:#46b959"
