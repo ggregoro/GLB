@@ -13,6 +13,15 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **`repo-status` (`default` profile)** — a small script that prints a
+  colored, boxed table of every git repo under `~/Projects`: branch,
+  clean or has changes, and whether it is in sync with its remote
+  (`↑`ahead `↓`behind, or "no upstream" for a branch never pushed),
+  with a one-line count underneath. It fetches but never pulls, so
+  running it changes nothing. Ships as a dotfile
+  (`.local/bin/repo-status`, already on `PATH` in all three shells);
+  plain Bash and git, no Nerd Font needed. `developer`/`server`
+  unaffected.
 - **`editstarship` in bash and fish (`default` profile)** — previously
   zsh-only. Each shell's alias opens its own Starship config
   (`starship-bash.toml` / `starship-fish.toml`), in the existing
