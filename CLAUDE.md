@@ -24,7 +24,8 @@ mission — installed and lightly configured, never vendor-managed, never
 a general app menu (see [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md),
 "Terminal-First, Not Terminal-Only"). The first such pick is **Ghostty**
 in `default`, so Yazi's image preview works where a distro's default
-terminal can't draw one.
+terminal can't draw one. The second is **Kitty**, also in `default`: a
+native package on all four managers, with a small config.
 
 - Repo: <https://github.com/ggregoro/GLB> (public)
 - License: MIT

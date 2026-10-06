@@ -62,6 +62,23 @@ declare -gA _GLB_PACKAGE_SKIP=(
 )
 
 # ------------------------------------------------------------
+# Packages that have no use under WSL (Windows Subsystem for Linux),
+# keyed by packages.txt name to a short reason. Same idea as
+# _GLB_EXTRA_WSL_SKIP in lib/extras.sh, for things that install through
+# the package manager rather than extras.txt.
+#
+# kitty - a second, Linux-side GUI terminal has nothing to add; the
+# Windows terminal the user is already in is the terminal (same call
+# as ghostty in lib/extras.sh). Its dotfile is still linked: it's inert
+# without the app, and that keeps `glb diff`/`glb repair` free of
+# WSL-only drift.
+# ------------------------------------------------------------
+
+declare -gA _GLB_PACKAGE_WSL_SKIP=(
+    [kitty]="not needed under WSL - the Windows terminal you're already in hosts the shell"
+)
+
+# ------------------------------------------------------------
 # Extra guidance shown alongside a package's manual-step pause, for a
 # failure whose cause the resolved install command alone doesn't
 # explain. Keyed "<generic-name>:<distro>" (the distro ID from
@@ -107,15 +124,22 @@ glb_package_manual_hint() {
 }
 
 # ------------------------------------------------------------
-# Look up whether a package is known-unavailable on the current
-# package manager. Prints the reason and returns 0 if so; returns 1
-# with no output otherwise.
+# Look up whether a package should be skipped on this machine: it is
+# known-unavailable on the current package manager, or has no use
+# under WSL. Prints the reason and returns 0 if so; returns 1 with no
+# output otherwise.
 # ------------------------------------------------------------
 
 glb_package_skip_reason() {
     local package="$1"
     local pkg_mgr
     local reason
+
+    reason="${_GLB_PACKAGE_WSL_SKIP[$package]:-}"
+    if [[ -n "$reason" ]] && glb_is_wsl 2>/dev/null; then
+        printf "%s\n" "$reason"
+        return 0
+    fi
 
     pkg_mgr="$(glb_detect_package_manager)" || return 1
     reason="${_GLB_PACKAGE_SKIP[${package}:${pkg_mgr}]:-}"

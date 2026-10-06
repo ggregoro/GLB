@@ -24,7 +24,8 @@ GLB is terminal-first: it enhances whatever terminal you already have
 rather than replacing it, and its focus stays the shell and CLI. GUI
 apps are added only when they're a deliberate pick that complements that
 focus (Ghostty, so Yazi's image preview works where a distro's default
-terminal can't draw one) — never a general app menu. See
+terminal can't draw one; Kitty, a ready-configured terminal) — never a
+general app menu. See
 [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for the reasoning.
 
 ## Features
@@ -151,6 +152,7 @@ render as empty boxes:
   custom font
 - **Konsole** — *Settings* → *Edit Current Profile* → *Appearance* → *Font*
 - **Ghostty** (installed by `default`) — already configured, nothing to do
+- **Kitty** (installed by `default`) — already configured, nothing to do
 - **WSL (Windows Terminal)** — the terminal is a Windows app and can't
   see Linux fonts, so GLB skips its own font install there. Install
   JetBrainsMono Nerd Font on Windows (download it from
@@ -198,9 +200,9 @@ See [`docs/ROADMAP.md`](docs/ROADMAP.md) for the full per-distro
 verification history.
 
 GLB also runs under **WSL** (Windows Subsystem for Linux) on any of the
-distros above. It detects WSL and skips the two extras that have no use
-there — Ghostty (the Windows terminal you're in is already the
-terminal) and the Linux-side Nerd Font install (see
+distros above. It detects WSL and skips what has no use there — Ghostty
+and Kitty (the Windows terminal you're in is already the terminal) and
+the Linux-side Nerd Font install (see
 [Terminal Font](#terminal-font)).
 
 ## Architecture

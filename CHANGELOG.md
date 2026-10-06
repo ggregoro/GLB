@@ -13,6 +13,20 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **Kitty (`default` profile)** — `default` now installs the Kitty
+  terminal emulator, the second GUI pick after Ghostty. A plain `kitty`
+  line in `packages.txt`: it is a native package under that name on
+  apt, dnf, pacman and zypper, so no snap and no per-distro override.
+  Ships a small config (`dotfiles/.config/kitty/kitty.conf`):
+  JetBrainsMono Nerd Font at 9, padding 14, a dark palette
+  ([Hackerboy](https://github.com/ggregoro/hackerboy)), a brighter
+  selection highlight, a background at 90% opacity (text stays solid),
+  a powerline tab bar, and Shift+Enter / Alt+Shift+Enter sent as CSI-u
+  for TUIs and tmux. On Omarchy the active theme's colors replace the
+  palette, so Kitty keeps following theme changes. GLB installs Kitty
+  but does not make it the default terminal. Skipped under WSL (new
+  `_GLB_PACKAGE_WSL_SKIP` table in `lib/package.sh`, the package-side
+  twin of `_GLB_EXTRA_WSL_SKIP`). `developer`/`server` unaffected.
 - **`repo-status` (`default` profile)** — a small script that prints a
   colored, boxed table of every git repo under `~/Projects`: branch,
   clean or has changes, and whether it is in sync with its remote

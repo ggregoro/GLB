@@ -107,7 +107,9 @@ Ubuntu-family, Pop!_OS, Fedora, Arch-family) and their test history.
   the first GUI pick under this stance: the graphics-capable terminal
   Yazi's image preview needs where a distro's default provides none,
   installed and launched on demand, never set as the default terminal.
-  See `docs/design/ghostty-yazi.md`.
+  See `docs/design/ghostty-yazi.md`. **Kitty** (2026-10-06) is the
+  second: a native package on all four package managers, shipped with
+  a small config, likewise never set as the default terminal.
 
 ## Release Strategy
 

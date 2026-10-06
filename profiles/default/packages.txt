@@ -57,6 +57,19 @@ bash-completion    # loads glb's completion file - see lib/completions.sh
 # on Mint until snapd is manually unblocked.
 snapd
 
+# Kitty - a GPU-accelerated terminal emulator, and the second GUI pick
+# under docs/PHILOSOPHY.md's "Terminal-First, Not Terminal-Only" (after
+# Ghostty in extras.txt). Unlike Ghostty it is a real native package
+# named `kitty` on all four managers (apt/dnf/pacman/zypper), so it is
+# a plain line here: no snap, no per-distro override. It speaks its own
+# Kitty graphics protocol, so yazi's image preview works in it too.
+# Configured by dotfiles/.config/kitty/kitty.conf. GLB installs it but
+# does not make it the default terminal; that stays a per-desktop
+# choice. Skipped under WSL (_GLB_PACKAGE_WSL_SKIP in lib/package.sh).
+# apt's version lags upstream (0.32 on Ubuntu 24.04-based distros);
+# nothing in the config needs newer.
+kitty
+
 # CPU architecture info banner (James Tigert / kz6fittycent), pairs
 # with fastfetch (now a `github-release` extra - see extras.txt). A
 # real native package on all four managers - no per-distro override

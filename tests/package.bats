@@ -241,3 +241,52 @@ teardown() {
     [ "$status" -eq 0 ]
     [[ "$output" != *"nosnap.pref"* ]]
 }
+
+# --- WSL skips -------------------------------------------------------------
+#
+# _GLB_PROC_VERSION is pointed at a nonexistent file by the sandbox
+# (= not WSL); these tests write a Microsoft kernel string there to
+# turn WSL on.
+
+@test "wsl: kitty is skipped, with the reason" {
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
+    source "$GLB_ROOT/lib/detect.sh"
+    source "$GLB_ROOT/lib/package.sh"
+    glb_detect_package_manager() { printf 'apt\n'; }
+
+    run glb_package_skip_reason kitty
+
+    [ "$status" -eq 0 ]
+    [[ "$output" == *"not needed under WSL"* ]]
+}
+
+@test "wsl: an ordinary package is not skipped" {
+    printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
+    source "$GLB_ROOT/lib/detect.sh"
+    source "$GLB_ROOT/lib/package.sh"
+    glb_detect_package_manager() { printf 'apt\n'; }
+
+    run glb_package_skip_reason ripgrep
+
+    [ "$status" -ne 0 ]
+    [ -z "$output" ]
+}
+
+@test "not wsl: kitty is not skipped on any package manager" {
+    source "$GLB_ROOT/lib/detect.sh"
+    source "$GLB_ROOT/lib/package.sh"
+
+    local mgr
+    for mgr in apt dnf pacman zypper; do
+        glb_detect_package_manager() { printf '%s\n' "$mgr"; }
+        run glb_package_skip_reason kitty
+        [ "$status" -ne 0 ]
+    done
+}
+
+@test "default profile: kitty is listed and its config ships" {
+    grep -q '^kitty$' "$GLB_REPO_ROOT/profiles/default/packages.txt"
+    [ -f "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf" ]
+    grep -q '^background_opacity 0.90$' \
+        "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf"
+}

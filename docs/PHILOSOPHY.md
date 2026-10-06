@@ -140,6 +140,19 @@ don't vendor-manage":
 See `docs/design/ghostty-yazi.md` for the full rationale and the
 per-distro packaging details.
 
+### Kitty — the second GUI pick
+
+`default` also installs **Kitty** (2026-10-06), the terminal the
+maintainer uses day to day. It fits the same rule: installed and
+lightly configured, not vendor-managed. Unlike Ghostty it is a native
+package named `kitty` on apt, dnf, pacman and zypper, so it needs no
+snap and no per-distro handling. Its config
+(`dotfiles/.config/kitty/kitty.conf`) is one short file: font, padding,
+colors, a readable selection highlight and a slightly see-through
+background. GLB does not make Kitty the default terminal; that stays a
+per-desktop choice. It is skipped under WSL, for the same reason as
+Ghostty.
+
 ---
 
 ## Opinionated but Customizable
