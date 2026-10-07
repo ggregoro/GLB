@@ -22,9 +22,8 @@ This project follows a simple versioning approach:
   ([Hackerboy](https://github.com/ggregoro/hackerboy)), a brighter
   selection highlight, a background at 90% opacity (text stays solid),
   a powerline tab bar, and Shift+Enter / Alt+Shift+Enter sent as CSI-u
-  for TUIs and tmux. On Omarchy the active theme's colors replace the
-  palette, so Kitty keeps following theme changes. GLB installs Kitty
-  but does not make it the default terminal. Skipped under WSL (new
+  for TUIs and tmux. GLB installs Kitty but does not make it the
+  default terminal. Skipped under WSL (new
   `_GLB_PACKAGE_WSL_SKIP` table in `lib/package.sh`, the package-side
   twin of `_GLB_EXTRA_WSL_SKIP`). `developer`/`server` unaffected.
 - **`repo-status` (`default` profile)** — a small script that prints a
