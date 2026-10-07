@@ -70,6 +70,17 @@ snapd
 # nothing in the config needs newer.
 kitty
 
+# aspell + its English dictionary - a spell checker for the terminal,
+# driven by the `spell` script (dotfiles/.local/bin/spell): `spell
+# notes.md` steps through a document one misspelled word at a time.
+# Both are real native packages under these names on all four managers
+# (apt/dnf/pacman/zypper), so plain lines, no per-distro override.
+# aspell 0.60.8 or newer (every current target) has the Markdown mode
+# `spell` relies on to skip code and link addresses. English only; add
+# another `aspell-<lang>` package by hand for other languages.
+aspell
+aspell-en
+
 # CPU architecture info banner (James Tigert / kz6fittycent), pairs
 # with fastfetch (now a `github-release` extra - see extras.txt). A
 # real native package on all four managers - no per-distro override

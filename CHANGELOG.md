@@ -13,6 +13,16 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **`spell` (`default` profile)** — a spell checker for the terminal.
+  `default` now installs `aspell` and `aspell-en` (native packages
+  under those names on apt, dnf, pacman and zypper) and ships a small
+  script, `.local/bin/spell`, so there is no `aspell check` to
+  remember: `spell notes.md` steps through a document one misspelled
+  word at a time, `spell list notes.md` only lists the words, and
+  `spell help` shows the commands and keys. Markdown files have their
+  code and link addresses skipped; corrections go into the file and
+  aspell keeps the earlier version as `.bak`. `developer`/`server`
+  unaffected.
 - **Kitty (`default` profile)** — `default` now installs the Kitty
   terminal emulator, the second GUI pick after Ghostty. A plain `kitty`
   line in `packages.txt`: it is a native package under that name on

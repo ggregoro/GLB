@@ -1,0 +1,68 @@
+#!/usr/bin/env bash
+# Spell check a document with aspell, without having to type
+# "aspell check" each time.
+#
+#   spell notes.md            check a document, one word at a time
+#   spell one.md two.md       check several, one after the other
+#   spell list notes.md       only list the misspelled words
+#   spell help                show this list
+#
+# Corrections go into the document itself; aspell keeps the version
+# from before beside it with .bak added to the name.
+
+usage() {
+    cat <<'EOF'
+spell: check the spelling of a document (uses aspell)
+
+  spell notes.md            check a document, one word at a time
+  spell one.md two.md       check several, one after the other
+  spell list notes.md       only list the misspelled words
+  spell help                show this list
+
+While it is checking:
+  a number   use that suggestion      r   type your own replacement
+  i          skip this word once      I   skip it for the whole document
+  a          add it to your dictionary
+  x          save and leave           b   leave without saving
+EOF
+}
+
+if ! command -v aspell >/dev/null; then
+    echo "spell: aspell is not installed (it is the aspell and aspell-en packages)" >&2
+    exit 1
+fi
+
+if [[ $# -eq 0 || $1 == help || $1 == -h || $1 == --help ]]; then
+    usage
+    exit 0
+fi
+
+# "spell list file" prints the misspelled words and changes nothing.
+# A real file named "list" still gets checked the normal way.
+list_only=no
+if [[ $1 == list && $# -gt 1 ]]; then
+    list_only=yes
+    shift
+fi
+
+status=0
+for doc in "$@"; do
+    if [[ ! -f $doc ]]; then
+        echo "spell: no such file: $doc" >&2
+        status=1
+        continue
+    fi
+
+    if [[ $list_only == yes ]]; then
+        # Markdown files: leave code and link addresses alone, the same
+        # as "aspell check" does by itself from the file name.
+        mode=()
+        [[ $doc == *.md || $doc == *.markdown ]] && mode=(--mode=markdown)
+        [[ $# -gt 1 ]] && echo "== $doc"
+        aspell "${mode[@]}" list < "$doc" | sort -u
+    else
+        aspell check "$doc" || status=1
+    fi
+done
+
+exit "$status"
