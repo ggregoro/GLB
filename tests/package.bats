@@ -284,6 +284,31 @@ teardown() {
     done
 }
 
+@test "snapd is skipped on pacman and zypper, where no repo has it" {
+    source "$GLB_ROOT/lib/detect.sh"
+    source "$GLB_ROOT/lib/package.sh"
+
+    local mgr
+    for mgr in pacman zypper; do
+        glb_detect_package_manager() { printf '%s\n' "$mgr"; }
+        run glb_package_skip_reason snapd
+        [ "$status" -eq 0 ]
+        [ -n "$output" ]
+    done
+}
+
+@test "snapd is still installed on apt and dnf, where ghostty needs it" {
+    source "$GLB_ROOT/lib/detect.sh"
+    source "$GLB_ROOT/lib/package.sh"
+
+    local mgr
+    for mgr in apt dnf; do
+        glb_detect_package_manager() { printf '%s\n' "$mgr"; }
+        run glb_package_skip_reason snapd
+        [ "$status" -ne 0 ]
+    done
+}
+
 @test "default profile: kitty is listed and its config ships" {
     grep -q '^kitty$' "$GLB_REPO_ROOT/profiles/default/packages.txt"
     [ -f "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf" ]

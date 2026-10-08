@@ -49,13 +49,20 @@ declare -gA _GLB_PACKAGE_OVERRIDES=(
 # specifically because nothing in these profiles still needs snapd
 # on pacman - yazi's snap extras.txt entry has its own native-pacman-
 # package override (see _GLB_SNAP_NATIVE_OVERRIDES in lib/extras.sh),
-# so skipping snapd doesn't strand anything. Left unskipped on
-# dnf/zypper (same confirmed gap, see packages.txt's own comment) -
-# yazi has no native package on those, so pausing there still
-# surfaces a real, actionable choice rather than silently dropping
-# the tool.
+# so skipping snapd doesn't strand anything.
+#
+# [snapd:zypper]: same gap, `zypper info snapd` reports "package
+# 'snapd' not found" in openSUSE's default repos (2026-08-13,
+# Tumbleweed VM; hit again 2026-10-08 on a Tumbleweed VM, where it was
+# the one step that did not go through). Safe to skip for the same
+# reason as pacman: ghostty, the only snap extras.txt entry left,
+# routes to openSUSE's native `ghostty` package (see
+# _GLB_EXTRA_NATIVE_OVERRIDES in lib/extras.sh), and yazi has been a
+# github-release extra since 2026-09-12. Not skipped on dnf: Fedora
+# has a real snapd package and ghostty needs it there.
 declare -gA _GLB_PACKAGE_SKIP=(
     [snapd:pacman]="not in Arch's official repos (AUR-only); nothing in these profiles needs it on pacman since yazi installs as a native package instead"
+    [snapd:zypper]="not in openSUSE's default repos; nothing in these profiles needs it on zypper since ghostty installs as a native package instead"
     [pacman-contrib:apt]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"
     [pacman-contrib:dnf]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"
     [pacman-contrib:zypper]="Arch-only package (provides checkupdates); the update notifier that needs it is only enabled on pacman"

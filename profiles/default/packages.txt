@@ -37,8 +37,10 @@ bash-completion    # loads glb's completion file - see lib/completions.sh
 # Tumbleweed VM, real restore of the server profile): `zypper info
 # snapd` reports "package 'snapd' not found" in the default repos -
 # but ghostty has a real native zypper package too (`repo-oss`), so
-# this is a non-issue there as well; snapd is simply never needed on
-# openSUSE. dnf unverified for snapd itself, and ghostty falls through
+# snapd is simply never needed on openSUSE and is skipped outright
+# there as well (_GLB_PACKAGE_SKIP, since 2026-10-08; before that the
+# missing package still paused every restore for a manual step). dnf
+# unverified for snapd itself, and ghostty falls through
 # to snap there (Fedora packages it only via COPR) - confirmed working
 # 2026-09-12 once `_glb_ensure_snap_dir` created the `/snap` symlink
 # Fedora's snapd package doesn't set up on its own (see lib/extras.sh).

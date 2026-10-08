@@ -129,6 +129,13 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **`snapd` no longer stops a restore on openSUSE** — `default` lists
+  `snapd` for the Ghostty snap, but openSUSE's default repos have no
+  `snapd` package, so the install failed and waited for a manual step
+  every time. Nothing needs it there: Ghostty installs as a native
+  package on zypper. It is now skipped on zypper with a one-line
+  reason, the same way it already was on pacman. apt and dnf still
+  install it.
 - **The Arch `update` shortcut no longer assumes `yay` is installed** —
   all three profiles defined `alias update='yay -Syu'` on pacman, but
   nothing installs `yay`, so on an Arch machine using `paru` (or no AUR
