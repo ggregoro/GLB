@@ -91,6 +91,18 @@ my machine." Once it's done, run:
 ~/.local/share/glb/glb restore
 ```
 
+**Keeping GLB itself up to date.** `glb update` updates the system's
+packages, not GLB. When this copy of GLB is behind GitHub, `glb update`,
+`glb restore` and `glb repair` say so and show the one command that
+updates it:
+
+```bash
+git -C ~/.local/share/glb pull --ff-only
+```
+
+Running the one-line installer again does the same thing. Set
+`GLB_NO_SELF_CHECK=1` to turn the notice off.
+
 Alternatively, clone it yourself and run `glb` directly:
 
 ```bash

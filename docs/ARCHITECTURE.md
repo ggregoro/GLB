@@ -61,6 +61,7 @@ to clone a private one.
 | `prompt.sh` | Installs and configures the Starship prompt (`glb prompt`), including the update path. |
 | `plugins.sh` | Vendors a curated set of zsh plugins (`zsh-autosuggestions`, `zsh-syntax-highlighting`) by git-cloning them directly — framework-free, no Oh My Zsh/Fisher dependency. |
 | `completions.sh` | Symlinks `glb` itself onto `PATH` and installs its bash/zsh/fish completion scripts. |
+| `selfcheck.sh` | Tells the user when this copy of GLB is behind its remote (`glb update`/`restore`/`repair`), with the command that updates it, and repeats that if the command fails. A notice only — GLB never updates itself. Silent when it can't check. |
 | `export.sh` | Captures the current machine's state (installed packages reverse-mapped to canonical names, tracked dotfiles, shell/prompt setup) into a profile-shaped `snapshots/<hostname>-<date>/` directory; also applies a snapshot the same way a profile is applied. |
 | `diff.sh` | Compares two profile-shaped directories — a profile, a snapshot, or either against the other — for package and dotfile drift. |
 | `repair.sh` | Checks the current machine against a profile (via an ephemeral export + diff, nothing saved to disk) and offers to re-run `restore` if drift is found. |

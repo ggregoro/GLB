@@ -27,6 +27,7 @@ source "$GLB_ROOT/lib/repair.sh"
 source "$GLB_ROOT/lib/prompt.sh"
 source "$GLB_ROOT/lib/plugins.sh"
 source "$GLB_ROOT/lib/completions.sh"
+source "$GLB_ROOT/lib/selfcheck.sh"
 
 # ------------------------------------------------------------
 # Display help
@@ -89,6 +90,15 @@ glb_show_info() {
 # ------------------------------------------------------------
 
 glb_show_banner "$GLB_VERSION"
+
+# The commands that change the machine say so first when this copy of
+# GLB is behind its remote, and again at the end if they fail.
+case "${1:-}" in
+    update|restore|repair)
+        glb_check_self_update
+        trap 'glb_self_update_reminder "$?"' EXIT
+        ;;
+esac
 
 case "${1:-}" in
     help)

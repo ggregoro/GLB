@@ -13,6 +13,18 @@ This project follows a simple versioning approach:
 ## [Unreleased]
 
 ### Added
+- **"This copy of GLB is behind" notice** — `glb update` updates the
+  system's packages, never GLB itself, so an old copy keeps running
+  old code and keeps hitting problems that are already fixed.
+  `glb update`, `glb restore` and `glb repair` now check first and say
+  so when the copy is behind its remote, with the one command that
+  updates it (`git -C <glb folder> pull --ff-only`); if the command
+  then fails, the notice is repeated as the last thing on screen. A
+  notice only: GLB never updates itself and never stops because of
+  it. Silent when the copy is up to date, isn't a git checkout, or
+  the remote can't be reached (10-second limit, never asks for a
+  password). `GLB_NO_SELF_CHECK=1` turns it off. New module
+  `lib/selfcheck.sh`.
 - **`spell` (`default` profile)** — a spell checker for the terminal.
   `default` now installs `aspell` and `aspell-en` (native packages
   under those names on apt, dnf, pacman and zypper) and ships a small

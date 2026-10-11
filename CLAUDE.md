@@ -48,7 +48,7 @@ Two problems, one tool:
 
 A single `glb` dispatcher script sources focused library modules from
 `lib/` (`detect`, `package`, `extras`, `timers`, `profile`, `export`, `diff`,
-`repair`, `prompt`, `plugins`, `completions`), driven by per-profile
+`repair`, `prompt`, `plugins`, `completions`, `selfcheck`), driven by per-profile
 directories under `profiles/`:
 
 ```
