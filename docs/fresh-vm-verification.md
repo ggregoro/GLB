@@ -59,6 +59,39 @@ Cosmic VM verification") — this file is the repeatable procedure.
    # (log out / in to take effect)
    ```
 
+   **Kitty can hit the same wall, and it looks different.** With 3D
+   acceleration on, Kitty may open a window with no text at all and
+   print no error: see-through at GLB's `background_opacity 0.90`,
+   solid black at opacity 1. It is the same with `kitty --config NONE`,
+   so it is not GLB's `kitty.conf`. Seen 2026-10-11 on an Arch VM
+   (Kitty 0.49.2, Mesa 26.2.4, VirtualBox 7.2.20, VMSVGA with 3D on,
+   under both COSMIC and niri); which of the three is at fault was not
+   narrowed down. On that same VM, Ghostty started plainly stopped with
+   `OpenGL version is too old. Ghostty requires OpenGL 4.3` (the 3D
+   driver offered 4.1), so step 1 above does not always give Ghostty a
+   usable GPU path either. The check and the workaround are the same:
+
+   ```sh
+   LIBGL_ALWAYS_SOFTWARE=1 kitty
+   ```
+
+   If that draws normally, the `environment.d` line above fixes Kitty
+   too (it applies to every app in the session, not only Ghostty). To
+   limit it to Kitty, put a small wrapper ahead of it on `PATH`:
+
+   ```sh
+   mkdir -p ~/.local/bin
+   printf '#!/bin/sh\nexec env LIBGL_ALWAYS_SOFTWARE=1 /usr/bin/kitty "$@"\n' > ~/.local/bin/kitty
+   chmod +x ~/.local/bin/kitty
+   ```
+
+   and copy `/usr/share/applications/kitty.desktop` to
+   `~/.local/share/applications/` with its `Exec=` lines changed to
+   start with `env LIBGL_ALWAYS_SOFTWARE=1`, so the app menu uses it as
+   well. Undo: delete those two files. Turning 3D acceleration off for
+   the VM also works, for every app at once, at the cost of a slower
+   desktop.
+
 4. Confirm a real Wayland session (`wl-clipboard` needs one):
 
    ```sh

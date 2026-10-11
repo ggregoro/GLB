@@ -12,6 +12,10 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- `fresh-vm-verification.md`: the VirtualBox GPU note now covers Kitty
+  as well as Ghostty. With 3D acceleration on, Kitty can open with no
+  text and no error; the same `LIBGL_ALWAYS_SOFTWARE=1` workaround
+  applies, with a Kitty-only wrapper as an alternative.
 - Added `cosmic-viewer-arch.md`: building COSMIC Viewer from source on
   Arch/EndeavourOS/CachyOS, the "cannot open shared object file" break
   after a library update and how to rebuild, updating to a new release,
