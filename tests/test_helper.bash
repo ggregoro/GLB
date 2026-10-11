@@ -16,7 +16,7 @@ GLB_REAL_BASH="$(command -v bash)"
 # (glb_command_exists). Tests must behave the same whether or not the
 # host already has them - a test that wants one present stubs it into
 # STUB_BIN, which is always first on PATH.
-GLB_HIDDEN_COMMANDS=(fresh nvim yazi checkupdates paru notify-send flatpak yay)
+GLB_HIDDEN_COMMANDS=(fresh nvim yazi checkupdates paru notify-send flatpak yay mise)
 
 # _glb_build_shadow_path <dest> [path]
 # Populate <dest> with a symlink to every executable reachable on
@@ -106,6 +106,15 @@ glb_setup_sandbox() {
     # that doesn't exist (= not WSL); a test that wants WSL writes a
     # Microsoft kernel string there.
     export _GLB_PROC_VERSION="$TEST_TMP/proc-version"
+
+    # A host with mise activated in fish (a vendor conf.d snippet that
+    # runs on every fish start, plus the __MISE_* variables the
+    # developer's own session exports) has mise rebuild PATH from the
+    # session's original one - putting the real /usr/bin ahead of
+    # STUB_BIN, so a test that runs fish reaches the host's real yay /
+    # flatpak / sudo instead of the stubs. Keep mise out of the sandbox.
+    export MISE_FISH_AUTO_ACTIVATE=0
+    unset __MISE_ORIG_PATH __MISE_DIFF __MISE_SESSION MISE_SHELL
 }
 
 glb_teardown_sandbox() {

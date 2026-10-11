@@ -123,7 +123,7 @@ The suite is independent of what's already installed on the machine
 running it: the sandbox `PATH` hides the host's copies of the commands
 GLB installs or notifies with (`GLB_HIDDEN_COMMANDS` in
 `tests/test_helper.bash` — `fresh`, `nvim`, `yazi`, `checkupdates`,
-`paru`, `notify-send`), so it passes the same on a bare machine and one
+`paru`, `notify-send`, `flatpak`, `yay`, `mise`), so it passes the same on a bare machine and one
 GLB has already been applied to. A test that needs one of those present
 stubs it into `STUB_BIN`. If a new test assumes some other tool is
 absent, add it to that list.

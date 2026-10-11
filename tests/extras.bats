@@ -127,6 +127,9 @@ teardown() {
     printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
     printf 'snap ghostty classic\n' > "$pdir/extras.txt"
     stub_command snap 'case "$1" in list) exit 0 ;; esac'
+    # apt has no native ghostty package, so the snap path is what's
+    # under test whatever the host's own package manager is.
+    stub_command apt 'exit 0'
     source "$GLB_ROOT/lib/detect.sh"
 
     run glb_apply_profile_extras "$pdir"
@@ -141,6 +144,9 @@ teardown() {
     printf 'Linux version 6.17.4-generic\n' > "$_GLB_PROC_VERSION"
     printf 'snap ghostty classic\nfont jetbrains-mono-nerd-font https://example.test/font.zip\n' > "$pdir/extras.txt"
     stub_command snap 'exit 1'
+    # apt has no native ghostty package, so the snap path is what's
+    # under test whatever the host's own package manager is.
+    stub_command apt 'exit 0'
     source "$GLB_ROOT/lib/detect.sh"
 
     run glb_apply_profile_extras "$pdir" "--dry-run"
