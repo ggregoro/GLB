@@ -43,7 +43,9 @@ This project follows a simple versioning approach:
   JetBrainsMono Nerd Font at 9, padding 14, a dark palette
   ([Hackerboy](https://github.com/ggregoro/hackerboy)), a brighter
   selection highlight, a background at 90% opacity (text stays solid),
-  a powerline tab bar, and Shift+Enter / Alt+Shift+Enter sent as CSI-u
+  a powerline tab bar, an animated cursor trail (`cursor_trail 1`,
+  Kitty 0.37 or newer; it also shows at a glance that the window is
+  Kitty), and Shift+Enter / Alt+Shift+Enter sent as CSI-u
   for TUIs and tmux. GLB installs Kitty but does not make it the
   default terminal. Skipped under WSL (new
   `_GLB_PACKAGE_WSL_SKIP` table in `lib/package.sh`, the package-side

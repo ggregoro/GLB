@@ -314,4 +314,6 @@ teardown() {
     [ -f "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf" ]
     grep -q '^background_opacity 0.90$' \
         "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf"
+    grep -Eq '^cursor_trail +1$' \
+        "$GLB_REPO_ROOT/profiles/default/dotfiles/.config/kitty/kitty.conf"
 }
