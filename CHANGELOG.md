@@ -141,6 +141,19 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **The "Yazi" app-menu entry now opens on a VirtualBox VM, and
+  without Ghostty** — the entry started Ghostty directly. On a
+  VirtualBox guest with 3D acceleration on, Ghostty closes at once
+  (it needs OpenGL 4.3, the guest's driver offers 4.1), so choosing
+  Yazi from a launcher did nothing; and on a machine without Ghostty
+  the entry had nothing to run. It now runs a small script,
+  `.local/bin/yazi-launch`: Ghostty first, Kitty when Ghostty isn't
+  installed, and on a VirtualBox guest (`systemd-detect-virt` says
+  `oracle`) that one window is started with
+  `LIBGL_ALWAYS_SOFTWARE=1`. Nothing else in the session changes and
+  real hardware is untouched. With no terminal or no `yazi` it says so
+  in a desktop notification instead of failing silently. `yazi-launch`
+  also works from a shell and from a custom keyboard shortcut.
 - **`snapd` no longer stops a restore on openSUSE** — `default` lists
   `snapd` for the Ghostty snap, but openSUSE's default repos have no
   `snapd` package, so the install failed and waited for a manual step

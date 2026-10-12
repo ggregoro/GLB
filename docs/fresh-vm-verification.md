@@ -75,6 +75,11 @@ Cosmic VM verification") — this file is the repeatable procedure.
    LIBGL_ALWAYS_SOFTWARE=1 kitty
    ```
 
+   GLB's own "Yazi" app-menu entry does not need any of this: its
+   script, `yazi-launch`, sets `LIBGL_ALWAYS_SOFTWARE=1` for its own
+   window on a VirtualBox guest. Ghostty or Kitty started any other
+   way still does.
+
    If that draws normally, the `environment.d` line above fixes Kitty
    too (it applies to every app in the session, not only Ghostty). To
    limit it to Kitty, put a small wrapper ahead of it on `PATH`:
@@ -149,7 +154,8 @@ Watch, in order:
   needed and working on Fedora.
 - **Dotfiles linked with no `.glb-backup`** on a clean VM:
   `~/.config/ghostty/config`, `~/.config/yazi/theme.toml`,
-  `~/.local/share/applications/yazi.desktop`, and 8 `~/.config/nvim/*`
+  `~/.local/share/applications/yazi.desktop`,
+  `~/.local/bin/yazi-launch`, and 8 `~/.config/nvim/*`
   files.
 - Ends: `[SUCCESS] Profile applied: default`
 
@@ -179,7 +185,8 @@ appears in the COSMIC app launcher (`gtk-launch yazi.desktop` also
 works). Window: near-black `#0d0e12`, slight transparency, blur
 (cosmic-comp's call). `ghostty +show-config` loads clean, no error
 dialog. Bind **Super+E** by hand (COSMIC Settings → Keyboard Shortcuts
-→ Custom → `ghostty --class=com.yazi.Yazi -e yazi`) — a documented
+→ Custom → `yazi-launch`, the script the entry itself runs; give the
+full path if the desktop can't find it) — a documented
 manual step, GLB never automates it.
 
 **D. Yazi image preview.** In Ghostty: `yazi`, highlight an image → a

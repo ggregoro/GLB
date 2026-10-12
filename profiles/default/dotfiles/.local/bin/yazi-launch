@@ -1,0 +1,41 @@
+#!/usr/bin/env bash
+# Open Yazi in a terminal window of its own. Run by the "Yazi" app-menu
+# entry (.local/share/applications/yazi.desktop); works from a shell too,
+# and passes any arguments on to yazi.
+#
+# Ghostty is the first choice, Kitty the second: both draw Yazi's image
+# previews (Kitty graphics protocol), and Kitty covers a machine where
+# Ghostty isn't installed.
+#
+# On a VirtualBox guest both need software drawing. With 3D acceleration
+# on, the guest's graphics driver offers OpenGL 4.1; Ghostty needs 4.3
+# and closes at once, and Kitty can open a window with no text. So there,
+# and only there, this one window gets LIBGL_ALWAYS_SOFTWARE=1. Nothing
+# else in the session is changed, and a value already set is left alone.
+# See docs/fresh-vm-verification.md.
+
+class="com.yazi.Yazi"
+
+if [[ -z "${LIBGL_ALWAYS_SOFTWARE:-}" ]] && command -v systemd-detect-virt >/dev/null 2>&1; then
+    if [[ "$(systemd-detect-virt 2>/dev/null)" == "oracle" ]]; then
+        export LIBGL_ALWAYS_SOFTWARE=1
+    fi
+fi
+
+if ! command -v yazi >/dev/null 2>&1; then
+    msg="yazi is not installed (or not on PATH)."
+elif command -v ghostty >/dev/null 2>&1; then
+    exec ghostty --class="$class" -e yazi "$@"
+elif command -v kitty >/dev/null 2>&1; then
+    exec kitty --class "$class" yazi "$@"
+else
+    msg="Neither Ghostty nor Kitty is installed, so there is no terminal to open Yazi in."
+fi
+
+# Started from an app menu there is no terminal to print to, so say it
+# as a desktop notification as well.
+printf 'yazi-launch: %s\n' "$msg" >&2
+if command -v notify-send >/dev/null 2>&1; then
+    notify-send "Yazi" "$msg" 2>/dev/null
+fi
+exit 1

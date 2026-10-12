@@ -99,6 +99,11 @@ Ghostty is the first pick under that stance, and it's a clean fit:
   one entry works on COSMIC, KDE, GNOME, and Xfce alike. It's the first
   `.local/share/` dotfile GLB ships; `glb_apply_profile_dotfiles`'s
   existing per-file `find` walk picks it up with no code change.
+  *(Changed 2026-10-11: the entry now runs
+  `~/.local/bin/yazi-launch`, a shipped script that does the same
+  thing, falls back to Kitty when Ghostty isn't installed, and gives
+  the window software drawing on a VirtualBox guest, where Ghostty
+  otherwise closes at once. See the root CHANGELOG.)*
 - **A small, opinionated appearance config**,
   `profiles/default/dotfiles/.config/ghostty/config`, shipped like
   `starship.toml`. It sets a *look*, not behavior: `theme = TokyoNight`

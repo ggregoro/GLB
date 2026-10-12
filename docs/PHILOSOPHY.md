@@ -130,8 +130,10 @@ don't vendor-manage":
   existed.
 - GLB does **not** set Ghostty as the default terminal or rebind the
   terminal shortcut. It's installed and launched on demand, via an
-  app-menu entry (`ghostty --class=com.yazi.Yazi -e yazi`) that runs
-  Yazi inside it.
+  app-menu entry that runs Yazi inside it. The entry calls a small
+  script, `yazi-launch`, which is `ghostty --class=com.yazi.Yazi -e
+  yazi` with two fallbacks: Kitty when Ghostty isn't installed, and
+  software drawing for that one window on a VirtualBox guest.
 - Binding a key to that launcher is left to the user — COSMIC, KDE, and
   GNOME each do custom keyboard shortcuts differently and none
   portably, so GLB documents the one-liner rather than automating three

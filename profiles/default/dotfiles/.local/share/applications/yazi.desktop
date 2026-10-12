@@ -2,10 +2,10 @@
 Type=Application
 Name=Yazi
 GenericName=File Manager
-Comment=Terminal file manager, in Ghostty
+Comment=Terminal file manager, in a window of its own
 Icon=system-file-manager
-Exec=ghostty --class=com.yazi.Yazi -e yazi
+Exec=sh -c "exec ~/.local/bin/yazi-launch"
 Terminal=false
 Categories=System;Utility;FileTools;
-Keywords=files;file manager;yazi;ghostty;
+Keywords=files;file manager;yazi;ghostty;kitty;
 StartupWMClass=com.yazi.Yazi
