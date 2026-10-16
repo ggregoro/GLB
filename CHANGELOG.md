@@ -227,6 +227,8 @@ This project follows a simple versioning approach:
   already has one.
 
 ### Changed
+- **`default`'s Kitty text is now 10 pt** (was 9) — `font_size` in
+  `.config/kitty/kitty.conf`; 9 read small at 125% scaling.
 - **`default`'s Starship prompt is now one line** — in all three
   shells' configs (`starship-bash.toml`/`starship-fish.toml`/
   `starship.toml`), the `format` string no longer ends with a line
