@@ -388,7 +388,13 @@ Expand platform support.
   pause.)*
 - **Fedora ✅** — dnf confirmed via a real `glb restore default` on a
   Fedora 44 Workstation test VM (2026-08-05). Zero package overrides
-  needed.
+  needed. **Fedora 45 Workstation (GNOME 51) confirmed 2026-11-04**,
+  the day after its release, on a fresh test VM (installed to disk,
+  fully updated, RPM Fusion enabled): GLB cloned from the public repo
+  into `~/.local/share/glb`, `glb restore default` ran clean end to
+  end with no manual fixes. Kitty, Starship, fastfetch and the snap
+  route for Ghostty (incl. the `/snap` symlink) all worked on GLB
+  `1.1.0` plus the fixes since.
 - **Arch Linux ✅** — pacman confirmed via a real `glb restore default`
   plus `new-to-linux`'s pacman-specific overrides (`libreoffice` →
   `libreoffice-fresh`, `gh` → `github-cli`) on a CachyOS (Arch-based)
@@ -521,7 +527,8 @@ time, but the project itself is considered essentially done.
 `glb restore default` end-to-end runs on the E7450 (Pop!_OS/apt), an
 openSUSE VM (zypper), and a CachyOS VM (pacman) — "ran perfectly end to
 end" on all three, with the neovim fix above closing the last known
-issue. Fedora (dnf) not yet re-verified against this release. Everything
+issue. Fedora (dnf) not yet re-verified against this release at the
+time (since confirmed on Fedora 45, 2026-11-04). Everything
 in this "Post-1.0 add-ons" section ships in `1.1.0`; see `CHANGELOG.md`'s
 `[1.1.0]` entry for the itemized list.
 
