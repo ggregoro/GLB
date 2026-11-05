@@ -135,6 +135,10 @@ This project follows a simple versioning approach:
   the fallback.
 
 ### Docs
+- **"How this was made" in the README** — says plainly that the code
+  and most of the docs were written by Claude (Anthropic's AI
+  assistant) with Claude Code, tested by me on real machines, and how
+  third-party material is credited.
 - **README and the fresh-VM checklist now call out `git` as a
   prerequisite** for the `install.sh` one-liner (it clones GLB, so
   `git` has to already be there). `install.sh` itself already checked

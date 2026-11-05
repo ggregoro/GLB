@@ -237,6 +237,20 @@ across several real machines and VMs, and documented in detail in
 `CLAUDE.md`. See [`docs/PHILOSOPHY.md`](docs/PHILOSOPHY.md) for the
 guiding principles behind its design decisions.
 
+## How this was made
+
+This project is AI-assisted. The idea, the testing and the decisions are
+mine; the code and most of the documentation were written by Claude,
+Anthropic's AI assistant, using Claude Code. I tested it on my own
+machines before publishing, but I'm not a professional software
+developer, so please read any script before you run it, and open an
+issue if something is wrong.
+
+My own work here is under the license in `LICENSE`. Third-party material
+(wallpapers, fonts, code from other projects) keeps its own license and
+is credited in this README where the source is known. If something isn't
+credited correctly, open an issue and I'll fix or remove it.
+
 ## License
 
 MIT — see [`LICENSE`](LICENSE).
