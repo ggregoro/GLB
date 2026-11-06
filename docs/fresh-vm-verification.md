@@ -152,6 +152,14 @@ Watch, in order:
   is auto-created on Ubuntu/Pop, and by GLB itself
   (`_glb_ensure_snap_dir`) anywhere else it's missing — confirmed
   needed and working on Fedora.
+- **Log out and back in after the first `snapd` install.** On a
+  machine that had no snapd before the restore, the desktop session
+  you ran it from can't see snap apps yet: `ghostty` is "not found"
+  in the terminal and missing from the app menu, although `snap list`
+  shows it installed. `/snap/bin` (for `PATH`) and the snap app-menu
+  folder are only added at login, by `/etc/profile.d/apps-bin-path.sh`
+  (seen on Debian 13 + KDE Plasma). Check it before logging out with
+  `/snap/bin/ghostty`.
 - **Dotfiles linked with no `.glb-backup`** on a clean VM:
   `~/.config/ghostty/config`, `~/.config/yazi/theme.toml`,
   `~/.local/share/applications/yazi.desktop`,

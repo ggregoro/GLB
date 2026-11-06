@@ -12,6 +12,10 @@ recorded in the root CHANGELOG and in `CLAUDE.md`'s Roadmap section.
 
 ### Added
 
+- `fresh-vm-verification.md`: log out and back in after the first
+  `snapd` install, or Ghostty looks missing (found on Debian 13 + KDE
+  Plasma). `ROADMAP.md`: Debian 13 + KDE Plasma 6.3 verified with
+  `glb restore default` (2026-11-05).
 - `fresh-vm-verification.md`: the VirtualBox GPU note now covers Kitty
   as well as Ghostty. With 3D acceleration on, Kitty can open with no
   text and no error; the same `LIBGL_ALWAYS_SOFTWARE=1` workaround

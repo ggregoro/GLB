@@ -367,7 +367,13 @@ Expand platform support.
 
 - **Debian ✅** — apt confirmed via a real `glb restore default` on an
   actual Debian 13 daily-driver machine (2026-08-06). Zero package
-  overrides needed.
+  overrides needed. **Debian 13 with KDE Plasma 6.3 confirmed
+  2026-11-05** on a fresh test VM (Wayland): GLB installed with the
+  `install.sh` one-liner, `glb restore default` ran clean end to end
+  on `1.1.0` plus the fixes since, and the bats suite passed in full
+  (Debian's own `bats` package). The only snag was not GLB's: the
+  Ghostty snap stays out of `PATH` and the app menu until you log out
+  and back in (see `docs/fresh-vm-verification.md`, Part 2).
 - **Ubuntu ✅ (via derivatives)** — apt confirmed via real restores on
   Ubuntu-based distros: Pop!_OS (daily-driver laptop plus a dedicated
   test VM), Linux Mint 22.3, and Zorin OS. Stock Ubuntu itself hasn't
