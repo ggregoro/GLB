@@ -147,6 +147,11 @@ This project follows a simple versioning approach:
   hits the error.
 
 ### Fixed
+- **Starship prompt shows the Arch logo on CachyOS** — Starship
+  detects CachyOS as its own OS, and the prompt configs had no symbol
+  for it, so Starship fell back to its built-in color emoji (a yellow
+  🎗️ ribbon) instead of a Nerd Font icon. Every profile's Starship
+  config now maps `CachyOS` to the Arch logo `󰣇`.
 - **The "Yazi" app-menu entry now opens on a VirtualBox VM, and
   without Ghostty** — the entry started Ghostty directly. On a
   VirtualBox guest with 3D acceleration on, Ghostty closes at once
