@@ -94,6 +94,9 @@ teardown() {
     stub_command snap 'echo "snap $*" >> "$TEST_TMP/calls"; exit 1'
     stub_command curl 'echo "curl $*" >> "$TEST_TMP/calls"; exit 0'
     stub_command bash 'exit 0'
+    # apt has no native ghostty package, so the snap path is what's
+    # under test whatever the host's own package manager is.
+    stub_command apt 'exit 0'
     source "$GLB_ROOT/lib/detect.sh"
 
     run glb_apply_profile_extras "$pdir"
@@ -112,6 +115,9 @@ teardown() {
     printf 'Linux version 6.6.87.2-microsoft-standard-WSL2\n' > "$_GLB_PROC_VERSION"
     printf 'snap ghostty classic\n' > "$pdir/extras.txt"
     stub_command snap 'exit 1'
+    # apt has no native ghostty package, so the snap path is what's
+    # under test whatever the host's own package manager is.
+    stub_command apt 'exit 0'
     source "$GLB_ROOT/lib/detect.sh"
 
     run glb_apply_profile_extras "$pdir" "--dry-run"
