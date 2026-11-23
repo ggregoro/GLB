@@ -56,7 +56,8 @@ This project follows a simple versioning approach:
   (`↑`ahead `↓`behind, or "no upstream" for a branch never pushed),
   with a one-line count underneath. Each column is as wide as its
   longest entry, so the table stays narrow (about 60 columns for
-  typical repos) and doesn't wrap in a half-width terminal. It fetches but never pulls, so
+  typical repos) and doesn't wrap in a half-width terminal. It fetches all repos at
+  once (under a second for about 20 repos) but never pulls, so
   running it changes nothing. Ships as a dotfile
   (`.local/bin/repo-status`, already on `PATH` in all three shells);
   plain Bash and git, no Nerd Font needed. `developer`/`server`

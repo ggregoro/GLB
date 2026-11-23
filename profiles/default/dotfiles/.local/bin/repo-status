@@ -25,6 +25,19 @@ names=() branches=() states=() state_colors=() syncs=() sync_plains=() sync_colo
 total=0
 dirty=0
 
+# Ask every remote for news first, all at the same time: one at a time
+# took about half a second per repo, mostly waiting on the network.
+# The & starts each fetch in the background and wait holds until all
+# of them are done. GIT_TERMINAL_PROMPT=0 makes a repo that would ask
+# for a password fail quietly instead (prompts from several fetches
+# at once would garble the screen). 2>/dev/null hides git's error
+# text: with no network the fetches fail and the table shows the last
+# known state.
+for dir in "$projects"/*/; do
+  [ -d "$dir/.git" ] && GIT_TERMINAL_PROMPT=0 git -C "$dir" fetch --quiet 2>/dev/null &
+done
+wait
+
 for dir in "$projects"/*/; do
   if [ ! -d "$dir/.git" ]; then
     continue
@@ -34,10 +47,8 @@ for dir in "$projects"/*/; do
   branch=$(git -C "$dir" branch --show-current)
   changes=$(git -C "$dir" status --porcelain)
 
-  # 2>/dev/null hides git's error text. With no network the fetch
-  # fails, and a branch that was never pushed has no upstream ("@{u}")
-  # to compare with; in that case ahead stays empty.
-  git -C "$dir" fetch --quiet 2>/dev/null
+  # A branch that was never pushed has no upstream ("@{u}") to compare
+  # with; 2>/dev/null hides git's complaint and ahead stays empty.
   ahead=$(git -C "$dir" rev-list --count "@{u}..HEAD" 2>/dev/null)
   behind=$(git -C "$dir" rev-list --count "HEAD..@{u}" 2>/dev/null)
 
