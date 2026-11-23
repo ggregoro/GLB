@@ -16,28 +16,12 @@ blue=$'\e[34m'
 cyan=$'\e[36m'
 reset=$'\e[0m'
 
-# The box. Three ready-made horizontal lines (top, middle, bottom) and
-# one upright bar that goes between the columns of every row. The
-# lines are exactly as wide as the columns below: 30, 10, 14 and 11
-# characters, plus one space of padding on each side.
-top="┌────────────────────────────────┬────────────┬────────────────┬─────────────┐"
-mid="├────────────────────────────────┼────────────┼────────────────┼─────────────┤"
-bot="└────────────────────────────────┴────────────┴────────────────┴─────────────┘"
 bar="${dim}│${reset}"
 
-# Header. %-30s means "text, left-aligned, padded to 30 characters".
-# That padding is what makes the columns line up.
-printf -v h_repo "%-30s" "REPO"
-printf -v h_branch "%-10s" "BRANCH"
-printf -v h_state "%-14s" "STATE"
-printf -v h_sync "%-11s" "SYNC"
-head_color="${bold}${blue}"
-
-echo
-echo "  ${dim}${top}${reset}"
-echo "  ${bar} ${head_color}${h_repo}${reset} ${bar} ${head_color}${h_branch}${reset} ${bar} ${head_color}${h_state}${reset} ${bar} ${head_color}${h_sync}${reset} ${bar}"
-echo "  ${dim}${mid}${reset}"
-
+# The table is drawn in two passes. First every repo is checked and its
+# cells are stored; then each column is made exactly as wide as its
+# longest entry (or its header), so there is no wasted space.
+names=() branches=() states=() state_colors=() syncs=() sync_plains=() sync_colors=()
 total=0
 dirty=0
 
@@ -58,43 +42,69 @@ for dir in "$projects"/*/; do
   behind=$(git -C "$dir" rev-list --count "HEAD..@{u}" 2>/dev/null)
 
   if [ -n "$changes" ]; then
-    mark="●"
-    state="has changes"
+    state="● has changes"
     state_color=$yellow
     dirty=$((dirty + 1))
   else
-    mark="✓"
-    state="clean"
+    state="✓ clean"
     state_color=$green
   fi
 
   # sync_plain is the same text with plain letters instead of arrows.
   # It is only used to count how wide the cell is.
   if [ -z "$ahead" ]; then
-    sync="no upstream"
-    sync_plain="no upstream"
-    sync_color=$yellow
+    sync="no upstream"; sync_plain=$sync; sync_color=$yellow
   elif [ "$ahead" -eq 0 ] && [ "$behind" -eq 0 ]; then
-    sync="in sync"
-    sync_plain="in sync"
-    sync_color=$dim
+    sync="in sync"; sync_plain=$sync; sync_color=$dim
   else
-    sync="↑$ahead ↓$behind"
-    sync_plain="^$ahead v$behind"
-    sync_color=$red
+    sync="↑$ahead ↓$behind"; sync_plain="^$ahead v$behind"; sync_color=$red
   fi
 
-  # Pad each cell to its column width first, then color it. Coloring
-  # first would throw the columns off, because the color codes count
-  # as characters even though they are invisible.
-  printf -v name_cell "%-30s" "$name"
-  printf -v branch_cell "%-10s" "$branch"
-  printf -v state_cell "%-12s" "$state"
-  printf -v sync_pad "%*s" $((11 - ${#sync_plain})) ""
-
-  echo "  ${bar} ${bold}${name_cell}${reset} ${bar} ${cyan}${branch_cell}${reset} ${bar} ${state_color}${mark} ${state_cell}${reset} ${bar} ${sync_color}${sync}${reset}${sync_pad} ${bar}"
-
+  names+=("$name"); branches+=("$branch")
+  states+=("$state"); state_colors+=("$state_color")
+  syncs+=("$sync"); sync_plains+=("$sync_plain"); sync_colors+=("$sync_color")
   total=$((total + 1))
+done
+
+# Column widths: start at the header's width, grow to the longest cell.
+# The state cells start with a one-character mark (✓ or ●); the mark is
+# swapped for a plain letter before counting, in case the terminal's
+# locale counts it as more than one character.
+w_repo=4 w_branch=6 w_state=5 w_sync=4
+for i in "${!names[@]}"; do
+  s="x${states[i]#?}"
+  (( ${#names[i]} > w_repo )) && w_repo=${#names[i]}
+  (( ${#branches[i]} > w_branch )) && w_branch=${#branches[i]}
+  (( ${#s} > w_state )) && w_state=${#s}
+  (( ${#sync_plains[i]} > w_sync )) && w_sync=${#sync_plains[i]}
+done
+
+# A horizontal line: n copies of ─, plus one on each side for padding.
+line() { local s; printf -v s "%*s" $(($1 + 2)) ""; printf '%s' "${s// /─}"; }
+top="┌$(line $w_repo)┬$(line $w_branch)┬$(line $w_state)┬$(line $w_sync)┐"
+mid="├$(line $w_repo)┼$(line $w_branch)┼$(line $w_state)┼$(line $w_sync)┤"
+bot="└$(line $w_repo)┴$(line $w_branch)┴$(line $w_state)┴$(line $w_sync)┘"
+
+# Pad each cell to its column width first, then color it. Coloring
+# first would throw the columns off, because the color codes count as
+# characters even though they are invisible. %-*s means "text,
+# left-aligned, padded to the width given before it".
+head_color="${bold}${blue}"
+printf -v h "  ${bar} ${head_color}%-*s${reset} ${bar} ${head_color}%-*s${reset} ${bar} ${head_color}%-*s${reset} ${bar} ${head_color}%-*s${reset} ${bar}" \
+  "$w_repo" REPO "$w_branch" BRANCH "$w_state" STATE "$w_sync" SYNC
+
+echo
+echo "  ${dim}${top}${reset}"
+echo "$h"
+echo "  ${dim}${mid}${reset}"
+
+for i in "${!names[@]}"; do
+  s="x${states[i]#?}"
+  printf -v name_cell "%-*s" "$w_repo" "${names[i]}"
+  printf -v branch_cell "%-*s" "$w_branch" "${branches[i]}"
+  printf -v state_pad "%*s" $((w_state - ${#s})) ""
+  printf -v sync_pad "%*s" $((w_sync - ${#sync_plains[i]})) ""
+  echo "  ${bar} ${bold}${name_cell}${reset} ${bar} ${cyan}${branch_cell}${reset} ${bar} ${state_colors[i]}${states[i]}${reset}${state_pad} ${bar} ${sync_colors[i]}${syncs[i]}${reset}${sync_pad} ${bar}"
 done
 
 echo "  ${dim}${bot}${reset}"

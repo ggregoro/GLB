@@ -80,3 +80,15 @@ plain() {
     [[ "$out" != *"just-a-folder"* ]]
     [[ "$out" == *"1 repos, 0 with changes"* ]]
 }
+
+@test "columns fit their contents, every line the same width" {
+    make_synced_repo alpha
+    git init -q "$HOME/Projects/a-much-longer-repo-name"
+    touch "$HOME/Projects/alpha/new-file"
+    run "$SCRIPT"
+    out="$(plain "$output")"
+    [[ "$out" == *"│ alpha                   │ "* ]]
+    [[ "$out" == *"│ BRANCH │ STATE         │ SYNC        │"* ]]
+    widths=$(printf '%s\n' "$out" | grep -E '^  [┌│├└]' | awk '{ print length }' | sort -u | wc -l)
+    [ "$widths" -eq 1 ]
+}

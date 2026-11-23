@@ -54,7 +54,9 @@ This project follows a simple versioning approach:
   colored, boxed table of every git repo under `~/Projects`: branch,
   clean or has changes, and whether it is in sync with its remote
   (`↑`ahead `↓`behind, or "no upstream" for a branch never pushed),
-  with a one-line count underneath. It fetches but never pulls, so
+  with a one-line count underneath. Each column is as wide as its
+  longest entry, so the table stays narrow (about 60 columns for
+  typical repos) and doesn't wrap in a half-width terminal. It fetches but never pulls, so
   running it changes nothing. Ships as a dotfile
   (`.local/bin/repo-status`, already on `PATH` in all three shells);
   plain Bash and git, no Nerd Font needed. `developer`/`server`
