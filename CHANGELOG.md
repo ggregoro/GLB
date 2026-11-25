@@ -140,6 +140,8 @@ This project follows a simple versioning approach:
 ### Changed
 - **`default`'s Kitty text is now 11 pt** (was 10) — `font_size` in
   `.config/kitty/kitty.conf`; 12 read too large, 10 a little small.
+- **`default`'s Ghostty text is now 11 pt** (was 12) — `font-size` in
+  `.config/ghostty/config`, to match Kitty.
 
 ### Docs
 - **"How this was made" in the README** — says plainly that the code
