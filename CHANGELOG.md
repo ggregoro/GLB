@@ -137,6 +137,10 @@ This project follows a simple versioning approach:
   can hand images to a browser. Stock viewers such as `imv` stay as
   the fallback.
 
+### Changed
+- **`default`'s Kitty text is now 11 pt** (was 10) — `font_size` in
+  `.config/kitty/kitty.conf`; 12 read too large, 10 a little small.
+
 ### Docs
 - **"How this was made" in the README** — says plainly that the code
   and most of the docs were written by Claude (Anthropic's AI
